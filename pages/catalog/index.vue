@@ -26,7 +26,7 @@
                   type="checkbox"
                   :value="characteristic.id"
                   v-model="selectedStandaloneIds"
-                  @change="fetchItems"
+                  @change="onFilterChange"
               >
               {{ characteristic.name }}
             </label>
@@ -55,7 +55,7 @@
                   :name="'group_' + groupName"
                   :value="characteristic.id"
                   v-model="selectedGroupValues[groupName]"
-                  @change="fetchItems"
+                  @change="onFilterChange"
               >
               {{ characteristic.name }}
             </label>
@@ -64,30 +64,50 @@
       </div>
 
       <div class="items-column">
-        <h3>Товары</h3>
-        <div v-if="catalogItems.length === 0">Товары не найдены</div>
-        <div v-for="item in catalogItems" :key="item.id" class="list-item">
-          {{ item.name }}
+        <h3>Товары ({{ totalItems }})</h3>
+
+        <div v-if="loadingItems" class="loading-overlay">Обновление...</div>
+
+        <div v-if="catalogItems.length === 0 && !loadingItems">Товары не найдены</div>
+
+        <div v-for="item in catalogItems" :key="item.id" class="product-card">
+          <strong>{{ item.name }}</strong>
         </div>
+
+        <div v-if="totalPages > 1" class="pagination">
+          <button
+              :disabled="currentPage === 1"
+              @click="changePage(currentPage - 1)"
+              class="page-btn"
+          >
+            &laquo;
+          </button>
+
+          <span class="page-info">
+             Стр. {{ currentPage }} из {{ totalPages }}
+          </span>
+
+          <button
+              :disabled="currentPage === totalPages"
+              @click="changePage(currentPage + 1)"
+              class="page-btn"
+          >
+            &raquo;
+          </button>
+        </div>
+
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import {ref} from "vue";
+import { ref } from "vue";
 
-interface Catalog {
-  id: number;
-  name: string;
-}
+interface Catalog { id: number; name: string; }
+interface Characteristic { id: number; name: string; }
 
-interface Characteristic {
-  id: number;
-  name: string;
-}
-
-const {data: catalogs, error, pending} = await useFetch<Catalog[]>('http://127.0.0.1:8000/volt12/catalogs');
+const { data: catalogs, error, pending } = await useFetch<Catalog[]>('http://127.0.0.1:8000/volt12/catalogs');
 
 const catalogItems = ref<any[]>([]);
 const catalogCharacteristicWithoutGroup = ref<Characteristic[]>([]);
@@ -96,12 +116,18 @@ const catalogCharacteristicWithGroup = ref<Record<string, Characteristic[]>>({})
 const currentCatalogId = ref<number | null>(null);
 
 const selectedStandaloneIds = ref<number[]>([]);
-
 const selectedGroupValues = ref<Record<string, number | null>>({});
 
+const currentPage = ref(1);
+const totalPages = ref(1);
+const totalItems = ref(0);
+const limit = ref(1);
+const loadingItems = ref(false);
 
 const fetchItems = async () => {
   if (currentCatalogId.value === null) return;
+
+  loadingItems.value = true;
 
   const allSelectedIds = [
     ...selectedStandaloneIds.value,
@@ -109,22 +135,49 @@ const fetchItems = async () => {
   ];
 
   try {
-    const itemsRes: any = await $fetch('http://127.0.0.1:8000/volt12/catalog_items', {
+    const response: any = await $fetch('http://127.0.0.1:8000/volt12/catalog_items', {
       method: 'POST',
       body: {
         catalogId: currentCatalogId.value,
-        characteristicIds: allSelectedIds
+        characteristicIds: allSelectedIds,
+        page: currentPage.value,
+        limit: limit.value
       }
     });
-    catalogItems.value = itemsRes;
+
+    if (response.items) {
+      catalogItems.value = response.items;
+    } else {
+      catalogItems.value = Array.isArray(response) ? response : [];
+    }
+
+    if (response.meta) {
+      totalItems.value = response.meta.total_items;
+      totalPages.value = response.meta.total_pages;
+      currentPage.value = response.meta.current_page;
+    }
+
   } catch (e) {
     console.error(e);
+  } finally {
+    loadingItems.value = false;
   }
 };
 
+const onFilterChange = () => {
+  currentPage.value = 1;
+  fetchItems();
+}
+
+const changePage = (page: number) => {
+  if (page < 1 || page > totalPages.value) return;
+  currentPage.value = page;
+  fetchItems();
+}
+
 const clearGroup = (groupName: string) => {
   selectedGroupValues.value[groupName] = null;
-  fetchItems();
+  onFilterChange();
 }
 
 const openCatalog = async (catalogId: number) => {
@@ -132,11 +185,14 @@ const openCatalog = async (catalogId: number) => {
 
   selectedStandaloneIds.value = [];
   selectedGroupValues.value = {};
+  currentPage.value = 1;
+  catalogItems.value = [];
+  totalItems.value = 0;
 
   try {
     const characteristicRes: any = await $fetch('http://127.0.0.1:8000/volt12/catalog_characteristics', {
       method: 'POST',
-      body: {catalogId: catalogId}
+      body: { catalogId: catalogId }
     });
 
     catalogCharacteristicWithoutGroup.value = characteristicRes.without_group;
@@ -151,83 +207,56 @@ const openCatalog = async (catalogId: number) => {
 </script>
 
 <style scoped>
-.wrapper {
-  display: flex;
-  gap: 20px;
-  margin-top: 20px;
-}
+.wrapper { display: flex; gap: 20px; margin-top: 20px; }
+.filters-column { width: 300px; border-right: 1px solid #ccc; padding-right: 15px; }
+.items-column { flex: 1; }
+.catalogs-container { padding: 20px; }
+.catalog-list { display: flex; flex-wrap: wrap; border-bottom: 2px solid #eee; margin-bottom: 20px; }
+.list-item { padding: 8px 15px; cursor: pointer; border-radius: 4px; margin-right: 5px; }
+.list-item:hover { background-color: #f0f0f0; }
+.list-item.active { background-color: #007bff; color: white; }
+.filter-group { margin-top: 20px; padding-bottom: 10px; border-bottom: 1px dashed #eee; }
+.filter-item { margin-top: 5px; }
+h4 { margin: 0 0 10px 0; font-size: 16px; color: #333; }
+label { cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.reset-link { font-size: 12px; color: #dc3545; cursor: pointer; margin-bottom: 5px; text-decoration: underline; }
+.reset-link:hover { text-decoration: none; }
 
-.filters-column {
-  width: 300px;
-  border-right: 1px solid #ccc;
-  padding-right: 15px;
-}
-
-.items-column {
-  flex: 1;
-}
-
-.catalogs-container {
-  padding: 20px;
-}
-
-.catalog-list {
-  display: flex;
-  flex-wrap: wrap;
-  border-bottom: 2px solid #eee;
-  margin-bottom: 20px;
-}
-
-.list-item {
-  padding: 8px 15px;
-  cursor: pointer;
+.product-card {
+  padding: 10px;
+  border: 1px solid #eee;
+  margin-bottom: 10px;
   border-radius: 4px;
-  margin-right: 5px;
 }
 
-.list-item:hover {
-  background-color: #f0f0f0;
-}
-
-.list-item.active {
-  background-color: #007bff;
-  color: white;
-}
-
-.filter-group {
-  margin-top: 20px;
-  padding-bottom: 10px;
-  border-bottom: 1px dashed #eee;
-}
-
-.filter-item {
-  margin-top: 5px;
-}
-
-h4 {
-  margin: 0 0 10px 0;
-  font-size: 16px;
-  color: #333;
-}
-
-label {
-  cursor: pointer;
+.pagination {
   display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 8px;
-  font-size: 14px;
+  gap: 15px;
+  margin-top: 20px;
 }
 
-/* Кнопка сброса */
-.reset-link {
-  font-size: 12px;
-  color: #dc3545;
+.page-btn {
+  padding: 5px 15px;
   cursor: pointer;
-  margin-bottom: 5px;
-  text-decoration: underline;
+  background: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 4px;
 }
 
-.reset-link:hover {
-  text-decoration: none;
+.page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-info {
+  font-weight: bold;
+}
+
+.loading-overlay {
+  color: #666;
+  font-style: italic;
+  margin-bottom: 10px;
 }
 </style>
