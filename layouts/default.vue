@@ -6,9 +6,7 @@
       <slot />
     </main>
 
-    <footer class="footer">
-      <p>&copy; 2026 Volt12 Shop. Все права защищены.</p>
-    </footer>
+    <Footer />
   </div>
 </template>
 
@@ -25,12 +23,5 @@
 
 .main {
   flex: 1;
-}
-
-.footer {
-  background-color: #222;
-  color: #ccc;
-  text-align: center;
-  padding: 1rem;
 }
 </style>

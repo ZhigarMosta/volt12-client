@@ -5,14 +5,7 @@
         Официальный дилер Pandora
       </p>
       <div class="header__socials">
-        <div class="header__social-icons">
-          <a href="#" class="header__social-link"> <!-- TODO куда -->
-            <img src="../../public/icons/whatsapp.svg" alt="whatsapp">
-          </a>
-          <a href="#" class="header__social-link"> <!-- TODO куда -->
-            <img src="../../public/icons/telegram.svg" alt="telegram">
-          </a>
-        </div>
+        <SocialIcons/>
         <p class="header__text">
           +7 (351) 77-66-224
         </p>
@@ -53,7 +46,7 @@
         <img class="header__search-icon" src="../../public/icons/search.svg" alt="search">
       </div>
       <div class="header__actions">
-        <NuxtLink to="/" class="header__action" href="">
+        <NuxtLink to="/" class="header__action">
           <img class="header__action-icon" src="../../public/icons/compare.svg" alt="compare">
           <p class="header__text">Сравнение</p>
         </NuxtLink>
