@@ -59,20 +59,17 @@ const cards = [
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
-  padding: 0 70px;
   margin-top: 48px;
 }
 
 @media (max-width: 1100px) {
   .preview-cards {
     grid-template-columns: repeat(2, 1fr);
-    padding: 0 37px;
     margin-top: 32px;
   }
 }
 @media (max-width: 744px) {
   .preview-cards {
-    padding: 0 20px;
     margin-top: 0;
   }
 }

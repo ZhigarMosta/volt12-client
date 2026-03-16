@@ -27,7 +27,8 @@
     --red: #e2000f;
 
     /* Gray */
-    --gray-bg: #F8F8F8;
+    --gray: #F8F8F8;
+    --gray-light: #B9B9B9;
 
     /* Black*/
     --black: #2D2D2D;

@@ -79,7 +79,7 @@ defineProps<{
   border-radius: 16px;
   max-width: 420px;
   max-height: 288px;
-  background: var(--gray-bg);
+  background: var(--gray);
 }
 
 .preview-card__ellipse {
