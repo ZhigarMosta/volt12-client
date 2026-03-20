@@ -4,6 +4,7 @@
     <div v-else-if="error" class="error">Ошибка: {{ error.message }}</div>
     <swiper
         v-else
+        class="swiper"
         :slides-per-view="slidesPerView"
         :slides-per-group="slidesPerGroup"
         :grid="{ rows: gridRows }"
@@ -12,9 +13,8 @@
         :modules="modules"
         :breakpoints="breakpoints"
         :class="['mySwiper', swiperClass]"
-        :style="swiperStyle"
     >
-      <swiper-slide v-for="item in items" :key="item.id">
+      <swiper-slide class="swiper-slide" v-for="item in items" :key="item.id">
           <component :is="slideComponent" :product="item" />
       </swiper-slide>
     </swiper>
@@ -83,29 +83,6 @@ const items = computed(() => {
   return props.items;
 });
 
-const swiperStyle = computed(() => {
-  const height = getResponsiveHeight();
-  return {
-    height: `${height}px`
-  };
-});
-
-function getResponsiveHeight(): number {
-  const width = typeof window !== 'undefined' ? window.innerWidth : 1100;
-  
-  if (width < 744 && props.heights?.mobile !== undefined) {
-    return props.heights.mobile;
-  }
-  if (width >= 744 && width < 1100 && props.heights?.tablet !== undefined) {
-    return props.heights.tablet;
-  }
-  if (width >= 1100 && props.heights?.desktop !== undefined) {
-    return props.heights.desktop;
-  }
-  
-  return 823;
-}
-
 const fetchData = async () => {
   if (!props.fetchItems) return;
 
@@ -143,6 +120,7 @@ onMounted(() => {
   padding-bottom: 50px;
   box-sizing: border-box;
   transition: height 0.3s ease;
+  height: var(--slider-desktop-height, 543px);
 }
 
 .swiper-slide {
@@ -165,5 +143,17 @@ onMounted(() => {
 
 :deep(.swiper-pagination-bullet-active) {
   background: var(--red);
+}
+
+@media (max-width: 1100px) {
+  .swiper {
+    height: var(--slider-tablet-height, 823px);
+  }
+}
+
+@media (max-width: 744px) {
+  .swiper {
+    height: var(--slider-mobile-height, 809px);
+  }
 }
 </style>

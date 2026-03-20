@@ -1,7 +1,8 @@
 <template>
   <div class="main-page">
 <!--    <PreviewCards />-->
-    <PopularProducts />
+<!--    <PopularProducts />-->
+    <InstallAlarm/>
   </div>
 </template>
 
