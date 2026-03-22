@@ -1,7 +1,6 @@
 <template>
   <div class="slider-wrapper">
-    <div v-if="loading">Загрузка...</div>
-    <div v-else-if="error" class="error">Ошибка: {{ error.message }}</div>
+    <div v-if="loading" class="loading">Загрузка...</div>
     <swiper
         v-else
         class="swiper"
@@ -117,7 +116,6 @@ onMounted(() => {
 
 .swiper {
   width: 100%;
-  padding-bottom: 50px;
   box-sizing: border-box;
   transition: height 0.3s ease;
   height: var(--slider-desktop-height, 543px);
@@ -144,15 +142,18 @@ onMounted(() => {
 :deep(.swiper-pagination-bullet-active) {
   background: var(--red);
 }
-
+.loading{
+  height: var(--slider-desktop-height, 543px);
+}
 @media (max-width: 1100px) {
-  .swiper {
+  .swiper, .loading {
     height: var(--slider-tablet-height, 823px);
+    padding-bottom: 50px;
   }
 }
 
 @media (max-width: 744px) {
-  .swiper {
+  .swiper, .loading {
     height: var(--slider-mobile-height, 809px);
   }
 }

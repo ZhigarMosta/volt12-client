@@ -14,7 +14,7 @@
         <p class="block_title">Полезная информация</p>
         <NuxtLink to="/" class="block_text">О компании</NuxtLink>
         <NuxtLink to="/" class="block_text">Контакты</NuxtLink>
-        <NuxtLink to="/" class="block_text">Каталог</NuxtLink>
+        <NuxtLink to="/catalog" class="block_text">Каталог</NuxtLink>
         <NuxtLink to="/" class="block_text">Услуги</NuxtLink>
         <NuxtLink to="/" class="block_text">Работа у нас</NuxtLink>
       </div>

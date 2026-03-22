@@ -72,7 +72,7 @@ onMounted(async () => {
 .tabs-container {
   position: relative;
   display: inline-flex;
-  border: 1px solid var(--black);
+  border: 1px solid rgba(var(--gray-light-rgb), 0.57);
   border-radius: 8px;
   user-select: none;
 }
@@ -105,6 +105,8 @@ onMounted(async () => {
   background-color: var(--red);
   border-radius: 8px;
   z-index: 1;
+  margin-top: -1px;
+  height: calc(100% + 2px);
 }
 
 .tab-indicator.animate-transition {

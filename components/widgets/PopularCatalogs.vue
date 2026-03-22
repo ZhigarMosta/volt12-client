@@ -15,6 +15,11 @@
           :breakpoints="sliderBreakpoints"
           :slide-component="ProductCard"
       />
+      <div class="button-wrapper">
+        <UiButton to="/catalog" size="sm" variant="red">
+          Перейти в каталог
+        </UiButton>
+      </div>
     </div>
   </section>
 </template>
@@ -89,6 +94,11 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.button-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 43px;
+}
 .popular-catalogs {
   margin-bottom: 60px;
 }
