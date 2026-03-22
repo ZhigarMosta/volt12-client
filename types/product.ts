@@ -29,3 +29,12 @@ export interface CatalogItemsParams {
   catalogId: number;
   limit: number;
 }
+
+export interface Feedback {
+  id?: number;
+  user_name: string;
+  map: string;
+  star_count: number;
+  message: string;
+  feedback_link: string;
+}

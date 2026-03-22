@@ -1,4 +1,4 @@
-import type { Product, PopularCatalog, CatalogItemsParams } from '~/types/product';
+import type { Product, PopularCatalog, CatalogItemsParams, Feedback } from '~/types/product';
 
 /**
  * Получает базовый URL API из runtime config
@@ -62,4 +62,12 @@ export async function getCatalogItems(params: CatalogItemsParams): Promise<Produ
     }
   });
   return response.items;
+}
+
+/**
+ * Получает отзывы с карт
+ */
+export async function getFeedbackFromMap(): Promise<Feedback[]> {
+  const API_BASE_URL = getApiBase();
+  return await $fetch<Feedback[]>(`${API_BASE_URL}/volt12/feedback_from_map`);
 }

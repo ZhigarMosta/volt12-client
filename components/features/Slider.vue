@@ -14,7 +14,7 @@
         :class="['mySwiper', swiperClass]"
     >
       <swiper-slide class="swiper-slide" v-for="item in items" :key="item.id">
-          <component :is="slideComponent" :product="item" />
+        <component :is="slideComponent" :product="item" :feedback="item" />
       </swiper-slide>
     </swiper>
   </div>
@@ -27,7 +27,7 @@ import 'swiper/css';
 import 'swiper/css/grid';
 import 'swiper/css/pagination';
 import { Grid, Pagination } from 'swiper/modules';
-import type { Product } from '~/types/product';
+import type { Product, Feedback } from '~/types/product';
 import ProductCard from '~/components/shared/ProductCard.vue';
 
 interface Breakpoint {
@@ -43,9 +43,11 @@ interface Heights {
   desktop?: number;
 }
 
+type SliderItem = Product | Feedback;
+
 interface Props {
-  items?: Product[];
-  fetchItems?: () => Promise<Product[]>;
+  items?: SliderItem[];
+  fetchItems?: () => Promise<SliderItem[]>;
   slidesPerView?: number;
   slidesPerGroup?: number;
   gridRows?: number;
@@ -69,7 +71,7 @@ const props = withDefaults(defineProps<Props>(), {
   swiperClass: ''
 });
 
-const internalItems = ref<Product[]>([]);
+const internalItems = ref<SliderItem[]>([]);
 const loading = ref(false);
 const error = ref<any>(null);
 

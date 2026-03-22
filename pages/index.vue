@@ -5,7 +5,8 @@
 <!--    <InstallAlarm/>-->
 <!--    <AlarmSelection/>-->
 <!--    <CallUs/>-->
-    <PopularCatalogs />
+<!--    <PopularCatalogs />-->
+<FeedbackFromMaps/>
   </div>
 </template>
 
