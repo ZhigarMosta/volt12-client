@@ -19,3 +19,13 @@ export interface Product {
   is_published: boolean;
   catalogItemImages: CatalogItemImage[];
 }
+
+export interface PopularCatalog {
+  id: number;
+  name: string;
+}
+
+export interface CatalogItemsParams {
+  catalogId: number;
+  limit: number;
+}

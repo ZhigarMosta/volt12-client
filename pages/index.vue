@@ -2,7 +2,10 @@
   <div class="main-page">
 <!--    <PreviewCards />-->
 <!--    <PopularProducts />-->
-    <InstallAlarm/>
+<!--    <InstallAlarm/>-->
+<!--    <AlarmSelection/>-->
+<!--    <CallUs/>-->
+    <PopularCatalogs />
   </div>
 </template>
 

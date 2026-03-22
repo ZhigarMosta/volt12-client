@@ -18,7 +18,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <ActionBackground right-image="/images/install-alarm.png">
+  <ActionBackground class="action-background" right-image="/images/install-alarm.png">
     <div class="left-side">
       <ActionTitle>Установка сигнавлизации с автозапуском</ActionTitle>
       <UiButton variant="white" size="lg" :full-width="isMobile">Записаться</UiButton>

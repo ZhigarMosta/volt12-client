@@ -22,7 +22,7 @@ defineProps<{
 .action-background{
   width: 100%;
   height: 100%;
-  background-image: url("/images/action-background.svg");
+  background-image: url("/images/action-background1.svg");
   border-radius: 16px;
 }
 
@@ -30,7 +30,7 @@ defineProps<{
   .action-background{
     width: 100%;
     height: 100%;
-    background-image: url("/images/action-background.svg");
+    background-image: url("/images/action-background1.svg");
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
