@@ -16,6 +16,16 @@
 
     <div v-if="currentCatalogId" class="wrapper">
       <div class="filters-column">
+        <div class="price-inputs">
+          <InputNumber
+              v-model="minPrice"
+              prefix="От"
+          />
+          <InputNumber
+              v-model="maxPrice"
+              prefix="До"
+          />
+        </div>
         <h3>Фильтры</h3>
 
         <div v-if="catalogCharacteristicWithoutGroup.length">
@@ -41,7 +51,7 @@
           <h4>{{ groupName }}</h4>
 
           <div
-              v-if="selectedGroupValues[groupName]"
+              v-if="selectedGroupValues[groupName]?.length"
               @click="clearGroup(groupName)"
               class="reset-link"
           >
@@ -51,11 +61,10 @@
           <div v-for="characteristic in characteristics" :key="characteristic.id" class="filter-item">
             <label>
               <input
-                  type="radio"
-                  :name="'group_' + groupName"
+                  type="checkbox"
                   :value="characteristic.id"
-                  v-model="selectedGroupValues[groupName]"
-                  @change="onFilterChange"
+                  :checked="selectedGroupValues[groupName]?.includes(characteristic.id)"
+                  @change="onGroupCheckboxChange(groupName, characteristic.id, $event)"
               >
               {{ characteristic.name }}
             </label>
@@ -103,6 +112,8 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
+const minPrice = ref<number | null>(null)
+const maxPrice = ref<number | null>(null)
 
 interface Catalog { id: number; name: string; }
 interface Characteristic { id: number; name: string; }
@@ -116,12 +127,12 @@ const catalogCharacteristicWithGroup = ref<Record<string, Characteristic[]>>({})
 const currentCatalogId = ref<number | null>(null);
 
 const selectedStandaloneIds = ref<number[]>([]);
-const selectedGroupValues = ref<Record<string, number | null>>({});
+const selectedGroupValues = ref<Record<string, number[]>>({});
 
 const currentPage = ref(1);
 const totalPages = ref(1);
 const totalItems = ref(0);
-const limit = ref(1);
+const limit = ref(10);
 const loadingItems = ref(false);
 
 const fetchItems = async () => {
@@ -129,9 +140,12 @@ const fetchItems = async () => {
 
   loadingItems.value = true;
 
-  const allSelectedIds = [
-    ...selectedStandaloneIds.value,
-    ...Object.values(selectedGroupValues.value).filter(id => id !== null && id !== undefined)
+  const groupedFilters = Object.values(selectedGroupValues.value).filter(group => group.length > 0);
+  const standaloneFilters = selectedStandaloneIds.value.map(id => [id]);
+
+  const filterGroups = [
+    ...groupedFilters,
+    ...standaloneFilters
   ];
 
   try {
@@ -139,7 +153,7 @@ const fetchItems = async () => {
       method: 'POST',
       body: {
         catalogId: currentCatalogId.value,
-        characteristicIds: allSelectedIds,
+        filterGroups: filterGroups,
         page: currentPage.value,
         limit: limit.value
       }
@@ -169,6 +183,26 @@ const onFilterChange = () => {
   fetchItems();
 }
 
+const onGroupCheckboxChange = (groupName: string, characteristicId: number, event: Event) => {
+  const target = event.target as HTMLInputElement;
+
+  if (!selectedGroupValues.value[groupName]) {
+    selectedGroupValues.value[groupName] = [];
+  }
+
+  if (target.checked) {
+    if (!selectedGroupValues.value[groupName].includes(characteristicId)) {
+      selectedGroupValues.value[groupName].push(characteristicId);
+    }
+  } else {
+    selectedGroupValues.value[groupName] = selectedGroupValues.value[groupName].filter(
+      id => id !== characteristicId
+    );
+  }
+
+  onFilterChange();
+}
+
 const changePage = (page: number) => {
   if (page < 1 || page > totalPages.value) return;
   currentPage.value = page;
@@ -176,7 +210,7 @@ const changePage = (page: number) => {
 }
 
 const clearGroup = (groupName: string) => {
-  selectedGroupValues.value[groupName] = null;
+  selectedGroupValues.value[groupName] = [];
   onFilterChange();
 }
 
@@ -207,8 +241,22 @@ const openCatalog = async (catalogId: number) => {
 </script>
 
 <style scoped>
-.wrapper { display: flex; gap: 20px; margin-top: 20px; }
-.filters-column { width: 300px; border-right: 1px solid #ccc; padding-right: 15px; }
+.price-inputs{
+  display: flex;
+  gap: 5px;
+}
+.wrapper {
+  display: flex;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.filters-column {
+  border-radius: 8px;
+  width: 330px;
+  background: var(--gray);
+  padding: 17px 15px 32px 15px;
+}
 .items-column { flex: 1; }
 .catalogs-container { padding: 20px; }
 .catalog-list { display: flex; flex-wrap: wrap; border-bottom: 2px solid #eee; margin-bottom: 20px; }
