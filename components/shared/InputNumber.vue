@@ -7,6 +7,8 @@
         :placeholder="placeholder"
         class="price-input"
         @keydown="onKeydown"
+        :max="MAX_INT"
+        :min="MIN_INT"
     />
   </div>
 </template>
@@ -28,6 +30,8 @@ const props = defineProps({
   }
 });
 const emit = defineEmits(['update:modelValue']);
+const MAX_INT = 2147483647;
+const MIN_INT = 0;
 const internalValue = computed({
   get() {
     return props.modelValue;
@@ -38,8 +42,7 @@ const internalValue = computed({
       return;
     }
     let numVal = Number(newValue);
-    const MAX_INT = 2147483647;
-    if (numVal < 0) numVal = 0;
+    if (numVal < MIN_INT) numVal = MIN_INT;
     if (numVal > MAX_INT) numVal = MAX_INT;
     emit('update:modelValue', numVal);
   }
