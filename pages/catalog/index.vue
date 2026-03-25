@@ -39,6 +39,10 @@
                   @change="onFilterChange"
               >
               {{ characteristic.name }}
+              <!-- Вывод количества -->
+              <span class="count-badge">
+        {{ facetsCounts[characteristic.id] || 0 }}
+      </span>
             </label>
           </div>
         </div>
@@ -67,6 +71,10 @@
                   @change="onGroupCheckboxChange(groupName, characteristic.id, $event)"
               >
               {{ characteristic.name }}
+              <!-- Вывод количества -->
+              <span class="count-badge">
+         {{ facetsCounts[characteristic.id] || 0 }}
+      </span>
             </label>
           </div>
         </div>
@@ -115,6 +123,56 @@ import { ref } from "vue";
 const minPrice = ref<number | null>(null)
 const maxPrice = ref<number | null>(null)
 
+const facetsCounts = ref<Record<number, number>>({});
+
+const fetchItems = async () => {
+  if (currentCatalogId.value === null) return;
+
+  loadingItems.value = true;
+
+  // Подготовка фильтров (ваш код)
+  const groupedFilters = Object.values(selectedGroupValues.value).filter(group => group.length > 0);
+  const standaloneFilters = selectedStandaloneIds.value.map(id => [id]);
+  const filterGroups = [...groupedFilters, ...standaloneFilters];
+
+  try {
+    const response: any = await $fetch('http://127.0.0.1:8000/volt12/catalog_items', {
+      method: 'POST',
+      body: {
+        catalogId: currentCatalogId.value,
+        filterGroups: filterGroups, // Убедитесь, что формат соответствует ожиданию PHP
+        page: currentPage.value,
+        limit: limit.value
+      }
+    });
+
+    // Обработка товаров (items)
+    if (response.items) {
+      catalogItems.value = response.items;
+    } else {
+      catalogItems.value = [];
+    }
+
+    // Обработка счетчиков (facets) - НОВОЕ
+    if (response.facets) {
+      facetsCounts.value = response.facets;
+    } else {
+      facetsCounts.value = {};
+    }
+
+    // Обработка meta
+    if (response.meta) {
+      totalItems.value = response.meta.total_items;
+      totalPages.value = response.meta.total_pages;
+      currentPage.value = response.meta.current_page;
+    }
+
+  } catch (e) {
+    console.error(e);
+  } finally {
+    loadingItems.value = false;
+  }
+};
 interface Catalog { id: number; name: string; }
 interface Characteristic { id: number; name: string; }
 
@@ -135,48 +193,6 @@ const totalItems = ref(0);
 const limit = ref(10);
 const loadingItems = ref(false);
 
-const fetchItems = async () => {
-  if (currentCatalogId.value === null) return;
-
-  loadingItems.value = true;
-
-  const groupedFilters = Object.values(selectedGroupValues.value).filter(group => group.length > 0);
-  const standaloneFilters = selectedStandaloneIds.value.map(id => [id]);
-
-  const filterGroups = [
-    ...groupedFilters,
-    ...standaloneFilters
-  ];
-
-  try {
-    const response: any = await $fetch('http://127.0.0.1:8000/volt12/catalog_items', {
-      method: 'POST',
-      body: {
-        catalogId: currentCatalogId.value,
-        filterGroups: filterGroups,
-        page: currentPage.value,
-        limit: limit.value
-      }
-    });
-
-    if (response.items) {
-      catalogItems.value = response.items;
-    } else {
-      catalogItems.value = Array.isArray(response) ? response : [];
-    }
-
-    if (response.meta) {
-      totalItems.value = response.meta.total_items;
-      totalPages.value = response.meta.total_pages;
-      currentPage.value = response.meta.current_page;
-    }
-
-  } catch (e) {
-    console.error(e);
-  } finally {
-    loadingItems.value = false;
-  }
-};
 
 const onFilterChange = () => {
   currentPage.value = 1;
@@ -276,7 +292,23 @@ label { cursor: pointer; display: flex; align-items: center; gap: 8px; font-size
   margin-bottom: 10px;
   border-radius: 4px;
 }
+.count-badge {
+  margin-left: auto; /* Сдвигает цифру в самый конец строки флекс-контейнера label */
+  color: #999;
+  font-size: 12px;
+  background: #f5f5f5;
+  padding: 2px 6px;
+  border-radius: 10px;
+}
 
+label {
+  /* Убедитесь, что label имеет display: flex из вашего кода */
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  width: 100%; /* Нужно, чтобы margin-left: auto сработал */
+  font-size: 14px;
+}
 .pagination {
   display: flex;
   justify-content: center;
