@@ -16,79 +16,78 @@
 
     <div v-if="currentCatalogId" class="wrapper">
       <div class="filters-column">
+        <p class="filter-text filter-group">Цена</p>
         <div class="price-inputs">
           <InputNumber
               v-model="minPrice"
               prefix="От"
+              placeholder="0 руб"
           />
           <InputNumber
               v-model="maxPrice"
               prefix="До"
+              placeholder="0 руб"
           />
         </div>
-        <h3>Фильтры</h3>
-
-        <div v-if="catalogCharacteristicWithoutGroup.length">
-          <h4>Общие</h4>
+        <Divider
+            width="292"
+            height="1"
+            color="#B9B9B9"
+        />
+        <div v-if="catalogCharacteristicWithoutGroup.length" class="characteristic-without-groups">
           <div v-for="characteristic in catalogCharacteristicWithoutGroup" :key="characteristic.id" class="filter-item">
-            <label>
-              <input
-                  type="checkbox"
-                  :value="characteristic.id"
-                  v-model="selectedStandaloneIds"
-                  @change="onFilterChange"
-              >
-              {{ characteristic.name }}
-              <!-- Вывод количества -->
-              <span class="count-badge">
-        {{ facetsCounts[characteristic.id] || 0 }}
-      </span>
-            </label>
+            <FilterCheckbox
+                :name="characteristic.name"
+                :count="facetsCounts[characteristic.id] || 0"
+                :value="characteristic.id"
+                v-model="selectedStandaloneIds"
+                @change="onFilterChange"
+            />
+            <Divider
+                width="292"
+                height="1"
+                color="#B9B9B9"
+            />
           </div>
         </div>
-
+        <Divider
+            width="292"
+            height="1"
+            color="#B9B9B9"
+            margin-top="24px"
+        />
         <div
             v-for="(characteristics, groupName) in catalogCharacteristicWithGroup"
             :key="groupName"
-            class="filter-group"
+            class="filter-group characteristic-with-groups"
         >
-          <h4>{{ groupName }}</h4>
-
-          <div
-              v-if="selectedGroupValues[groupName]?.length"
-              @click="clearGroup(groupName)"
-              class="reset-link"
-          >
-            Сбросить выбор
-          </div>
-
+          <p class="filter-text filter-group">{{ groupName }} </p>
           <div v-for="characteristic in characteristics" :key="characteristic.id" class="filter-item">
-            <label>
-              <input
-                  type="checkbox"
-                  :value="characteristic.id"
-                  :checked="selectedGroupValues[groupName]?.includes(characteristic.id)"
-                  @change="onGroupCheckboxChange(groupName, characteristic.id, $event)"
-              >
-              {{ characteristic.name }}
-              <!-- Вывод количества -->
-              <span class="count-badge">
-         {{ facetsCounts[characteristic.id] || 0 }}
-      </span>
-            </label>
+            <FilterCheckbox
+                :name="characteristic.name"
+                :count="facetsCounts[characteristic.id] || 0"
+                :value="characteristic.id"
+                :checked="selectedGroupValues[groupName]?.includes(characteristic.id)"
+                @change="onGroupCheckboxChange(groupName, characteristic.id, $event)"
+            />
           </div>
+          <Divider
+              width="292"
+              height="1"
+              color="#B9B9B9"
+              margin-top="24px"
+          />
         </div>
       </div>
 
       <div class="items-column">
-        <h3>Товары ({{ totalItems }})</h3>
-
         <div v-if="loadingItems" class="loading-overlay">Обновление...</div>
 
         <div v-if="catalogItems.length === 0 && !loadingItems">Товары не найдены</div>
 
         <div v-for="item in catalogItems" :key="item.id" class="product-card">
           <strong>{{ item.name }}</strong>
+          {{item}}
         </div>
 
         <div v-if="totalPages > 1" class="pagination">
@@ -119,7 +118,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import {ref} from "vue";
+
 const minPrice = ref<number | null>(null)
 const maxPrice = ref<number | null>(null)
 
@@ -173,10 +173,18 @@ const fetchItems = async () => {
     loadingItems.value = false;
   }
 };
-interface Catalog { id: number; name: string; }
-interface Characteristic { id: number; name: string; }
 
-const { data: catalogs, error, pending } = await useFetch<Catalog[]>('http://127.0.0.1:8000/volt12/catalogs');
+interface Catalog {
+  id: number;
+  name: string;
+}
+
+interface Characteristic {
+  id: number;
+  name: string;
+}
+
+const {data: catalogs, error, pending} = await useFetch<Catalog[]>('http://127.0.0.1:8000/volt12/catalogs');
 
 const catalogItems = ref<any[]>([]);
 const catalogCharacteristicWithoutGroup = ref<Characteristic[]>([]);
@@ -212,7 +220,7 @@ const onGroupCheckboxChange = (groupName: string, characteristicId: number, even
     }
   } else {
     selectedGroupValues.value[groupName] = selectedGroupValues.value[groupName].filter(
-      id => id !== characteristicId
+        id => id !== characteristicId
     );
   }
 
@@ -242,7 +250,7 @@ const openCatalog = async (catalogId: number) => {
   try {
     const characteristicRes: any = await $fetch('http://127.0.0.1:8000/volt12/catalog_characteristics', {
       method: 'POST',
-      body: { catalogId: catalogId }
+      body: {catalogId: catalogId}
     });
 
     catalogCharacteristicWithoutGroup.value = characteristicRes.without_group;
@@ -257,14 +265,48 @@ const openCatalog = async (catalogId: number) => {
 </script>
 
 <style scoped>
-.price-inputs{
+.wrapper-input {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 20px;
+}
+.division{
+  margin-top: 24px;
+}
+.filter-item:last-child svg, .filter-group:last-child svg {
+  display: none;
+}
+.characteristic-with-groups{
+  margin-top: 24px;
+}
+.characteristic-without-groups {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.filter-text {
+  font-family: 'NT Somic', sans-serif;
+  font-weight: 500;
+  font-size: 15px;
+  color: var(--black);
+}
+
+.filter-group {
+  margin-bottom: 18px;
+}
+
+.price-inputs {
   display: flex;
   gap: 5px;
+  margin-bottom: 24px;
 }
+
 .wrapper {
   display: flex;
   gap: 20px;
-  margin-top: 20px;
 }
 
 .filters-column {
@@ -273,18 +315,70 @@ const openCatalog = async (catalogId: number) => {
   background: var(--gray);
   padding: 17px 15px 32px 15px;
 }
-.items-column { flex: 1; }
-.catalogs-container { padding: 20px; }
-.catalog-list { display: flex; flex-wrap: wrap; border-bottom: 2px solid #eee; margin-bottom: 20px; }
-.list-item { padding: 8px 15px; cursor: pointer; border-radius: 4px; margin-right: 5px; }
-.list-item:hover { background-color: #f0f0f0; }
-.list-item.active { background-color: #007bff; color: white; }
-.filter-group { margin-top: 20px; padding-bottom: 10px; border-bottom: 1px dashed #eee; }
-.filter-item { margin-top: 5px; }
-h4 { margin: 0 0 10px 0; font-size: 16px; color: #333; }
-label { cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 14px; }
-.reset-link { font-size: 12px; color: #dc3545; cursor: pointer; margin-bottom: 5px; text-decoration: underline; }
-.reset-link:hover { text-decoration: none; }
+
+.items-column {
+  flex: 1;
+}
+
+.catalogs-container {
+  padding: 20px;
+}
+
+.catalog-list {
+  display: flex;
+  flex-wrap: wrap;
+  border-bottom: 2px solid #eee;
+  margin-bottom: 20px;
+}
+
+.list-item {
+  padding: 8px 15px;
+  cursor: pointer;
+  border-radius: 4px;
+  margin-right: 5px;
+}
+
+.list-item:hover {
+  background-color: #f0f0f0;
+}
+
+.list-item.active {
+  background-color: #007bff;
+  color: white;
+}
+
+.filter-item {
+  margin-top: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+h4 {
+  margin: 0 0 10px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+label {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.reset-link {
+  font-size: 12px;
+  color: #dc3545;
+  cursor: pointer;
+  margin-bottom: 5px;
+  text-decoration: underline;
+}
+
+.reset-link:hover {
+  text-decoration: none;
+}
 
 .product-card {
   padding: 10px;
@@ -292,23 +386,23 @@ label { cursor: pointer; display: flex; align-items: center; gap: 8px; font-size
   margin-bottom: 10px;
   border-radius: 4px;
 }
+
 .count-badge {
-  margin-left: auto; /* Сдвигает цифру в самый конец строки флекс-контейнера label */
-  color: #999;
-  font-size: 12px;
-  background: #f5f5f5;
-  padding: 2px 6px;
-  border-radius: 10px;
+  margin-left: 13px;
+  font-family: 'NT Somic', sans-serif;
+  font-weight: 500;
+  font-size: 15px;
+  color: var(--gray-light);
 }
 
 label {
-  /* Убедитесь, что label имеет display: flex из вашего кода */
   display: flex !important;
   align-items: center;
   gap: 8px;
   width: 100%; /* Нужно, чтобы margin-left: auto сработал */
   font-size: 14px;
 }
+
 .pagination {
   display: flex;
   justify-content: center;
