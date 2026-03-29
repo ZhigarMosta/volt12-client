@@ -1,4 +1,4 @@
-import type { Product, PopularCatalog, CatalogItemsParams, Feedback } from '~/types/product';
+import type { Product, PopularCatalog, CatalogItemsParams, Feedback, Catalog } from '~/types/product';
 
 /**
  * Получает базовый URL API из runtime config
@@ -47,6 +47,14 @@ export interface CatalogItemsResponse {
 export async function getPopularCatalogs(): Promise<PopularCatalog[]> {
   const API_BASE_URL = getApiBase();
   return await $fetch<PopularCatalog[]>(`${API_BASE_URL}/volt12/popular_catalogs`);
+}
+
+/**
+ * Получает список всех каталогов
+ */
+export async function getCatalogs(): Promise<Catalog[]> {
+  const API_BASE_URL = getApiBase();
+  return await $fetch<Catalog[]>(`${API_BASE_URL}/volt12/catalogs`);
 }
 
 /**

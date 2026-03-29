@@ -25,6 +25,12 @@ export interface PopularCatalog {
   name: string;
 }
 
+export interface Catalog {
+  id: number;
+  name: string;
+  slug: string;
+}
+
 export interface CatalogItemsParams {
   catalogId: number;
   limit: number;
