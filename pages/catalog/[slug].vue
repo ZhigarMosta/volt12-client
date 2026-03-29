@@ -172,6 +172,8 @@ const parseFiltersFromUrl = () => {
   const query = route.query;
   const urlStandaloneIds: number[] = [];
   const urlGroupValues: Record<string, number[]> = {};
+  let urlMinPrice: number | null = null;
+  let urlMaxPrice: number | null = null;
 
   // Парсим standalone фильтры (обычные характеристики)
   // Формат: filters[standalone]=101,102
@@ -204,7 +206,27 @@ const parseFiltersFromUrl = () => {
     }
   });
 
-  return { standaloneIds: urlStandaloneIds, groupValues: urlGroupValues };
+  // Парсим цену
+  // Формат: price_min=1000, price_max=5000
+  if (query.price_min) {
+    const parsed = parseInt(query.price_min as string, 10);
+    if (!isNaN(parsed)) {
+      urlMinPrice = parsed;
+    }
+  }
+  if (query.price_max) {
+    const parsed = parseInt(query.price_max as string, 10);
+    if (!isNaN(parsed)) {
+      urlMaxPrice = parsed;
+    }
+  }
+
+  return { 
+    standaloneIds: urlStandaloneIds, 
+    groupValues: urlGroupValues,
+    minPrice: urlMinPrice,
+    maxPrice: urlMaxPrice
+  };
 };
 
 const buildUrlFilters = () => {
@@ -222,6 +244,14 @@ const buildUrlFilters = () => {
       query[`filters[group_${groupName}]`] = values.join(',');
     }
   });
+
+  // Добавляем цену
+  if (minPrice.value !== null) {
+    query['price_min'] = minPrice.value.toString();
+  }
+  if (maxPrice.value !== null) {
+    query['price_max'] = maxPrice.value.toString();
+  }
 
   return query;
 };
@@ -241,6 +271,24 @@ const updateUrlFilters = () => {
 // Вычисляемое свойство для хлебных крошек фильтров
 const activeFiltersBreadcrumbs = computed(() => {
   const breadcrumbs: Array<{ key: string; value: number | null; label: string }> = [];
+
+  // Добавляем фильтр по минимальной цене
+  if (minPrice.value !== null) {
+    breadcrumbs.push({
+      key: 'minPrice',
+      value: null,
+      label: `От ${minPrice.value} ₽`
+    });
+  }
+
+  // Добавляем фильтр по максимальной цене
+  if (maxPrice.value !== null) {
+    breadcrumbs.push({
+      key: 'maxPrice',
+      value: null,
+      label: `До ${maxPrice.value} ₽`
+    });
+  }
 
   // Добавляем standalone фильтры
   selectedStandaloneIds.value.forEach(id => {
@@ -280,6 +328,10 @@ const removeFilter = (key: string, value: number | null) => {
     if (value !== null) {
       selectedGroupValues.value[groupName] = (selectedGroupValues.value[groupName] || []).filter(id => id !== value);
     }
+  } else if (key === 'minPrice') {
+    minPrice.value = null;
+  } else if (key === 'maxPrice') {
+    maxPrice.value = null;
   }
   currentPage.value = 1;
   // Не вызываем updateUrlFilters здесь, так как watch отследит изменение и обновит URL
@@ -317,12 +369,22 @@ const fetchItems = async () => {
   const standaloneFilters = selectedStandaloneIds.value.map(id => [id]);
   const filterGroups = [...groupedFilters, ...standaloneFilters];
 
+  // Формируем фильтр цены
+  const priceFilter: { min?: number; max?: number } = {};
+  if (minPrice.value !== null) {
+    priceFilter.min = minPrice.value;
+  }
+  if (maxPrice.value !== null) {
+    priceFilter.max = maxPrice.value;
+  }
+
   try {
     const response: any = await $fetch('http://127.0.0.1:8000/volt12/catalog_items', {
       method: 'POST',
       body: {
         catalogId: catalog.value.id,
         filterGroups: filterGroups,
+        price: Object.keys(priceFilter).length > 0 ? priceFilter : null,
         page: currentPage.value,
         limit: limit.value
       }
@@ -387,17 +449,14 @@ watch(() => catalog.value, async (newCatalog) => {
       catalogCharacteristicWithGroup.value = characteristicRes.with_group;
 
       // Парсим фильтры из URL после загрузки характеристик
-      const { standaloneIds, groupValues } = parseFiltersFromUrl();
+      const { standaloneIds, groupValues, minPrice: urlMinPrice, maxPrice: urlMaxPrice } = parseFiltersFromUrl();
       selectedStandaloneIds.value = standaloneIds;
       selectedGroupValues.value = groupValues;
+      minPrice.value = urlMinPrice;
+      maxPrice.value = urlMaxPrice;
 
-      // Если есть фильтры в URL, загружаем товары
-      if (standaloneIds.length > 0 || Object.keys(groupValues).length > 0) {
-        await fetchItems();
-      } else {
-        // Иначе загружаем без фильтров
-        await fetchItems();
-      }
+      // Загружаем товары с фильтрами
+      await fetchItems();
     } catch (error) {
       console.error(error);
     }
@@ -409,19 +468,21 @@ watch(() => route.query, async (newQuery, oldQuery) => {
   if (!oldQuery) return; // Пропускаем первую инициализацию
 
   // Проверяем, изменились ли фильтры или страница
-  const oldFilters = Object.keys(oldQuery).filter(k => k.startsWith('filters['));
-  const newFilters = Object.keys(newQuery).filter(k => k.startsWith('filters['));
+  const oldFilters = Object.keys(oldQuery).filter(k => k.startsWith('filters[') || k === 'price_min' || k === 'price_max');
+  const newFilters = Object.keys(newQuery).filter(k => k.startsWith('filters[') || k === 'price_min' || k === 'price_max');
 
   const filtersChanged = JSON.stringify(oldFilters.map(k => oldQuery[k])) !== JSON.stringify(newFilters.map(k => newQuery[k]));
   const pageChanged = newQuery.page !== oldQuery.page;
 
   if (filtersChanged || pageChanged) {
     // Парсим новые фильтры из URL
-    const { standaloneIds, groupValues } = parseFiltersFromUrl();
+    const { standaloneIds, groupValues, minPrice: urlMinPrice, maxPrice: urlMaxPrice } = parseFiltersFromUrl();
 
     // Обновляем состояние фильтров
     selectedStandaloneIds.value = standaloneIds;
     selectedGroupValues.value = groupValues;
+    minPrice.value = urlMinPrice;
+    maxPrice.value = urlMaxPrice;
 
     // Обновляем страницу из URL
     const urlPage = newQuery.page ? parseInt(newQuery.page as string, 10) : 1;
@@ -445,7 +506,7 @@ watch([selectedStandaloneIds, selectedGroupValues, currentPage], ([newStandalone
   // Очищаем старые параметры фильтров в query
   const cleanQuery = { ...route.query };
   Object.keys(cleanQuery).forEach(key => {
-    if (key.startsWith('filters[')) {
+    if (key.startsWith('filters[') || key === 'price_min' || key === 'price_max') {
       delete cleanQuery[key];
     }
   });
@@ -457,6 +518,35 @@ watch([selectedStandaloneIds, selectedGroupValues, currentPage], ([newStandalone
       page: newPage > 1 ? newPage.toString() : undefined
     }
   });
+}, { deep: true });
+
+// Watch для отслеживания изменений цены
+watch([minPrice, maxPrice], ([newMin, newMax], [oldMin, oldMax]) => {
+  // Пропускаем первую инициализацию
+  if (oldMin === undefined && oldMax === undefined) return;
+
+  currentPage.value = 1;
+
+  // Обновляем URL с новыми параметрами цены
+  const filterParams = buildUrlFilters();
+
+  // Очищаем старые параметры фильтров в query
+  const cleanQuery = { ...route.query };
+  Object.keys(cleanQuery).forEach(key => {
+    if (key.startsWith('filters[') || key === 'price_min' || key === 'price_max') {
+      delete cleanQuery[key];
+    }
+  });
+
+  router.push({
+    query: {
+      ...cleanQuery,
+      ...filterParams,
+      page: undefined
+    }
+  });
+
+  fetchItems();
 }, { deep: true });
 </script>
 
