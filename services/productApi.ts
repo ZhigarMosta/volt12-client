@@ -1,4 +1,13 @@
-import type { Product, PopularCatalog, CatalogItemsParams, Feedback, Catalog } from '~/types/product';
+import type {
+  Product,
+  PopularCatalog,
+  Catalog,
+  CatalogItemsParams,
+  CatalogItemsFilters,
+  CatalogItemsResponse,
+  CatalogCharacteristics,
+  Feedback
+} from '~/types/product';
 
 /**
  * Получает базовый URL API из runtime config
@@ -12,17 +21,63 @@ function getApiBase(): string {
  * Получает список популярных товаров
  */
 export async function getPopularProducts(): Promise<Product[]> {
-  const API_BASE_URL = getApiBase();
-  return await $fetch<Product[]>(`${API_BASE_URL}/volt12/popular_catalog_items`);
+  const apiBase = getApiBase();
+  return await $fetch<Product[]>(`${apiBase}/volt12/popular_catalog_items`);
+}
+
+/**
+ * Получает список популярных каталогов
+ */
+export async function getPopularCatalogs(): Promise<PopularCatalog[]> {
+  const apiBase = getApiBase();
+  return await $fetch<PopularCatalog[]>(`${apiBase}/volt12/popular_catalogs`);
+}
+
+/**
+ * Получает список всех каталогов
+ */
+export async function getCatalogs(): Promise<Catalog[]> {
+  const apiBase = getApiBase();
+  return await $fetch<Catalog[]>(`${apiBase}/volt12/catalogs`);
+}
+
+/**
+ * Получает характеристики каталога (с группами и без)
+ */
+export async function getCatalogCharacteristics(catalogId: number): Promise<CatalogCharacteristics> {
+  const apiBase = getApiBase();
+  return await $fetch<CatalogCharacteristics>(`${apiBase}/volt12/catalog_characteristics`, {
+    method: 'POST',
+    body: { catalogId }
+  });
+}
+
+/**
+ * Получает товары из каталога с фильтрами и пагинацией
+ */
+export async function getCatalogItems(params: CatalogItemsFilters): Promise<CatalogItemsResponse> {
+  const apiBase = getApiBase();
+  return await $fetch<CatalogItemsResponse>(`${apiBase}/volt12/catalog_items`, {
+    method: 'POST',
+    body: params
+  });
+}
+
+/**
+ * Получает отзывы с карт
+ */
+export async function getFeedbackFromMap(): Promise<Feedback[]> {
+  const apiBase = getApiBase();
+  return await $fetch<Feedback[]>(`${apiBase}/volt12/feedback_from_map`);
 }
 
 /**
  * Получает URL изображения продукта
  */
 export function getProductImageUrl(product: Product): string {
-  const API_BASE_URL = getApiBase();
-  if (product.catalogItemImages && product.catalogItemImages.length > 0) {
-    return `${API_BASE_URL}/${product.catalogItemImages[0].img_link}`;
+  const apiBase = getApiBase();
+  if (product.catalogItemImages?.length > 0) {
+    return `${apiBase}/${product.catalogItemImages[0].img_link}`;
   }
   return '/icons/test.png';
 }
@@ -30,52 +85,9 @@ export function getProductImageUrl(product: Product): string {
 /**
  * Получает Title изображения продукта
  */
-export function getProductImageTitle(product: Product): string {
-    const API_BASE_URL = getApiBase();
-    if (product.catalogItemImages && product.catalogItemImages.length > 0) {
-        return product.catalogItemImages[0].title
-    }
-}
-
-export interface CatalogItemsResponse {
-  items: Product[];
-}
-
-/**
- * Получает список популярных каталогов
- */
-export async function getPopularCatalogs(): Promise<PopularCatalog[]> {
-  const API_BASE_URL = getApiBase();
-  return await $fetch<PopularCatalog[]>(`${API_BASE_URL}/volt12/popular_catalogs`);
-}
-
-/**
- * Получает список всех каталогов
- */
-export async function getCatalogs(): Promise<Catalog[]> {
-  const API_BASE_URL = getApiBase();
-  return await $fetch<Catalog[]>(`${API_BASE_URL}/volt12/catalogs`);
-}
-
-/**
- * Получает товары из каталога
- */
-export async function getCatalogItems(params: CatalogItemsParams): Promise<Product[]> {
-  const API_BASE_URL = getApiBase();
-  const response = await $fetch<CatalogItemsResponse>(`${API_BASE_URL}/volt12/catalog_items`, {
-    method: 'POST',
-    body: {
-      catalogId: params.catalogId,
-      limit: params.limit
-    }
-  });
-  return response.items;
-}
-
-/**
- * Получает отзывы с карт
- */
-export async function getFeedbackFromMap(): Promise<Feedback[]> {
-  const API_BASE_URL = getApiBase();
-  return await $fetch<Feedback[]>(`${API_BASE_URL}/volt12/feedback_from_map`);
+export function getProductImageTitle(product: Product): string | undefined {
+  if (product.catalogItemImages?.length > 0) {
+    return product.catalogItemImages[0].title;
+  }
+  return undefined;
 }

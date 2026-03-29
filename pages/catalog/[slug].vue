@@ -7,96 +7,27 @@
     <template v-else>
       <H2 class="h2">{{ catalog.name }}</H2>
 
-<!--      &lt;!&ndash; Хлебные крошки фильтров &ndash;&gt;-->
-<!--      <div v-if="activeFiltersBreadcrumbs.length > 0" class="filters-breadcrumbs">-->
-<!--        <span class="breadcrumbs-title">Фильтры:</span>-->
-<!--        <div class="breadcrumbs-list">-->
-<!--          <span-->
-<!--              v-for="(breadcrumb, index) in activeFiltersBreadcrumbs"-->
-<!--              :key="breadcrumb.key + '-' + breadcrumb.value + '-' + breadcrumb.groupId"-->
-<!--              class="breadcrumb-item"-->
-<!--          >-->
-<!--            <span class="breadcrumb-label">{{ breadcrumb.label }}</span>-->
-<!--            <button-->
-<!--                class="breadcrumb-remove"-->
-<!--                @click="removeFilter(breadcrumb.key, breadcrumb.value, breadcrumb.groupId)"-->
-<!--                aria-label="Удалить фильтр"-->
-<!--            >-->
-<!--              ×-->
-<!--            </button>-->
-<!--          </span>-->
-<!--        </div>-->
-<!--        <button class="clear-all-filters" @click="clearAllFilters">-->
-<!--          Очистить все-->
-<!--        </button>-->
-<!--      </div>-->
+      <FiltersBreadcrumbs
+          :breadcrumbs="activeFiltersBreadcrumbs"
+          @remove="removeFilter"
+          @clear-all="clearAllFilters"
+      />
 
       <div class="wrapper">
-        <div class="filters-column">
-          <p class="filter-text filter-group">Цена</p>
-          <div class="price-inputs">
-            <InputNumber
-                v-model="minPrice"
-                prefix="От"
-                placeholder="0 руб"
-            />
-            <InputNumber
-                v-model="maxPrice"
-                prefix="До"
-                placeholder="0 руб"
-            />
-          </div>
-          <Divider
-              width="292"
-              height="1"
-              color="#B9B9B9"
-          />
-          <div v-if="catalogCharacteristicWithoutGroup.length" class="characteristic-without-groups">
-            <div v-for="characteristic in catalogCharacteristicWithoutGroup" :key="characteristic.id" class="filter-item">
-              <FilterCheckbox
-                  :name="characteristic.name"
-                  :count="facetsCounts[characteristic.id] || 0"
-                  :value="characteristic.id"
-                  v-model="selectedStandaloneIds"
-                  @change="onFilterChange"
-              />
-              <Divider
-                  width="292"
-                  height="1"
-                  color="#B9B9B9"
-              />
-            </div>
-          </div>
-          <Divider
-              width="292"
-              height="1"
-              color="#B9B9B9"
-              margin-top="24px"
-          />
-          <div
-              v-for="group in catalogCharacteristicWithGroup"
-              :key="group.id"
-              class="filter-group characteristic-with-groups"
-          >
-            <p class="filter-text filter-group">{{ group.name }} </p>
-            <div v-for="characteristic in group.items" :key="characteristic.id" class="filter-item">
-              <FilterCheckbox
-                  :name="characteristic.name"
-                  :count="facetsCounts[characteristic.id] || 0"
-                  :value="characteristic.id"
-                  :model-value="selectedGroupValues[group.id] || []"
-                  @update:model-value="selectedGroupValues[group.id] = $event"
-                  @change="onFilterChange"
-              />
-            </div>
-            <Divider
-                width="292"
-                height="1"
-                color="#B9B9B9"
-                margin-top="24px"
-            />
-          </div>
-        </div>
+        <CatalogFilters
+            :min-price="minPrice"
+            :max-price="maxPrice"
+            :catalog-characteristic-without-group="catalogCharacteristicWithoutGroup"
+            :catalog-characteristic-with-group="catalogCharacteristicWithGroup"
+            :selected-standalone-ids="selectedStandaloneIds"
+            :selected-group-values="selectedGroupValues"
+            :facets-counts="facetsCounts"
+            @update:min-price="minPrice = $event"
+            @update:max-price="maxPrice = $event"
+            @update:standalone="selectedStandaloneIds = $event"
+            @update:group="(groupId, value) => selectedGroupValues[groupId] = value"
+            @filter-change="onFilterChange"
+        />
 
         <div class="items-column">
           <div v-if="loadingItems" class="loading-overlay">Обновление...</div>
@@ -142,7 +73,8 @@
 </template>
 
 <script setup lang="ts">
-import type { Catalog, Product, Characteristic, CharacteristicGroup } from '~/types/product';
+import type { Catalog, Product, Characteristic, CharacteristicGroup, CatalogItemsFilters, CatalogItemsResponse } from '~/types/product';
+import { getCatalogs, getCatalogCharacteristics, getCatalogItems } from '~/services/productApi';
 
 const route = useRoute();
 const router = useRouter();
@@ -350,15 +282,9 @@ const clearAllFilters = () => {
   // Не вызываем updateUrlFilters здесь, так как watch отследит изменение и обновит URL
 };
 
-const { data: catalogsData, error: fetchError, pending } = await useFetch<Catalog[]>('http://127.0.0.1:8000/volt12/catalogs');
+const { data: catalogsData, error: fetchError, pending } = await useAsyncData('catalogs', () => getCatalogs());
 
-const error = ref<Error | null>(null);
-
-watchEffect(() => {
-  if (fetchError.value) {
-    error.value = fetchError.value;
-  }
-});
+const error = computed(() => fetchError.value ? new Error(fetchError.value.message) : null);
 
 watchEffect(() => {
   if (catalogsData.value) {
@@ -384,23 +310,18 @@ const fetchItems = async () => {
     priceFilter.max = maxPrice.value;
   }
 
-  try {
-    const response: any = await $fetch('http://127.0.0.1:8000/volt12/catalog_items', {
-      method: 'POST',
-      body: {
-        catalogId: catalog.value.id,
-        filterGroups: filterGroups,
-        price: Object.keys(priceFilter).length > 0 ? priceFilter : null,
-        page: currentPage.value,
-        limit: limit.value
-      }
-    });
+  const filters: CatalogItemsFilters = {
+    catalogId: catalog.value.id,
+    limit: limit.value,
+    page: currentPage.value,
+    filterGroups: filterGroups.length > 0 ? filterGroups : undefined,
+    price: Object.keys(priceFilter).length > 0 ? priceFilter : undefined
+  };
 
-    if (response.items) {
-      catalogItems.value = response.items;
-    } else {
-      catalogItems.value = [];
-    }
+  try {
+    const response = await getCatalogItems(filters);
+
+    catalogItems.value = response.items || [];
 
     if (response.facets) {
       facetsCounts.value = response.facets;
@@ -446,13 +367,10 @@ watch(() => catalog.value, async (newCatalog) => {
     totalItems.value = 0;
 
     try {
-      const characteristicRes: any = await $fetch('http://127.0.0.1:8000/volt12/catalog_characteristics', {
-        method: 'POST',
-        body: { catalogId: newCatalog.id }
-      });
+      const characteristics = await getCatalogCharacteristics(newCatalog.id);
 
-      catalogCharacteristicWithoutGroup.value = characteristicRes.without_group;
-      catalogCharacteristicWithGroup.value = characteristicRes.with_group;
+      catalogCharacteristicWithoutGroup.value = characteristics.without_group;
+      catalogCharacteristicWithGroup.value = characteristics.with_group;
 
       // Парсим фильтры из URL после загрузки характеристик
       const { standaloneIds, groupValues, minPrice: urlMinPrice, maxPrice: urlMaxPrice } = parseFiltersFromUrl();
@@ -529,7 +447,10 @@ watch([selectedStandaloneIds, selectedGroupValues, currentPage], ([newStandalone
 // Watch для отслеживания изменений цены
 watch([minPrice, maxPrice], ([newMin, newMax], [oldMin, oldMax]) => {
   // Пропускаем первую инициализацию
-  if (oldMin === undefined && oldMax === undefined) return;
+  if (oldMin === undefined || oldMax === undefined) return;
+
+  // Пропускаем, если значения не изменились
+  if (newMin === oldMin && newMax === oldMax) return;
 
   currentPage.value = 1;
 
@@ -565,142 +486,14 @@ watch([minPrice, maxPrice], ([newMin, newMax], [oldMin, oldMax]) => {
   margin-bottom: 29px;
 }
 
-/* Хлебные крошки фильтров
-.filters-breadcrumbs {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 20px;
-  padding: 10px 15px;
-  background: #f5f5f5;
-  border-radius: 8px;
-}
-
-.breadcrumbs-title {
-  font-family: 'NT Somic', sans-serif;
-  font-weight: 500;
-  font-size: 14px;
-  color: var(--black);
-  margin-right: 5px;
-}
-
-.breadcrumbs-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  flex: 1;
-}
-
-.breadcrumb-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 4px 10px;
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 16px;
-  font-size: 13px;
-  color: var(--black);
-  font-family: 'NT Somic', sans-serif;
-}
-
-.breadcrumb-label {
-  white-space: nowrap;
-}
-
-.breadcrumb-remove {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  padding: 0;
-  border: none;
-  background: #e0e0e0;
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: 16px;
-  line-height: 1;
-  color: #666;
-  transition: background 0.2s;
-}
-
-.breadcrumb-remove:hover {
-  background: #d0d0d0;
-}
-
-.clear-all-filters {
-  padding: 4px 12px;
-  border: none;
-  background: transparent;
-  color: #dc3545;
-  font-size: 13px;
-  cursor: pointer;
-  font-family: 'NT Somic', sans-serif;
-  text-decoration: underline;
-  transition: opacity 0.2s;
-}
-
-.clear-all-filters:hover {
-  opacity: 0.8;
-}*/
-
 .wrapper {
   display: flex;
   gap: 20px;
 }
 
-.filters-column {
-  border-radius: 8px;
-  width: 330px;
-  background: var(--gray);
-  padding: 17px 15px 32px 15px;
-}
-
 .items-column {
   flex: 1;
   position: relative;
-}
-
-.filter-item:last-child .divider,
-.filter-group:last-child .divider {
-  display: none;
-}
-
-.characteristic-with-groups {
-  margin-top: 24px;
-}
-
-.characteristic-without-groups {
-  margin-top: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.filter-text {
-  font-family: 'NT Somic', sans-serif;
-  font-weight: 500;
-  font-size: 15px;
-  color: var(--black);
-}
-
-.filter-group {
-  margin-bottom: 18px;
-}
-
-.price-inputs {
-  display: flex;
-  gap: 5px;
-  margin-bottom: 24px;
-}
-
-.filter-item {
-  margin-top: 5px;
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
 }
 
 .products-grid {

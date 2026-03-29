@@ -1,0 +1,151 @@
+<template>
+  <div class="filters-column">
+    <p class="filter-text filter-group">Цена</p>
+    <div class="price-inputs">
+      <InputNumber
+          :model-value="localMinPrice"
+          @update:model-value="localMinPrice = $event"
+          prefix="От"
+          placeholder="0 руб"
+      />
+      <InputNumber
+          :model-value="localMaxPrice"
+          @update:model-value="localMaxPrice = $event"
+          prefix="До"
+          placeholder="0 руб"
+      />
+    </div>
+    <Divider
+        width="292"
+        height="1"
+        color="#B9B9B9"
+    />
+    <div v-if="catalogCharacteristicWithoutGroup.length" class="characteristic-without-groups">
+      <div v-for="characteristic in catalogCharacteristicWithoutGroup" :key="characteristic.id" class="filter-item">
+        <FilterCheckbox
+            :name="characteristic.name"
+            :count="facetsCounts[characteristic.id] || 0"
+            :value="characteristic.id"
+            :model-value="selectedStandaloneIds"
+            @update:model-value="$emit('update:standalone', $event)"
+            @change="$emit('filter-change')"
+        />
+        <Divider
+            width="292"
+            height="1"
+            color="#B9B9B9"
+        />
+      </div>
+    </div>
+    <Divider
+        width="292"
+        height="1"
+        color="#B9B9B9"
+        margin-top="24px"
+    />
+    <div
+        v-for="group in catalogCharacteristicWithGroup"
+        :key="group.id"
+        class="filter-group characteristic-with-groups"
+    >
+      <p class="filter-text filter-group">{{ group.name }} </p>
+      <div v-for="characteristic in group.items" :key="characteristic.id" class="filter-item">
+        <FilterCheckbox
+            :name="characteristic.name"
+            :count="facetsCounts[characteristic.id] || 0"
+            :value="characteristic.id"
+            :model-value="selectedGroupValues[group.id] || []"
+            @update:model-value="$emit('update:group', group.id, $event)"
+            @change="$emit('filter-change')"
+        />
+      </div>
+      <Divider
+          width="292"
+          height="1"
+          color="#B9B9B9"
+          margin-top="24px"
+      />
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import type { Characteristic, CharacteristicGroup } from '~/types/product';
+
+const props = defineProps<{
+  minPrice: number | null;
+  maxPrice: number | null;
+  catalogCharacteristicWithoutGroup: Characteristic[];
+  catalogCharacteristicWithGroup: CharacteristicGroup[];
+  selectedStandaloneIds: number[];
+  selectedGroupValues: Record<number, number[]>;
+  facetsCounts: Record<number, number>;
+}>();
+
+const emit = defineEmits<{
+  'update:minPrice': [value: number | null];
+  'update:maxPrice': [value: number | null];
+  'update:standalone': [value: number[]];
+  'update:group': [groupId: number, value: number[]];
+  'filter-change': [];
+}>();
+
+const localMinPrice = computed({
+  get: () => props.minPrice,
+  set: (value) => emit('update:minPrice', value)
+});
+
+const localMaxPrice = computed({
+  get: () => props.maxPrice,
+  set: (value) => emit('update:maxPrice', value)
+});
+</script>
+
+<style scoped>
+.filters-column {
+  border-radius: 8px;
+  width: 330px;
+  background: var(--gray);
+  padding: 17px 15px 32px 15px;
+}
+
+.filter-item:last-child .divider,
+.filter-group:last-child .divider {
+  display: none;
+}
+
+.characteristic-with-groups {
+  margin-top: 24px;
+}
+
+.characteristic-without-groups {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.filter-text {
+  font-family: 'NT Somic', sans-serif;
+  font-weight: 500;
+  font-size: 15px;
+  color: var(--black);
+}
+
+.filter-group {
+  margin-bottom: 18px;
+}
+
+.price-inputs {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 24px;
+}
+
+.filter-item {
+  margin-top: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+</style>

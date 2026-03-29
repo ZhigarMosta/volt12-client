@@ -42,6 +42,32 @@ export interface CharacteristicGroup {
   items: Characteristic[];
 }
 
+export interface CatalogCharacteristics {
+  without_group: Characteristic[];
+  with_group: CharacteristicGroup[];
+}
+
+export interface CatalogItemsFilters {
+  catalogId: number;
+  limit: number;
+  page?: number;
+  filterGroups?: number[][];
+  price?: {
+    min?: number;
+    max?: number;
+  };
+}
+
+export interface CatalogItemsResponse {
+  items: Product[];
+  facets?: Record<number, number>;
+  meta?: {
+    total_items: number;
+    total_pages: number;
+    current_page: number;
+  };
+}
+
 export interface CatalogItemsParams {
   catalogId: number;
   limit: number;
