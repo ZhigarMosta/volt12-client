@@ -191,9 +191,9 @@ const parseFiltersFromUrl = () => {
   }
 
   // Парсим групповые фильтры (характеристики в группах)
-  // Формат: filters[group_10]=1,2 (где 10 - ID группы)
+  // Формат: filters[10]=1,2 (где 10 - ID группы)
   Object.entries(query).forEach(([key, value]) => {
-    const groupMatch = key.match(/^filters\[group_(\d+)\]$/);
+    const groupMatch = key.match(/^filters\[(\d+)\]$/);
     if (groupMatch && value) {
       const groupId = parseInt(groupMatch[1], 10);
       if (!isNaN(groupId)) {
@@ -243,7 +243,7 @@ const buildUrlFilters = () => {
   // Добавляем групповые фильтры (по ID группы)
   Object.entries(selectedGroupValues.value).forEach(([groupId, values]) => {
     if (values.length > 0) {
-      query[`filters[group_${groupId}]`] = values.join(',');
+      query[`filters[${groupId}]`] = values.join(',');
     }
   });
 
