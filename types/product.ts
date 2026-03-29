@@ -31,6 +31,11 @@ export interface Catalog {
   slug: string;
 }
 
+export interface Characteristic {
+  id: number;
+  name: string;
+}
+
 export interface CatalogItemsParams {
   catalogId: number;
   limit: number;
