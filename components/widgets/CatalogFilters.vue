@@ -21,7 +21,11 @@
         color="#B9B9B9"
     />
     <div v-if="catalogCharacteristicWithoutGroup.length" class="characteristic-without-groups">
-      <div v-for="characteristic in catalogCharacteristicWithoutGroup" :key="characteristic.id" class="filter-item">
+      <div
+          v-for="(characteristic, index) in catalogCharacteristicWithoutGroup"
+          :key="characteristic.id"
+          class="filter-item"
+      >
         <FilterCheckbox
             :name="characteristic.name"
             :count="facetsCounts[characteristic.id] || 0"
@@ -31,6 +35,7 @@
             @change="$emit('filter-change')"
         />
         <Divider
+            v-if="index < catalogCharacteristicWithoutGroup.length - 1"
             width="292"
             height="1"
             color="#B9B9B9"
@@ -44,12 +49,16 @@
         margin-top="24px"
     />
     <div
-        v-for="group in catalogCharacteristicWithGroup"
+        v-for="(group, groupIndex) in catalogCharacteristicWithGroup"
         :key="group.id"
         class="filter-group characteristic-with-groups"
     >
       <p class="filter-text filter-group">{{ group.name }} </p>
-      <div v-for="characteristic in group.items" :key="characteristic.id" class="filter-item">
+      <div
+          v-for="(characteristic, index) in group.items"
+          :key="characteristic.id"
+          class="filter-item"
+      >
         <FilterCheckbox
             :name="characteristic.name"
             :count="facetsCounts[characteristic.id] || 0"
@@ -60,6 +69,7 @@
         />
       </div>
       <Divider
+          v-if="groupIndex < catalogCharacteristicWithGroup.length - 1"
           width="292"
           height="1"
           color="#B9B9B9"
@@ -107,11 +117,6 @@ const localMaxPrice = computed({
   width: 330px;
   background: var(--gray);
   padding: 17px 15px 32px 15px;
-}
-
-.filter-item:last-child .divider,
-.filter-group:last-child .divider {
-  display: none;
 }
 
 .characteristic-with-groups {
