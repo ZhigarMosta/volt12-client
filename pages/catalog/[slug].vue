@@ -13,13 +13,13 @@
 <!--        <div class="breadcrumbs-list">-->
 <!--          <span-->
 <!--              v-for="(breadcrumb, index) in activeFiltersBreadcrumbs"-->
-<!--              :key="breadcrumb.key"-->
+<!--              :key="breadcrumb.key + '-' + breadcrumb.value + '-' + breadcrumb.groupId"-->
 <!--              class="breadcrumb-item"-->
 <!--          >-->
 <!--            <span class="breadcrumb-label">{{ breadcrumb.label }}</span>-->
 <!--            <button-->
 <!--                class="breadcrumb-remove"-->
-<!--                @click="removeFilter(breadcrumb.key, breadcrumb.value)"-->
+<!--                @click="removeFilter(breadcrumb.key, breadcrumb.value, breadcrumb.groupId)"-->
 <!--                aria-label="Удалить фильтр"-->
 <!--            >-->
 <!--              ×-->
@@ -74,18 +74,18 @@
               margin-top="24px"
           />
           <div
-              v-for="(characteristics, groupName) in catalogCharacteristicWithGroup"
-              :key="groupName"
+              v-for="group in catalogCharacteristicWithGroup"
+              :key="group.id"
               class="filter-group characteristic-with-groups"
           >
-            <p class="filter-text filter-group">{{ groupName }} </p>
-            <div v-for="characteristic in characteristics" :key="characteristic.id" class="filter-item">
+            <p class="filter-text filter-group">{{ group.name }} </p>
+            <div v-for="characteristic in group.items" :key="characteristic.id" class="filter-item">
               <FilterCheckbox
                   :name="characteristic.name"
                   :count="facetsCounts[characteristic.id] || 0"
                   :value="characteristic.id"
-                  :model-value="selectedGroupValues[groupName] || []"
-                  @update:model-value="selectedGroupValues[groupName] = $event"
+                  :model-value="selectedGroupValues[group.id] || []"
+                  @update:model-value="selectedGroupValues[group.id] = $event"
                   @change="onFilterChange"
               />
             </div>
@@ -142,7 +142,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Catalog, Product, Characteristic } from '~/types/product';
+import type { Catalog, Product, Characteristic, CharacteristicGroup } from '~/types/product';
 
 const route = useRoute();
 const router = useRouter();
@@ -156,10 +156,10 @@ const facetsCounts = ref<Record<number, number>>({});
 const catalog = ref<Catalog | null>(null);
 const catalogItems = ref<Product[]>([]);
 const catalogCharacteristicWithoutGroup = ref<Characteristic[]>([]);
-const catalogCharacteristicWithGroup = ref<Record<string, Characteristic[]>>({});
+const catalogCharacteristicWithGroup = ref<CharacteristicGroup[]>([]);
 
 const selectedStandaloneIds = ref<number[]>([]);
-const selectedGroupValues = ref<Record<string, number[]>>({});
+const selectedGroupValues = ref<Record<number, number[]>>({});
 
 const currentPage = ref(1);
 const totalPages = ref(1);
@@ -171,7 +171,7 @@ const loadingItems = ref(false);
 const parseFiltersFromUrl = () => {
   const query = route.query;
   const urlStandaloneIds: number[] = [];
-  const urlGroupValues: Record<string, number[]> = {};
+  const urlGroupValues: Record<number, number[]> = {};
   let urlMinPrice: number | null = null;
   let urlMaxPrice: number | null = null;
 
@@ -191,17 +191,19 @@ const parseFiltersFromUrl = () => {
   }
 
   // Парсим групповые фильтры (характеристики в группах)
-  // Формат: filters[group_color]=201,202
+  // Формат: filters[group_10]=1,2 (где 10 - ID группы)
   Object.entries(query).forEach(([key, value]) => {
-    const groupMatch = key.match(/^filters\[group_(.+)\]$/);
+    const groupMatch = key.match(/^filters\[group_(\d+)\]$/);
     if (groupMatch && value) {
-      const groupName = groupMatch[1];
-      if (typeof value === 'string') {
-        urlGroupValues[groupName] = value.split(',').map(id => parseInt(id, 10)).filter(id => !isNaN(id));
-      } else if (Array.isArray(value)) {
-        urlGroupValues[groupName] = value.flatMap(v =>
-            typeof v === 'string' ? v.split(',').map(id => parseInt(id, 10)).filter(id => !isNaN(id)) : []
-        );
+      const groupId = parseInt(groupMatch[1], 10);
+      if (!isNaN(groupId)) {
+        if (typeof value === 'string') {
+          urlGroupValues[groupId] = value.split(',').map(id => parseInt(id, 10)).filter(id => !isNaN(id));
+        } else if (Array.isArray(value)) {
+          urlGroupValues[groupId] = value.flatMap(v =>
+              typeof v === 'string' ? v.split(',').map(id => parseInt(id, 10)).filter(id => !isNaN(id)) : []
+          );
+        }
       }
     }
   });
@@ -221,8 +223,8 @@ const parseFiltersFromUrl = () => {
     }
   }
 
-  return { 
-    standaloneIds: urlStandaloneIds, 
+  return {
+    standaloneIds: urlStandaloneIds,
     groupValues: urlGroupValues,
     minPrice: urlMinPrice,
     maxPrice: urlMaxPrice
@@ -238,10 +240,10 @@ const buildUrlFilters = () => {
     query['filters[standalone]'] = sortedIds.join(',');
   }
 
-  // Добавляем групповые фильтры
-  Object.entries(selectedGroupValues.value).forEach(([groupName, values]) => {
+  // Добавляем групповые фильтры (по ID группы)
+  Object.entries(selectedGroupValues.value).forEach(([groupId, values]) => {
     if (values.length > 0) {
-      query[`filters[group_${groupName}]`] = values.join(',');
+      query[`filters[group_${groupId}]`] = values.join(',');
     }
   });
 
@@ -270,13 +272,14 @@ const updateUrlFilters = () => {
 
 // Вычисляемое свойство для хлебных крошек фильтров
 const activeFiltersBreadcrumbs = computed(() => {
-  const breadcrumbs: Array<{ key: string; value: number | null; label: string }> = [];
+  const breadcrumbs: Array<{ key: string; value: number | null; groupId: number | null; label: string }> = [];
 
   // Добавляем фильтр по минимальной цене
   if (minPrice.value !== null) {
     breadcrumbs.push({
       key: 'minPrice',
       value: null,
+      groupId: null,
       label: `От ${minPrice.value} ₽`
     });
   }
@@ -286,6 +289,7 @@ const activeFiltersBreadcrumbs = computed(() => {
     breadcrumbs.push({
       key: 'maxPrice',
       value: null,
+      groupId: null,
       label: `До ${maxPrice.value} ₽`
     });
   }
@@ -297,37 +301,39 @@ const activeFiltersBreadcrumbs = computed(() => {
       breadcrumbs.push({
         key: 'standalone',
         value: id,
+        groupId: null,
         label: characteristic.name
       });
     }
   });
 
   // Добавляем групповые фильтры
-  Object.entries(selectedGroupValues.value).forEach(([groupName, values]) => {
-    const characteristics = catalogCharacteristicWithGroup.value[groupName] || [];
-    values.forEach(id => {
-      const characteristic = characteristics.find(c => c.id === id);
-      if (characteristic) {
-        breadcrumbs.push({
-          key: `group_${groupName}`,
-          value: id,
-          label: `${groupName}: ${characteristic.name}`
-        });
-      }
-    });
+  Object.entries(selectedGroupValues.value).forEach(([groupIdStr, values]) => {
+    const groupId = parseInt(groupIdStr, 10);
+    const group = catalogCharacteristicWithGroup.value.find(g => g.id === groupId);
+    if (group) {
+      values.forEach(id => {
+        const characteristic = group.items.find(c => c.id === id);
+        if (characteristic) {
+          breadcrumbs.push({
+            key: `group_${groupId}`,
+            value: id,
+            groupId: groupId,
+            label: `${group.name}: ${characteristic.name}`
+          });
+        }
+      });
+    }
   });
 
   return breadcrumbs;
 });
 
-const removeFilter = (key: string, value: number | null) => {
+const removeFilter = (key: string, value: number | null, groupId: number | null = null) => {
   if (key === 'standalone' && value !== null) {
     selectedStandaloneIds.value = selectedStandaloneIds.value.filter(id => id !== value);
-  } else if (key.startsWith('group_')) {
-    const groupName = key.replace('group_', '');
-    if (value !== null) {
-      selectedGroupValues.value[groupName] = (selectedGroupValues.value[groupName] || []).filter(id => id !== value);
-    }
+  } else if (key.startsWith('group_') && groupId !== null && value !== null) {
+    selectedGroupValues.value[groupId] = (selectedGroupValues.value[groupId] || []).filter(id => id !== value);
   } else if (key === 'minPrice') {
     minPrice.value = null;
   } else if (key === 'maxPrice') {
@@ -427,8 +433,8 @@ const changePage = (page: number) => {
   // Watch автоматически обновит URL при изменении currentPage
 };
 
-const clearGroup = (groupName: string) => {
-  selectedGroupValues.value[groupName] = [];
+const clearGroup = (groupId: number) => {
+  selectedGroupValues.value[groupId] = [];
   onFilterChange();
 };
 

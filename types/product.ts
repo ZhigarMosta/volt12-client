@@ -36,6 +36,12 @@ export interface Characteristic {
   name: string;
 }
 
+export interface CharacteristicGroup {
+  id: number;
+  name: string;
+  items: Characteristic[];
+}
+
 export interface CatalogItemsParams {
   catalogId: number;
   limit: number;
