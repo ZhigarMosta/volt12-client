@@ -7,6 +7,30 @@
     <template v-else>
       <H2 class="h2">{{ catalog.name }}</H2>
 
+<!--      &lt;!&ndash; Хлебные крошки фильтров &ndash;&gt;-->
+<!--      <div v-if="activeFiltersBreadcrumbs.length > 0" class="filters-breadcrumbs">-->
+<!--        <span class="breadcrumbs-title">Фильтры:</span>-->
+<!--        <div class="breadcrumbs-list">-->
+<!--          <span-->
+<!--              v-for="(breadcrumb, index) in activeFiltersBreadcrumbs"-->
+<!--              :key="breadcrumb.key"-->
+<!--              class="breadcrumb-item"-->
+<!--          >-->
+<!--            <span class="breadcrumb-label">{{ breadcrumb.label }}</span>-->
+<!--            <button-->
+<!--                class="breadcrumb-remove"-->
+<!--                @click="removeFilter(breadcrumb.key, breadcrumb.value)"-->
+<!--                aria-label="Удалить фильтр"-->
+<!--            >-->
+<!--              ×-->
+<!--            </button>-->
+<!--          </span>-->
+<!--        </div>-->
+<!--        <button class="clear-all-filters" @click="clearAllFilters">-->
+<!--          Очистить все-->
+<!--        </button>-->
+<!--      </div>-->
+
       <div class="wrapper">
         <div class="filters-column">
           <p class="filter-text filter-group">Цена</p>
@@ -60,8 +84,9 @@
                   :name="characteristic.name"
                   :count="facetsCounts[characteristic.id] || 0"
                   :value="characteristic.id"
-                  :checked="selectedGroupValues[groupName]?.includes(characteristic.id)"
-                  @change="onGroupCheckboxChange(groupName, characteristic.id, $event)"
+                  :model-value="selectedGroupValues[groupName] || []"
+                  @update:model-value="selectedGroupValues[groupName] = $event"
+                  @change="onFilterChange"
               />
             </div>
             <Divider
@@ -120,6 +145,7 @@
 import type { Catalog, Product, Characteristic } from '~/types/product';
 
 const route = useRoute();
+const router = useRouter();
 const slug = route.params.slug as string;
 
 const minPrice = ref<number | null>(null);
@@ -140,6 +166,130 @@ const totalPages = ref(1);
 const totalItems = ref(0);
 const limit = ref(10);
 const loadingItems = ref(false);
+
+// Вспомогательные функции для работы с URL фильтрами
+const parseFiltersFromUrl = () => {
+  const query = route.query;
+  const urlStandaloneIds: number[] = [];
+  const urlGroupValues: Record<string, number[]> = {};
+
+  // Парсим standalone фильтры (обычные характеристики)
+  // Формат: filters[standalone]=101,102
+  const standaloneParam = query['filters[standalone]'];
+  if (standaloneParam) {
+    if (typeof standaloneParam === 'string') {
+      urlStandaloneIds.push(...standaloneParam.split(',').map(id => parseInt(id, 10)).filter(id => !isNaN(id)));
+    } else if (Array.isArray(standaloneParam)) {
+      standaloneParam.forEach(param => {
+        if (typeof param === 'string') {
+          urlStandaloneIds.push(...param.split(',').map(id => parseInt(id, 10)).filter(id => !isNaN(id)));
+        }
+      });
+    }
+  }
+
+  // Парсим групповые фильтры (характеристики в группах)
+  // Формат: filters[group_color]=201,202
+  Object.entries(query).forEach(([key, value]) => {
+    const groupMatch = key.match(/^filters\[group_(.+)\]$/);
+    if (groupMatch && value) {
+      const groupName = groupMatch[1];
+      if (typeof value === 'string') {
+        urlGroupValues[groupName] = value.split(',').map(id => parseInt(id, 10)).filter(id => !isNaN(id));
+      } else if (Array.isArray(value)) {
+        urlGroupValues[groupName] = value.flatMap(v =>
+            typeof v === 'string' ? v.split(',').map(id => parseInt(id, 10)).filter(id => !isNaN(id)) : []
+        );
+      }
+    }
+  });
+
+  return { standaloneIds: urlStandaloneIds, groupValues: urlGroupValues };
+};
+
+const buildUrlFilters = () => {
+  const query: Record<string, string> = {};
+
+  // Добавляем standalone фильтры
+  if (selectedStandaloneIds.value.length > 0) {
+    query['filters[standalone]'] = selectedStandaloneIds.value.join(',');
+  }
+
+  // Добавляем групповые фильтры
+  Object.entries(selectedGroupValues.value).forEach(([groupName, values]) => {
+    if (values.length > 0) {
+      query[`filters[group_${groupName}]`] = values.join(',');
+    }
+  });
+
+  return query;
+};
+
+const updateUrlFilters = () => {
+  const filterParams = buildUrlFilters();
+
+  router.push({
+    query: {
+      ...route.query,
+      ...filterParams,
+      page: currentPage.value > 1 ? currentPage.value.toString() : undefined
+    }
+  });
+};
+
+// Вычисляемое свойство для хлебных крошек фильтров
+const activeFiltersBreadcrumbs = computed(() => {
+  const breadcrumbs: Array<{ key: string; value: number | null; label: string }> = [];
+
+  // Добавляем standalone фильтры
+  selectedStandaloneIds.value.forEach(id => {
+    const characteristic = catalogCharacteristicWithoutGroup.value.find(c => c.id === id);
+    if (characteristic) {
+      breadcrumbs.push({
+        key: 'standalone',
+        value: id,
+        label: characteristic.name
+      });
+    }
+  });
+
+  // Добавляем групповые фильтры
+  Object.entries(selectedGroupValues.value).forEach(([groupName, values]) => {
+    const characteristics = catalogCharacteristicWithGroup.value[groupName] || [];
+    values.forEach(id => {
+      const characteristic = characteristics.find(c => c.id === id);
+      if (characteristic) {
+        breadcrumbs.push({
+          key: `group_${groupName}`,
+          value: id,
+          label: `${groupName}: ${characteristic.name}`
+        });
+      }
+    });
+  });
+
+  return breadcrumbs;
+});
+
+const removeFilter = (key: string, value: number | null) => {
+  if (key === 'standalone' && value !== null) {
+    selectedStandaloneIds.value = selectedStandaloneIds.value.filter(id => id !== value);
+  } else if (key.startsWith('group_')) {
+    const groupName = key.replace('group_', '');
+    if (value !== null) {
+      selectedGroupValues.value[groupName] = (selectedGroupValues.value[groupName] || []).filter(id => id !== value);
+    }
+  }
+  currentPage.value = 1;
+  // Не вызываем updateUrlFilters здесь, так как watch отследит изменение и обновит URL
+};
+
+const clearAllFilters = () => {
+  selectedStandaloneIds.value = [];
+  selectedGroupValues.value = {};
+  currentPage.value = 1;
+  // Не вызываем updateUrlFilters здесь, так как watch отследит изменение и обновит URL
+};
 
 const { data: catalogsData, error: fetchError, pending } = await useFetch<Catalog[]>('http://127.0.0.1:8000/volt12/catalogs');
 
@@ -202,35 +352,16 @@ const fetchItems = async () => {
   }
 };
 
+// Обработчик изменения фильтров - просто сбрасываем страницу на 1
+// Watch автоматически обновит URL при изменении selectedStandaloneIds или selectedGroupValues
 const onFilterChange = () => {
   currentPage.value = 1;
-  fetchItems();
-};
-
-const onGroupCheckboxChange = (groupName: string, characteristicId: number, event: Event) => {
-  const target = event.target as HTMLInputElement;
-
-  if (!selectedGroupValues.value[groupName]) {
-    selectedGroupValues.value[groupName] = [];
-  }
-
-  if (target.checked) {
-    if (!selectedGroupValues.value[groupName].includes(characteristicId)) {
-      selectedGroupValues.value[groupName].push(characteristicId);
-    }
-  } else {
-    selectedGroupValues.value[groupName] = selectedGroupValues.value[groupName].filter(
-        id => id !== characteristicId
-    );
-  }
-
-  onFilterChange();
 };
 
 const changePage = (page: number) => {
   if (page < 1 || page > totalPages.value) return;
   currentPage.value = page;
-  fetchItems();
+  // Watch автоматически обновит URL при изменении currentPage
 };
 
 const clearGroup = (groupName: string) => {
@@ -238,10 +369,9 @@ const clearGroup = (groupName: string) => {
   onFilterChange();
 };
 
+// Watch для каталога - инициализация фильтров из URL
 watch(() => catalog.value, async (newCatalog) => {
   if (newCatalog) {
-    selectedStandaloneIds.value = [];
-    selectedGroupValues.value = {};
     currentPage.value = 1;
     catalogItems.value = [];
     totalItems.value = 0;
@@ -255,12 +385,78 @@ watch(() => catalog.value, async (newCatalog) => {
       catalogCharacteristicWithoutGroup.value = characteristicRes.without_group;
       catalogCharacteristicWithGroup.value = characteristicRes.with_group;
 
-      await fetchItems();
+      // Парсим фильтры из URL после загрузки характеристик
+      const { standaloneIds, groupValues } = parseFiltersFromUrl();
+      selectedStandaloneIds.value = standaloneIds;
+      selectedGroupValues.value = groupValues;
+
+      // Если есть фильтры в URL, загружаем товары
+      if (standaloneIds.length > 0 || Object.keys(groupValues).length > 0) {
+        await fetchItems();
+      } else {
+        // Иначе загружаем без фильтров
+        await fetchItems();
+      }
     } catch (error) {
       console.error(error);
     }
   }
 }, { immediate: true });
+
+// Watch для изменений в URL (back/forward navigation)
+watch(() => route.query, async (newQuery, oldQuery) => {
+  if (!oldQuery) return; // Пропускаем первую инициализацию
+
+  // Проверяем, изменились ли фильтры или страница
+  const oldFilters = Object.keys(oldQuery).filter(k => k.startsWith('filters['));
+  const newFilters = Object.keys(newQuery).filter(k => k.startsWith('filters['));
+
+  const filtersChanged = JSON.stringify(oldFilters.map(k => oldQuery[k])) !== JSON.stringify(newFilters.map(k => newQuery[k]));
+  const pageChanged = newQuery.page !== oldQuery.page;
+
+  if (filtersChanged || pageChanged) {
+    // Парсим новые фильтры из URL
+    const { standaloneIds, groupValues } = parseFiltersFromUrl();
+
+    // Обновляем состояние фильтров
+    selectedStandaloneIds.value = standaloneIds;
+    selectedGroupValues.value = groupValues;
+
+    // Обновляем страницу из URL
+    const urlPage = newQuery.page ? parseInt(newQuery.page as string, 10) : 1;
+    if (!isNaN(urlPage) && urlPage > 0) {
+      currentPage.value = urlPage;
+    }
+
+    // Загружаем товары с новыми фильтрами
+    await fetchItems();
+  }
+}, { deep: true });
+
+// Watch для отслеживания изменений фильтров и страницы для обновления URL
+watch([selectedStandaloneIds, selectedGroupValues, currentPage], ([newStandalone, newGroups, newPage], [oldStandalone, oldGroups, oldPage]) => {
+  // Пропускаем первую инициализацию
+  if (!oldStandalone && !oldGroups) return;
+
+  // Обновляем URL при изменении фильтров или страницы
+  const filterParams = buildUrlFilters();
+
+  // Очищаем старые параметры фильтров в query
+  const cleanQuery = { ...route.query };
+  Object.keys(cleanQuery).forEach(key => {
+    if (key.startsWith('filters[')) {
+      delete cleanQuery[key];
+    }
+  });
+
+  router.push({
+    query: {
+      ...cleanQuery,
+      ...filterParams,
+      page: newPage > 1 ? newPage.toString() : undefined
+    }
+  });
+}, { deep: true });
 </script>
 
 <style scoped>
@@ -271,6 +467,87 @@ watch(() => catalog.value, async (newCatalog) => {
 .h2 {
   margin-bottom: 29px;
 }
+
+/* Хлебные крошки фильтров
+.filters-breadcrumbs {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 10px 15px;
+  background: #f5f5f5;
+  border-radius: 8px;
+}
+
+.breadcrumbs-title {
+  font-family: 'NT Somic', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--black);
+  margin-right: 5px;
+}
+
+.breadcrumbs-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex: 1;
+}
+
+.breadcrumb-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 16px;
+  font-size: 13px;
+  color: var(--black);
+  font-family: 'NT Somic', sans-serif;
+}
+
+.breadcrumb-label {
+  white-space: nowrap;
+}
+
+.breadcrumb-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: none;
+  background: #e0e0e0;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  color: #666;
+  transition: background 0.2s;
+}
+
+.breadcrumb-remove:hover {
+  background: #d0d0d0;
+}
+
+.clear-all-filters {
+  padding: 4px 12px;
+  border: none;
+  background: transparent;
+  color: #dc3545;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: 'NT Somic', sans-serif;
+  text-decoration: underline;
+  transition: opacity 0.2s;
+}
+
+.clear-all-filters:hover {
+  opacity: 0.8;
+}*/
 
 .wrapper {
   display: flex;
