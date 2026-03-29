@@ -210,9 +210,10 @@ const parseFiltersFromUrl = () => {
 const buildUrlFilters = () => {
   const query: Record<string, string> = {};
 
-  // Добавляем standalone фильтры
+  // Добавляем standalone фильтры (сортируем по убыванию)
   if (selectedStandaloneIds.value.length > 0) {
-    query['filters[standalone]'] = selectedStandaloneIds.value.join(',');
+    const sortedIds = [...selectedStandaloneIds.value].sort((a, b) => b - a);
+    query['filters[standalone]'] = sortedIds.join(',');
   }
 
   // Добавляем групповые фильтры
