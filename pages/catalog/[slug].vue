@@ -8,7 +8,12 @@
       <H2 class="h2">{{ catalog.name }}</H2>
       <div class="sorts">
         <div class="header__search left-sort">
-          <input class="header__search-input search_text" type="text" placeholder="Поиск по сайту">
+          <input
+            v-model="searchQuery"
+            class="header__search-input search_text"
+            type="text"
+            placeholder="Поиск по сайту"
+          >
           <img class="header__search-icon" src="../../public/icons/search.svg" alt="search">
         </div>
         <div class="right-sort">
@@ -108,6 +113,7 @@ const slug = route.params.slug as string;
 
 const minPrice = ref<number | null>(null);
 const maxPrice = ref<number | null>(null);
+const searchQuery = ref<string>('');
 
 const facetsCounts = ref<Record<number, number>>({});
 
@@ -134,6 +140,7 @@ const parseFiltersFromUrl = () => {
   const urlGroupValues: Record<number, number[]> = {};
   let urlMinPrice: number | null = null;
   let urlMaxPrice: number | null = null;
+  let urlSearchQuery: string = '';
 
   // Парсим standalone фильтры (обычные характеристики)
   // Формат: filters[standalone]=101,102
@@ -183,11 +190,18 @@ const parseFiltersFromUrl = () => {
     }
   }
 
+  // Парсим поисковый запрос
+  // Формат: search=запрос
+  if (query.search) {
+    urlSearchQuery = query.search as string;
+  }
+
   return {
     standaloneIds: urlStandaloneIds,
     groupValues: urlGroupValues,
     minPrice: urlMinPrice,
-    maxPrice: urlMaxPrice
+    maxPrice: urlMaxPrice,
+    searchQuery: urlSearchQuery
   };
 };
 
@@ -213,6 +227,11 @@ const buildUrlFilters = () => {
   }
   if (maxPrice.value !== null) {
     query['price_max'] = maxPrice.value.toString();
+  }
+
+  // Добавляем поисковый запрос
+  if (searchQuery.value) {
+    query['search'] = searchQuery.value;
   }
 
   return query;
@@ -343,7 +362,8 @@ const fetchItems = async () => {
     limit: limit.value,
     page: currentPage.value,
     filterGroups: filterGroups.length > 0 ? filterGroups : undefined,
-    price: Object.keys(priceFilter).length > 0 ? priceFilter : undefined
+    price: Object.keys(priceFilter).length > 0 ? priceFilter : undefined,
+    search: searchQuery.value || undefined
   };
 
   try {
@@ -401,15 +421,16 @@ watch(() => catalog.value, async (newCatalog) => {
       catalogCharacteristicWithGroup.value = characteristics.with_group;
 
       // Парсим фильтры из URL после загрузки характеристик
-      const { standaloneIds, groupValues, minPrice: urlMinPrice, maxPrice: urlMaxPrice } = parseFiltersFromUrl();
+      const { standaloneIds, groupValues, minPrice: urlMinPrice, maxPrice: urlMaxPrice, searchQuery: urlSearchQuery } = parseFiltersFromUrl();
       selectedStandaloneIds.value = standaloneIds;
       selectedGroupValues.value = groupValues;
       minPrice.value = urlMinPrice;
       maxPrice.value = urlMaxPrice;
+      searchQuery.value = urlSearchQuery || '';
 
       // Загружаем товары с фильтрами
       await fetchItems();
-      
+
       // Помечаем, что начальная загрузка завершена
       isInitialLoadComplete = true;
     } catch (error) {
@@ -498,32 +519,62 @@ const updatePriceUrlAndFetch = async () => {
 // Debounced версия функции обновления цены (debouncedTime задержка)
 const debouncedUpdatePriceUrlAndFetch = debounce(updatePriceUrlAndFetch, debouncedTime);
 
+// Функция для обновления URL и загрузки данных при изменении поискового запроса
+const updateSearchUrlAndFetch = async () => {
+  currentPage.value = 1;
+
+  // Обновляем URL с поисковым запросом
+  const cleanQuery = { ...route.query };
+  Object.keys(cleanQuery).forEach(key => {
+    if (key.startsWith('filters[') || key === 'price_min' || key === 'price_max' || key === 'search') {
+      delete cleanQuery[key];
+    }
+  });
+
+  isUpdatingFromInternalChange = true;
+  await router.push({
+    query: {
+      ...cleanQuery,
+      ...(searchQuery.value ? { search: searchQuery.value } : {}),
+      page: undefined
+    }
+  });
+
+  // Загружаем данные после обновления URL
+  await fetchItems();
+};
+
+// Debounced версия функции поиска (debouncedTime задержка)
+const debouncedUpdateSearchUrlAndFetch = debounce(updateSearchUrlAndFetch, debouncedTime);
+
 // Watch для изменений в URL (back/forward navigation)
 watch(() => route.query, async (newQuery, oldQuery) => {
   if (!oldQuery) return; // Пропускаем первую инициализацию
-  
+
   // Если изменение вызвано нашим router.push, пропускаем
   if (isUpdatingFromInternalChange) {
     isUpdatingFromInternalChange = false;
     return;
   }
 
-  // Проверяем, изменились ли фильтры или страница
-  const oldFilters = Object.keys(oldQuery).filter(k => k.startsWith('filters[') || k === 'price_min' || k === 'price_max');
-  const newFilters = Object.keys(newQuery).filter(k => k.startsWith('filters[') || k === 'price_min' || k === 'price_max');
+  // Проверяем, изменились ли фильтры, поиск или страница
+  const oldFilters = Object.keys(oldQuery).filter(k => k.startsWith('filters[') || k === 'price_min' || k === 'price_max' || k === 'search');
+  const newFilters = Object.keys(newQuery).filter(k => k.startsWith('filters[') || k === 'price_min' || k === 'price_max' || k === 'search');
 
   const filtersChanged = JSON.stringify(oldFilters.map(k => oldQuery[k])) !== JSON.stringify(newFilters.map(k => newQuery[k]));
   const pageChanged = newQuery.page !== oldQuery.page;
+  const searchChanged = newQuery.search !== oldQuery.search;
 
-  if (filtersChanged || pageChanged) {
+  if (filtersChanged || pageChanged || searchChanged) {
     // Парсим новые фильтры из URL
-    const { standaloneIds, groupValues, minPrice: urlMinPrice, maxPrice: urlMaxPrice } = parseFiltersFromUrl();
+    const { standaloneIds, groupValues, minPrice: urlMinPrice, maxPrice: urlMaxPrice, searchQuery: urlSearchQuery } = parseFiltersFromUrl();
 
     // Обновляем состояние фильтров
     selectedStandaloneIds.value = standaloneIds;
     selectedGroupValues.value = groupValues;
     minPrice.value = urlMinPrice;
     maxPrice.value = urlMaxPrice;
+    searchQuery.value = urlSearchQuery || '';
 
     // Обновляем страницу из URL
     const urlPage = newQuery.page ? parseInt(newQuery.page as string, 10) : 1;
@@ -556,6 +607,15 @@ watch([minPrice, maxPrice], ([newMin, newMax], [oldMin, oldMax]) => {
   // Запускаем debounced функцию обновления URL и загрузки
   debouncedUpdatePriceUrlAndFetch();
 }, { deep: true });
+
+// Watch для отслеживания изменений поискового запроса — обновляет URL и загружает данные с debouncing
+watch(searchQuery, () => {
+  // Пропускаем начальную загрузку
+  if (!isInitialLoadComplete) return;
+
+  // Запускаем debounced функцию обновления URL и загрузки
+  debouncedUpdateSearchUrlAndFetch();
+});
 </script>
 
 <style scoped>

@@ -56,6 +56,7 @@ export interface CatalogItemsFilters {
     min?: number;
     max?: number;
   };
+  search?: string;
 }
 
 export interface CatalogItemsResponse {
