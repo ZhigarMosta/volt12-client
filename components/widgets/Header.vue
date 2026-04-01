@@ -136,7 +136,7 @@
 }
 
 .header__search {
-  @apply flex justify-between items-center px-[26px] h-[51px] w-full rounded-[8px] bg-[var(--gray-bg)] gap-[20px] ml-[20px] mr-[30px];
+  @apply flex justify-between items-center px-[26px] h-[51px] w-full rounded-[8px] bg-[var(--gray)] gap-[20px] ml-[20px] mr-[30px];
 }
 
 .header__search-input {

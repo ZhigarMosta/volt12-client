@@ -6,15 +6,41 @@
 
     <template v-else>
       <H2 class="h2">{{ catalog.name }}</H2>
-
-      <FiltersBreadcrumbs
-          :breadcrumbs="activeFiltersBreadcrumbs"
-          @remove="removeFilter"
-          @clear-all="clearAllFilters"
-      />
+      <div class="sorts">
+        <div class="header__search left-sort">
+          <input class="header__search-input search_text" type="text" placeholder="Поиск по сайту">
+          <img class="header__search-icon" src="../../public/icons/search.svg" alt="search">
+        </div>
+        <div class="right-sort">
+          <button class="sort">
+            <p class="sort-text">Акции</p>
+            <svg width="15" height="9" viewBox="0 0 15 9" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M8.07088 0.292915C7.68035 -0.097609 7.04719 -0.097609 6.65666 0.292915L0.292702 6.65688C-0.0978227 7.0474 -0.0978227 7.68057 0.292702 8.07109C0.683226 8.46161 1.31639 8.46161 1.70692 8.07109L7.36377 2.41424L13.0206 8.07109C13.4111 8.46161 14.0443 8.46161 14.4348 8.07109C14.8254 7.68057 14.8254 7.0474 14.4348 6.65688L8.07088 0.292915ZM7.36377 1.00012H8.36377V1.00002H7.36377H6.36377V1.00012H7.36377Z" fill="#B9B9B9" />
+            </svg>
+          </button>
+          <button class="sort">
+            <p class="sort-text">Акции</p>
+            <svg width="15" height="9" viewBox="0 0 15 9" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M8.07088 0.292915C7.68035 -0.097609 7.04719 -0.097609 6.65666 0.292915L0.292702 6.65688C-0.0978227 7.0474 -0.0978227 7.68057 0.292702 8.07109C0.683226 8.46161 1.31639 8.46161 1.70692 8.07109L7.36377 2.41424L13.0206 8.07109C13.4111 8.46161 14.0443 8.46161 14.4348 8.07109C14.8254 7.68057 14.8254 7.0474 14.4348 6.65688L8.07088 0.292915ZM7.36377 1.00012H8.36377V1.00002H7.36377H6.36377V1.00012H7.36377Z" fill="#B9B9B9" />
+            </svg>
+          </button>
+          <button class="sort">
+            <p class="sort-text">Акции</p>
+            <svg width="15" height="9" viewBox="0 0 15 9" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M8.07088 0.292915C7.68035 -0.097609 7.04719 -0.097609 6.65666 0.292915L0.292702 6.65688C-0.0978227 7.0474 -0.0978227 7.68057 0.292702 8.07109C0.683226 8.46161 1.31639 8.46161 1.70692 8.07109L7.36377 2.41424L13.0206 8.07109C13.4111 8.46161 14.0443 8.46161 14.4348 8.07109C14.8254 7.68057 14.8254 7.0474 14.4348 6.65688L8.07088 0.292915ZM7.36377 1.00012H8.36377V1.00002H7.36377H6.36377V1.00012H7.36377Z" fill="#B9B9B9" />
+            </svg>
+          </button>
+        </div>
+      </div>
+<!--      <FiltersBreadcrumbs-->
+<!--          :breadcrumbs="activeFiltersBreadcrumbs"-->
+<!--          @remove="removeFilter"-->
+<!--          @clear-all="clearAllFilters"-->
+<!--      />-->
 
       <div class="wrapper">
         <CatalogFilters
+            class="catalog-filters"
             :min-price="minPrice"
             :max-price="maxPrice"
             :catalog-characteristic-without-group="catalogCharacteristicWithoutGroup"
@@ -96,7 +122,7 @@ const selectedGroupValues = ref<Record<number, number[]>>({});
 const currentPage = ref(1);
 const totalPages = ref(1);
 const totalItems = ref(0);
-const limit = ref(10);
+const limit = ref(15);
 const loadingItems = ref(false);
 
 // Вспомогательные функции для работы с URL фильтрами
@@ -478,8 +504,52 @@ watch([minPrice, maxPrice], ([newMin, newMax], [oldMin, oldMax]) => {
 </script>
 
 <style scoped>
+.search_text {
+  @apply font-['NT_Somic'] font-medium text-[14px] content-center text-[#b9b9b9];
+}
+.sorts{
+  display: flex;
+  justify-content: space-between;
+
+  margin-bottom: 20px;
+}
+.right-sort{
+  display: flex;
+  gap: 12px;
+}
+.header__search-icon{
+  @apply w-[20px] h-[20px];
+}
+.header__search {
+  @apply flex justify-between items-center px-[26px] h-[51px] rounded-[8px] bg-[var(--gray)] gap-[20px];
+  width: 307px;
+}
+
+.header__search-input {
+  @apply w-full;
+}
+
+.header__search-input::placeholder {
+  @apply text-[#b9b9b9];
+}
+
+.sort{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  width: 150px;
+  padding: 16px 20px;
+  background: var(--gray);
+  border-radius: 8px;
+}
+.sort-text{
+  font-family: 'NT Somic', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+}
 .catalog-page {
-  padding: 20px;
+  padding: 0 70px;
 }
 
 .h2 {
@@ -498,7 +568,7 @@ watch([minPrice, maxPrice], ([newMin, newMax], [oldMin, oldMax]) => {
 
 .products-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(267px, 1fr));
   gap: 20px;
 }
 
@@ -561,17 +631,27 @@ watch([minPrice, maxPrice], ([newMin, newMax], [oldMin, oldMax]) => {
   color: #dc3545;
 }
 
-@media (max-width: 768px) {
-  .wrapper {
-    flex-direction: column;
+@media (max-width: 1100px) {
+  .catalog-filters{
+    display: none;
   }
 
-  .filters-column {
-    width: 100%;
+  .catalog-page {
+    padding: 0 37px;
   }
+}
 
+@media (max-width: 744px) {
+  .catalog-page {
+    padding: 0 20px;
+  }
   .products-grid {
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 428px) {
+  .products-grid {
+    grid-template-columns: repeat(1, 1fr);
   }
 }
 </style>

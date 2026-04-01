@@ -2,7 +2,7 @@
   <component
       :is="to ? 'NuxtLink' : 'button'"
       :to="to"
-      :class="['ui-btn', `ui-btn--${variant}`, `ui-btn--${size}`, { 'ui-btn--full': fullWidth }]"
+      :class="['ui-btn', `ui-btn--${variant}`, `ui-btn--${size}`, `ui-btn--${verticalSpacing}`, { 'ui-btn--full': fullWidth }]"
   >
     <slot />
   </component>
@@ -14,6 +14,7 @@ defineProps<{
   variant?: 'red' | 'white'
   size?: 'sm' | 'lg'
   fullWidth?: boolean
+  verticalSpacing?: 'default' | 'compact'
 }>()
 </script>
 
@@ -51,14 +52,26 @@ defineProps<{
 }
 
 .ui-btn--sm {
-  padding: 10px 31px;
+  padding-left: 31px;
+  padding-right: 31px;
 }
 
 .ui-btn--lg {
-  padding: 10px 68px;
+  padding-left: 68px;
+  padding-right: 68px;
 }
 
 .ui-btn--full {
   width: 100%;
+}
+
+.ui-btn--default {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.ui-btn--compact {
+  padding-top: 5px;
+  padding-bottom: 5px;
 }
 </style>
