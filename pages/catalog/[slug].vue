@@ -125,6 +125,8 @@ const totalItems = ref(0);
 const limit = ref(15);
 const loadingItems = ref(false);
 
+const debouncedTime = 600;
+
 // Вспомогательные функции для работы с URL фильтрами
 const parseFiltersFromUrl = () => {
   const query = route.query;
@@ -413,9 +415,92 @@ watch(() => catalog.value, async (newCatalog) => {
   }
 }, { immediate: true });
 
+// Флаг для отслеживания, было ли изменение URL вызвано нашим router.push
+let isUpdatingFromInternalChange = false;
+
+// Debounce функция для отложенного выполнения
+const debounce = <T extends (...args: any[]) => Promise<any>>(fn: T, delay: number) => {
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+  return (...args: Parameters<T>) => {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+    timeoutId = setTimeout(() => {
+      fn(...args);
+      timeoutId = null;
+    }, delay);
+  };
+};
+
+// Функция для обновления URL и загрузки данных при изменении фильтров
+const updateFiltersUrlAndFetch = async () => {
+  // Обновляем URL при изменении фильтров или страницы
+  const filterParams = buildUrlFilters();
+
+  // Очищаем старые параметры фильтров в query
+  const cleanQuery = { ...route.query };
+  Object.keys(cleanQuery).forEach(key => {
+    if (key.startsWith('filters[') || key === 'price_min' || key === 'price_max') {
+      delete cleanQuery[key];
+    }
+  });
+
+  isUpdatingFromInternalChange = true;
+  await router.push({
+    query: {
+      ...cleanQuery,
+      ...filterParams,
+      page: currentPage.value > 1 ? currentPage.value.toString() : undefined
+    }
+  });
+
+  // Загружаем данные после обновления URL
+  await fetchItems();
+};
+
+// Debounced версия функции обновления фильтров (debouncedTime задержка)
+const debouncedUpdateFiltersUrlAndFetch = debounce(updateFiltersUrlAndFetch, debouncedTime);
+
+// Функция для обновления URL и загрузки данных при изменении цены
+const updatePriceUrlAndFetch = async () => {
+  currentPage.value = 1;
+
+  // Обновляем URL с новыми параметрами цены
+  const filterParams = buildUrlFilters();
+
+  // Очищаем старые параметры фильтров в query
+  const cleanQuery = { ...route.query };
+  Object.keys(cleanQuery).forEach(key => {
+    if (key.startsWith('filters[') || key === 'price_min' || key === 'price_max') {
+      delete cleanQuery[key];
+    }
+  });
+
+  isUpdatingFromInternalChange = true;
+  await router.push({
+    query: {
+      ...cleanQuery,
+      ...filterParams,
+      page: undefined
+    }
+  });
+
+  // Загружаем данные после обновления URL
+  await fetchItems();
+};
+
+// Debounced версия функции обновления цены (debouncedTime задержка)
+const debouncedUpdatePriceUrlAndFetch = debounce(updatePriceUrlAndFetch, debouncedTime);
+
 // Watch для изменений в URL (back/forward navigation)
 watch(() => route.query, async (newQuery, oldQuery) => {
   if (!oldQuery) return; // Пропускаем первую инициализацию
+  
+  // Если изменение вызвано нашим router.push, пропускаем
+  if (isUpdatingFromInternalChange) {
+    isUpdatingFromInternalChange = false;
+    return;
+  }
 
   // Проверяем, изменились ли фильтры или страница
   const oldFilters = Object.keys(oldQuery).filter(k => k.startsWith('filters[') || k === 'price_min' || k === 'price_max');
@@ -445,32 +530,16 @@ watch(() => route.query, async (newQuery, oldQuery) => {
   }
 }, { deep: true });
 
-// Watch для отслеживания изменений фильтров и страницы для обновления URL
+// Watch для отслеживания изменений фильтров и страницы — обновляет URL и загружает данные с debouncing
 watch([selectedStandaloneIds, selectedGroupValues, currentPage], ([newStandalone, newGroups, newPage], [oldStandalone, oldGroups, oldPage]) => {
   // Пропускаем первую инициализацию
   if (!oldStandalone && !oldGroups) return;
 
-  // Обновляем URL при изменении фильтров или страницы
-  const filterParams = buildUrlFilters();
-
-  // Очищаем старые параметры фильтров в query
-  const cleanQuery = { ...route.query };
-  Object.keys(cleanQuery).forEach(key => {
-    if (key.startsWith('filters[') || key === 'price_min' || key === 'price_max') {
-      delete cleanQuery[key];
-    }
-  });
-
-  router.push({
-    query: {
-      ...cleanQuery,
-      ...filterParams,
-      page: newPage > 1 ? newPage.toString() : undefined
-    }
-  });
+  // Запускаем debounced функцию обновления URL и загрузки
+  debouncedUpdateFiltersUrlAndFetch();
 }, { deep: true });
 
-// Watch для отслеживания изменений цены
+// Watch для отслеживания изменений цены — обновляет URL и загружает данные с debouncing
 watch([minPrice, maxPrice], ([newMin, newMax], [oldMin, oldMax]) => {
   // Пропускаем первую инициализацию
   if (oldMin === undefined || oldMax === undefined) return;
@@ -478,28 +547,8 @@ watch([minPrice, maxPrice], ([newMin, newMax], [oldMin, oldMax]) => {
   // Пропускаем, если значения не изменились
   if (newMin === oldMin && newMax === oldMax) return;
 
-  currentPage.value = 1;
-
-  // Обновляем URL с новыми параметрами цены
-  const filterParams = buildUrlFilters();
-
-  // Очищаем старые параметры фильтров в query
-  const cleanQuery = { ...route.query };
-  Object.keys(cleanQuery).forEach(key => {
-    if (key.startsWith('filters[') || key === 'price_min' || key === 'price_max') {
-      delete cleanQuery[key];
-    }
-  });
-
-  router.push({
-    query: {
-      ...cleanQuery,
-      ...filterParams,
-      page: undefined
-    }
-  });
-
-  fetchItems();
+  // Запускаем debounced функцию обновления URL и загрузки
+  debouncedUpdatePriceUrlAndFetch();
 }, { deep: true });
 </script>
 
