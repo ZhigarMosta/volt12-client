@@ -409,6 +409,9 @@ watch(() => catalog.value, async (newCatalog) => {
 
       // Загружаем товары с фильтрами
       await fetchItems();
+      
+      // Помечаем, что начальная загрузка завершена
+      isInitialLoadComplete = true;
     } catch (error) {
       console.error(error);
     }
@@ -417,6 +420,9 @@ watch(() => catalog.value, async (newCatalog) => {
 
 // Флаг для отслеживания, было ли изменение URL вызвано нашим router.push
 let isUpdatingFromInternalChange = false;
+
+// Флаг для отслеживания завершения начальной инициализации
+let isInitialLoadComplete = false;
 
 // Debounce функция для отложенного выполнения
 const debounce = <T extends (...args: any[]) => Promise<any>>(fn: T, delay: number) => {
@@ -532,8 +538,8 @@ watch(() => route.query, async (newQuery, oldQuery) => {
 
 // Watch для отслеживания изменений фильтров и страницы — обновляет URL и загружает данные с debouncing
 watch([selectedStandaloneIds, selectedGroupValues, currentPage], ([newStandalone, newGroups, newPage], [oldStandalone, oldGroups, oldPage]) => {
-  // Пропускаем первую инициализацию
-  if (!oldStandalone && !oldGroups) return;
+  // Пропускаем первую инициализацию и начальную загрузку
+  if ((!oldStandalone && !oldGroups) || !isInitialLoadComplete) return;
 
   // Запускаем debounced функцию обновления URL и загрузки
   debouncedUpdateFiltersUrlAndFetch();
@@ -541,8 +547,8 @@ watch([selectedStandaloneIds, selectedGroupValues, currentPage], ([newStandalone
 
 // Watch для отслеживания изменений цены — обновляет URL и загружает данные с debouncing
 watch([minPrice, maxPrice], ([newMin, newMax], [oldMin, oldMax]) => {
-  // Пропускаем первую инициализацию
-  if (oldMin === undefined || oldMax === undefined) return;
+  // Пропускаем первую инициализацию и начальную загрузку
+  if ((oldMin === undefined && oldMax === undefined) || !isInitialLoadComplete) return;
 
   // Пропускаем, если значения не изменились
   if (newMin === oldMin && newMax === oldMax) return;
