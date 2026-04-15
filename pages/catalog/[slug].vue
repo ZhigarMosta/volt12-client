@@ -84,27 +84,12 @@
             />
           </div>
 
-          <div v-if="totalPages > 1" class="pagination">
-            <button
-                :disabled="currentPage === 1"
-                @click="changePage(currentPage - 1)"
-                class="page-btn"
-            >
-              &laquo;
-            </button>
-
-            <span class="page-info">
-               Стр. {{ currentPage }} из {{ totalPages }}
-            </span>
-
-            <button
-                :disabled="currentPage === totalPages"
-                @click="changePage(currentPage + 1)"
-                class="page-btn"
-            >
-              &raquo;
-            </button>
-          </div>
+          <Pagination
+              v-if="totalPages > 1"
+              :current-page="currentPage"
+              :total-pages="totalPages"
+              @change-page="changePage"
+          />
         </div>
       </div>
     </template>
@@ -705,31 +690,6 @@ watch(searchQuery, () => {
   padding: 40px;
   color: #666;
   font-size: 16px;
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 15px;
-  margin-top: 20px;
-}
-
-.page-btn {
-  padding: 5px 15px;
-  cursor: pointer;
-  background: #f8f9fa;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.page-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.page-info {
-  font-weight: bold;
 }
 
 .loading-overlay {
