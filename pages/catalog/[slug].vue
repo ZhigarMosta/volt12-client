@@ -5,7 +5,7 @@
     <div v-else-if="!catalog" class="error">Каталог не найден</div>
 
     <template v-else>
-      <H2 class="h2">{{ catalog.name }}</H2>
+      <Navigate :items="breadcrumbsItems" />
       <div class="sorts">
         <div class="header__search left-sort">
           <input
@@ -17,19 +17,27 @@
           <img class="header__search-icon" src="../../public/icons/search.svg" alt="search">
         </div>
         <div class="right-sort">
-          <button class="sort">
-            <p class="sort-text">Акции</p>
-            <svg width="15" height="9" viewBox="0 0 15 9" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M8.07088 0.292915C7.68035 -0.097609 7.04719 -0.097609 6.65666 0.292915L0.292702 6.65688C-0.0978227 7.0474 -0.0978227 7.68057 0.292702 8.07109C0.683226 8.46161 1.31639 8.46161 1.70692 8.07109L7.36377 2.41424L13.0206 8.07109C13.4111 8.46161 14.0443 8.46161 14.4348 8.07109C14.8254 7.68057 14.8254 7.0474 14.4348 6.65688L8.07088 0.292915ZM7.36377 1.00012H8.36377V1.00002H7.36377H6.36377V1.00012H7.36377Z" fill="#B9B9B9" />
-            </svg>
-          </button>
-          <button class="sort">
-            <p class="sort-text">Акции</p>
-            <svg width="15" height="9" viewBox="0 0 15 9" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M8.07088 0.292915C7.68035 -0.097609 7.04719 -0.097609 6.65666 0.292915L0.292702 6.65688C-0.0978227 7.0474 -0.0978227 7.68057 0.292702 8.07109C0.683226 8.46161 1.31639 8.46161 1.70692 8.07109L7.36377 2.41424L13.0206 8.07109C13.4111 8.46161 14.0443 8.46161 14.4348 8.07109C14.8254 7.68057 14.8254 7.0474 14.4348 6.65688L8.07088 0.292915ZM7.36377 1.00012H8.36377V1.00002H7.36377H6.36377V1.00012H7.36377Z" fill="#B9B9B9" />
-            </svg>
-          </button>
-          <button class="sort">
+          <div class="sort-order-by">
+            <button class="sort">
+              <p class="sort-text">Акции</p>
+              <svg width="15" height="9" viewBox="0 0 15 9" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8.07088 0.292915C7.68035 -0.097609 7.04719 -0.097609 6.65666 0.292915L0.292702 6.65688C-0.0978227 7.0474 -0.0978227 7.68057 0.292702 8.07109C0.683226 8.46161 1.31639 8.46161 1.70692 8.07109L7.36377 2.41424L13.0206 8.07109C13.4111 8.46161 14.0443 8.46161 14.4348 8.07109C14.8254 7.68057 14.8254 7.0474 14.4348 6.65688L8.07088 0.292915ZM7.36377 1.00012H8.36377V1.00002H7.36377H6.36377V1.00012H7.36377Z" fill="#B9B9B9" />
+              </svg>
+            </button>
+            <button class="sort">
+              <p class="sort-text">Акции</p>
+              <svg width="15" height="9" viewBox="0 0 15 9" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8.07088 0.292915C7.68035 -0.097609 7.04719 -0.097609 6.65666 0.292915L0.292702 6.65688C-0.0978227 7.0474 -0.0978227 7.68057 0.292702 8.07109C0.683226 8.46161 1.31639 8.46161 1.70692 8.07109L7.36377 2.41424L13.0206 8.07109C13.4111 8.46161 14.0443 8.46161 14.4348 8.07109C14.8254 7.68057 14.8254 7.0474 14.4348 6.65688L8.07088 0.292915ZM7.36377 1.00012H8.36377V1.00002H7.36377H6.36377V1.00012H7.36377Z" fill="#B9B9B9" />
+              </svg>
+            </button>
+            <button class="sort">
+              <p class="sort-text">Акции</p>
+              <svg width="15" height="9" viewBox="0 0 15 9" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8.07088 0.292915C7.68035 -0.097609 7.04719 -0.097609 6.65666 0.292915L0.292702 6.65688C-0.0978227 7.0474 -0.0978227 7.68057 0.292702 8.07109C0.683226 8.46161 1.31639 8.46161 1.70692 8.07109L7.36377 2.41424L13.0206 8.07109C13.4111 8.46161 14.0443 8.46161 14.4348 8.07109C14.8254 7.68057 14.8254 7.0474 14.4348 6.65688L8.07088 0.292915ZM7.36377 1.00012H8.36377V1.00002H7.36377H6.36377V1.00012H7.36377Z" fill="#B9B9B9" />
+              </svg>
+            </button>
+          </div>
+          <button class="sort mobile">
             <p class="sort-text">Акции</p>
             <svg width="15" height="9" viewBox="0 0 15 9" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M8.07088 0.292915C7.68035 -0.097609 7.04719 -0.097609 6.65666 0.292915L0.292702 6.65688C-0.0978227 7.0474 -0.0978227 7.68057 0.292702 8.07109C0.683226 8.46161 1.31639 8.46161 1.70692 8.07109L7.36377 2.41424L13.0206 8.07109C13.4111 8.46161 14.0443 8.46161 14.4348 8.07109C14.8254 7.68057 14.8254 7.0474 14.4348 6.65688L8.07088 0.292915ZM7.36377 1.00012H8.36377V1.00002H7.36377H6.36377V1.00012H7.36377Z" fill="#B9B9B9" />
@@ -110,6 +118,11 @@ import { getCatalogs, getCatalogCharacteristics, getCatalogItems } from '~/servi
 const route = useRoute();
 const router = useRouter();
 const slug = route.params.slug as string;
+
+const breadcrumbsItems = computed(() => [
+  { to: '/', text: 'Главная' },
+  { to: '/catalog', text: 'Каталог' }
+]);
 
 const minPrice = ref<number | null>(null);
 const maxPrice = ref<number | null>(null);
@@ -628,7 +641,7 @@ watch(searchQuery, () => {
 
   margin-bottom: 20px;
 }
-.right-sort{
+.sort-order-by{
   display: flex;
   gap: 12px;
 }
@@ -745,8 +758,26 @@ watch(searchQuery, () => {
   text-align: center;
   color: #dc3545;
 }
-
+.mobile{
+  display: none;
+}
 @media (max-width: 1100px) {
+  .mobile{
+    display: block;
+  }
+  .right-sort{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+  .sorts{
+    flex-direction: column;
+    gap: 20px;
+  }
+  .header__search{
+    width: 100%;
+  }
   .catalog-filters{
     display: none;
   }

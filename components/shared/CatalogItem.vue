@@ -94,7 +94,7 @@ const props = defineProps<{
   onAdd?: () => void;
 }>();
 
-const baseURL = 'http://127.0.0.1:8000/';
+const baseURL = 'http://127.0.0.1:8000/';//TODO брать из .env
 
 const rawImages = computed<ImgItem[]>(() => props.images ?? []);
 
