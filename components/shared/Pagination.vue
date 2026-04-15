@@ -49,36 +49,78 @@ defineEmits<{
   'change-page': [page: number];
 }>();
 
+const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1024);
+
+const updateWidth = () => {
+  windowWidth.value = window.innerWidth;
+};
+
+onMounted(() => {
+  window.addEventListener('resize', updateWidth);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateWidth);
+});
+
 const visiblePages = computed(() => {
   const total = props.totalPages;
   const current = props.currentPage;
   const pages: (number | string)[] = [];
+  const isMobile = windowWidth.value <= 744;
 
-  if (total <= 5) {
-    for (let i = 1; i <= total; i++) {
-      pages.push(i);
-    }
-  } else if (current <= 4) {
-    for (let i = 1; i <= 5; i++) {
-      pages.push(i);
-    }
-    pages.push('ellipsis');
-    pages.push(total);
-  } else if (current >= total - 3) {
-    pages.push(1);
-    pages.push('ellipsis');
-    for (let i = total - 4; i <= total; i++) {
-      pages.push(i);
+  if(isMobile){
+    if (total <= 3) {
+      for (let i = 1; i <= total; i++) {
+        pages.push(i);
+      }
+    } else if (current <= 2) {
+      for (let i = 1; i <= 3; i++) {
+        pages.push(i);
+      }
+      pages.push('ellipsis');
+      pages.push(total);
+    } else if (current >= total - 3) {
+      pages.push(1);
+      pages.push('ellipsis');
+      for (let i = total - 2; i <= total; i++) {
+        pages.push(i);
+      }
+    } else {
+      pages.push(1);
+      pages.push('ellipsis');
+      pages.push(current);
+      pages.push('ellipsis');
+      pages.push(total);
     }
   } else {
-    pages.push(1);
-    pages.push('ellipsis');
-    pages.push(current - 1);
-    pages.push(current);
-    pages.push(current + 1);
-    pages.push('ellipsis');
-    pages.push(total);
+    if (total <= 5) {
+      for (let i = 1; i <= total; i++) {
+        pages.push(i);
+      }
+    } else if (current <= 4) {
+      for (let i = 1; i <= 5; i++) {
+        pages.push(i);
+      }
+      pages.push('ellipsis');
+      pages.push(total);
+    } else if (current >= total - 3) {
+      pages.push(1);
+      pages.push('ellipsis');
+      for (let i = total - 4; i <= total; i++) {
+        pages.push(i);
+      }
+    } else {
+      pages.push(1);
+      pages.push('ellipsis');
+      pages.push(current - 1);
+      pages.push(current);
+      pages.push(current + 1);
+      pages.push('ellipsis');
+      pages.push(total);
+    }
   }
+
 
   return pages;
 });
@@ -86,11 +128,12 @@ const visiblePages = computed(() => {
 
 <style scoped>
 .pagination {
+  width: 100%;
+  max-width: 576px;
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-  gap: 32px;
-  margin-top: 60px;
+  margin: 60px auto 0 auto;
 }
 
 .page-btn {

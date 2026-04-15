@@ -16,6 +16,7 @@
       />
     </div>
     <Divider
+        v-if="catalogCharacteristicWithoutGroup.length"
         width="292"
         height="1"
         color="#B9B9B9"
@@ -43,6 +44,7 @@
       </div>
     </div>
     <Divider
+        v-if="catalogCharacteristicWithGroup.length"
         width="292"
         height="1"
         color="#B9B9B9"
@@ -116,7 +118,8 @@ const localMaxPrice = computed({
   border-radius: 8px;
   width: 330px;
   background: var(--gray);
-  padding: 17px 15px 32px 15px;
+  padding: 17px 15px;
+  height: max-content;
 }
 
 .characteristic-with-groups {

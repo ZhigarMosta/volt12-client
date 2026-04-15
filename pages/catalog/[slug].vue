@@ -37,19 +37,21 @@
               </svg>
             </button>
           </div>
-          <button class="sort mobile">
-            <p class="sort-text">Акции</p>
-            <svg width="15" height="9" viewBox="0 0 15 9" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M8.07088 0.292915C7.68035 -0.097609 7.04719 -0.097609 6.65666 0.292915L0.292702 6.65688C-0.0978227 7.0474 -0.0978227 7.68057 0.292702 8.07109C0.683226 8.46161 1.31639 8.46161 1.70692 8.07109L7.36377 2.41424L13.0206 8.07109C13.4111 8.46161 14.0443 8.46161 14.4348 8.07109C14.8254 7.68057 14.8254 7.0474 14.4348 6.65688L8.07088 0.292915ZM7.36377 1.00012H8.36377V1.00002H7.36377H6.36377V1.00012H7.36377Z" fill="#B9B9B9" />
+          <button class="mobile">
+            <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="44" height="44" rx="8" fill="#E2000F" />
+              <rect x="11" y="26.8889" width="11" height="2.44444" rx="1.22222" fill="#F8F8F8" />
+              <rect x="11" y="20.7778" width="17.1111" height="2.44444" rx="1.22222" fill="#F8F8F8" />
+              <rect x="11" y="14.6666" width="22" height="2.44444" rx="1.22222" fill="#F8F8F8" />
             </svg>
           </button>
         </div>
       </div>
-<!--      <FiltersBreadcrumbs-->
-<!--          :breadcrumbs="activeFiltersBreadcrumbs"-->
-<!--          @remove="removeFilter"-->
-<!--          @clear-all="clearAllFilters"-->
-<!--      />-->
+      <FiltersBreadcrumbs
+          :breadcrumbs="activeFiltersBreadcrumbs"
+          @remove="removeFilter"
+          @clear-all="clearAllFilters"
+      />
 
       <div class="wrapper">
         <CatalogFilters
@@ -126,7 +128,7 @@ const selectedGroupValues = ref<Record<number, number[]>>({});
 const currentPage = ref(1);
 const totalPages = ref(1);
 const totalItems = ref(0);
-const limit = ref(1);
+const limit = ref(2);
 const loadingItems = ref(false);
 
 const debouncedTime = 600;
@@ -630,6 +632,7 @@ watch(searchQuery, () => {
   margin-bottom: 20px;
 }
 .sort-order-by{
+  flex-wrap: wrap;
   display: flex;
   gap: 12px;
 }
@@ -667,10 +670,6 @@ watch(searchQuery, () => {
 .catalog-page {
   padding: 0 70px;
   margin-bottom: 62px;
-}
-
-.h2 {
-  margin-bottom: 29px;
 }
 
 .wrapper {
@@ -752,6 +751,17 @@ watch(searchQuery, () => {
 }
 
 @media (max-width: 744px) {
+  .sort{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    width: max-content;
+    padding: 16px 20px;
+    background: var(--gray);
+    border-radius: 8px;
+    gap: 8px;
+  }
   .catalog-page {
     padding: 0 20px;
     margin-bottom: 58px;
