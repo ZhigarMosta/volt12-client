@@ -5,7 +5,7 @@
   >
     <p class="title">{{ title }}</p>
     <div class="image-action">
-      <div class="image-stage" aria-label="product image" role="img"
+      <div class="image-stage" role="img"
            @mousemove="handleMove"
            @mouseleave="handleLeave"
            @touchmove="handleTouchMove"
@@ -16,7 +16,16 @@
             class="product-image"
             :alt="normalizedImages[activeIndex].alt || title"
         />
-        <div v-else class="placeholder">No image</div>
+        <div v-else class="placeholder">No image</div><!--   TODO лишьний код, продукты без картинок выводится не будут    -->
+
+        <div class="dots" v-if="normalizedImages.length > 1">
+          <span
+              v-for="(img, idx) in normalizedImages"
+              :key="idx"
+              class="dot"
+              :class="{ active: idx === activeIndex }"
+          ></span>
+        </div>
       </div>
       <div class="actions">
         <button class="action">
@@ -37,15 +46,6 @@
       </div>
     </div>
 
-
-    <div class="dots" v-if="normalizedImages.length > 1">
-      <span
-          v-for="(img, idx) in normalizedImages"
-          :key="idx"
-          class="dot"
-          :class="{ active: idx === activeIndex }"
-      ></span>
-    </div>
 
     <div class="info">
       <div class="price-block">
@@ -94,7 +94,8 @@ const props = defineProps<{
   onAdd?: () => void;
 }>();
 
-const baseURL = 'http://127.0.0.1:8000/';//TODO брать из .env
+const config = useRuntimeConfig();
+const baseURL = computed(() => config.public.apiBase as string);
 
 const rawImages = computed<ImgItem[]>(() => props.images ?? []);
 
@@ -112,7 +113,8 @@ const normalizedImages = computed<NormItem[]>(() => {
 
     let url = path;
     if (!/^https?:\/\//i.test(path)) {
-      url = baseURL + path.replace(/^\/+/, '');
+      const base = baseURL.value.replace(/\/+$/, '');
+      url = base + '/' + path.replace(/^\/+/, '');
     }
 
     if (!seen.has(url)) {
@@ -207,7 +209,6 @@ function onAddToCart() {
 }
 
 .product-image {
-  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
@@ -224,12 +225,13 @@ function onAddToCart() {
 }
 
 .dots {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 4px;
-
-  margin-top: 8px;
 }
 
 .dot {
