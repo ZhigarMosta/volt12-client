@@ -69,7 +69,7 @@
         />
 
         <div class="items-column">
-          <div v-if="loadingItems" class="loading-overlay">Обновление...</div>
+          <div v-if="loadingItems" class="loading-overlay"></div>
 
           <div v-if="catalogItems.length === 0 && !loadingItems" class="no-items">Товары не найдены</div>
 
@@ -126,7 +126,7 @@ const selectedGroupValues = ref<Record<number, number[]>>({});
 const currentPage = ref(1);
 const totalPages = ref(1);
 const totalItems = ref(0);
-const limit = ref(15);
+const limit = ref(1);
 const loadingItems = ref(false);
 
 const debouncedTime = 600;
@@ -408,7 +408,6 @@ const clearGroup = (groupId: number) => {
 // Watch для каталога - инициализация фильтров из URL
 watch(() => catalog.value, async (newCatalog) => {
   if (newCatalog) {
-    currentPage.value = 1;
     catalogItems.value = [];
     totalItems.value = 0;
 
@@ -425,6 +424,10 @@ watch(() => catalog.value, async (newCatalog) => {
       minPrice.value = urlMinPrice;
       maxPrice.value = urlMaxPrice;
       searchQuery.value = urlSearchQuery || '';
+
+      // Парсим страницу из URL
+      const urlPage = route.query.page ? parseInt(route.query.page as string, 10) : 1;
+      currentPage.value = !isNaN(urlPage) && urlPage > 0 ? urlPage : 1;
 
       // Загружаем товары с фильтрами
       await fetchItems();
@@ -663,6 +666,7 @@ watch(searchQuery, () => {
 }
 .catalog-page {
   padding: 0 70px;
+  margin-bottom: 62px;
 }
 
 .h2 {
@@ -750,6 +754,7 @@ watch(searchQuery, () => {
 @media (max-width: 744px) {
   .catalog-page {
     padding: 0 20px;
+    margin-bottom: 58px;
   }
   .products-grid {
     grid-template-columns: repeat(2, 1fr);
