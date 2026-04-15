@@ -77,14 +77,27 @@
           <div v-if="catalogItems.length === 0 && !loadingItems" class="no-items">Товары не найдены</div>
 
           <div class="products-grid">
-            <CatalogItem
-                v-for="item in catalogItems"
-                :key="item.id"
-                :images="item.catalogItemImages"
-                :title="item.name"
-                :subtitle="item.product_code"
-                :price="item.price"
-            />
+            <template v-if="loadingItems">
+              <div
+                  v-for="i in limit"
+                  :key="i"
+                  class="skeleton-card"
+              >
+                <div class="skeleton-card-title" />
+                <div class="skeleton-card-image" />
+                <div class="skeleton-card-price" />
+              </div>
+            </template>
+            <template v-else>
+              <CatalogItem
+                  v-for="item in catalogItems"
+                  :key="item.id"
+                  :images="item.catalogItemImages"
+                  :title="item.name"
+                  :subtitle="item.product_code"
+                  :price="item.price"
+              />
+            </template>
           </div>
 
           <Pagination
@@ -694,11 +707,53 @@ watch(searchQuery, () => {
   gap: 20px;
 }
 
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
 .no-items {
   text-align: center;
   padding: 40px;
   color: #666;
   font-size: 16px;
+}
+
+.skeleton-card {
+  width: 100%;
+  max-width: 267px;
+  border-radius: 16px;
+  border: 1px solid rgba(185, 185, 185, 0.38);
+  padding: 15px 17px;
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.skeleton-card-title {
+  height: 14px;
+  width: 60%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #e0e0e0 25%, #e8e8e8 50%, #e0e0e0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.skeleton-card-image {
+  height: 138px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #e0e0e0 25%, #e8e8e8 50%, #e0e0e0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.skeleton-card-price {
+  height: 20px;
+  width: 80px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #e0e0e0 25%, #e8e8e8 50%, #e0e0e0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
 }
 
 .loading-overlay {
