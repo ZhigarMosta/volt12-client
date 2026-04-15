@@ -56,6 +56,7 @@
       <div class="wrapper">
         <CatalogFilters
             class="catalog-filters"
+            :loading="loadingFilters"
             :min-price="minPrice"
             :max-price="maxPrice"
             :catalog-characteristic-without-group="catalogCharacteristicWithoutGroup"
@@ -130,6 +131,7 @@ const totalPages = ref(1);
 const totalItems = ref(0);
 const limit = ref(2);
 const loadingItems = ref(false);
+const loadingFilters = ref(false);
 
 const debouncedTime = 600;
 
@@ -412,6 +414,7 @@ watch(() => catalog.value, async (newCatalog) => {
   if (newCatalog) {
     catalogItems.value = [];
     totalItems.value = 0;
+    loadingFilters.value = true;
 
     try {
       const characteristics = await getCatalogCharacteristics(newCatalog.id);
@@ -434,10 +437,13 @@ watch(() => catalog.value, async (newCatalog) => {
       // Загружаем товары с фильтрами
       await fetchItems();
 
+      loadingFilters.value = false;
+
       // Помечаем, что начальная загрузка завершена
       isInitialLoadComplete = true;
     } catch (error) {
       console.error(error);
+      loadingFilters.value = false;
     }
   }
 }, { immediate: true });
