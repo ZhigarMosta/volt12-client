@@ -1,25 +1,33 @@
 <template>
-  <div v-if="breadcrumbs.length > 0" class="filters-breadcrumbs">
-    <span class="breadcrumbs-title">Фильтры:</span>
-    <div class="breadcrumbs-list">
-      <span
-          v-for="breadcrumb in breadcrumbs"
-          :key="breadcrumb.key + '-' + breadcrumb.value + '-' + breadcrumb.groupId"
-          class="breadcrumb-item"
-      >
-        <span class="breadcrumb-label">{{ breadcrumb.label }}</span>
-        <button
-            class="breadcrumb-remove"
-            @click="$emit('remove', breadcrumb.key, breadcrumb.value, breadcrumb.groupId)"
-            aria-label="Удалить фильтр"
+  <div v-if="breadcrumbs.length > 0 || loading" class="filters-breadcrumbs">
+    <template v-if="loading">
+      <div class="skeleton-title" />
+      <div class="skeleton-pill" />
+      <div class="skeleton-pill" />
+      <div class="skeleton-pill" />
+    </template>
+    <template v-else>
+      <span class="breadcrumbs-title">Фильтры:</span>
+      <div class="breadcrumbs-list">
+        <span
+            v-for="breadcrumb in breadcrumbs"
+            :key="breadcrumb.key + '-' + breadcrumb.value + '-' + breadcrumb.groupId"
+            class="breadcrumb-item"
         >
-          ×
-        </button>
-      </span>
-    </div>
-    <button class="clear-all-filters" @click="$emit('clear-all')">
-      Очистить все
-    </button>
+          <span class="breadcrumb-label">{{ breadcrumb.label }}</span>
+          <button
+              class="breadcrumb-remove"
+              @click="$emit('remove', breadcrumb.key, breadcrumb.value, breadcrumb.groupId)"
+              aria-label="Удалить фильтр"
+          >
+            ×
+          </button>
+        </span>
+      </div>
+      <button class="clear-all-filters" @click="$emit('clear-all')">
+        Очистить все
+      </button>
+    </template>
   </div>
 </template>
 
@@ -33,6 +41,7 @@ type Breadcrumb = {
 
 defineProps<{
   breadcrumbs: Breadcrumb[];
+  loading?: boolean;
 }>();
 
 defineEmits<{
@@ -120,5 +129,30 @@ defineEmits<{
 
 .clear-all-filters:hover {
   opacity: 0.8;
+}
+
+/* Skeleton */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton-title {
+  height: 14px;
+  width: 70px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #e0e0e0 25%, #e8e8e8 50%, #e0e0e0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  flex-shrink: 0;
+}
+
+.skeleton-pill {
+  height: 28px;
+  width: 80px;
+  border-radius: 16px;
+  background: linear-gradient(90deg, #e0e0e0 25%, #e8e8e8 50%, #e0e0e0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
 }
 </style>

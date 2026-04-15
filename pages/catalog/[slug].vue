@@ -49,6 +49,7 @@
       </div>
       <FiltersBreadcrumbs
           :breadcrumbs="activeFiltersBreadcrumbs"
+          :loading="loadingFilters"
           @remove="removeFilter"
           @clear-all="clearAllFilters"
       />
@@ -143,7 +144,7 @@ const currentPage = ref(1);
 const totalPages = ref(1);
 const totalItems = ref(0);
 const limit = ref(2);
-const loadingItems = ref(false);
+const loadingItems = ref(true);
 const loadingFilters = ref(false);
 
 const debouncedTime = 600;
