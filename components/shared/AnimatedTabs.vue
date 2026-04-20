@@ -94,7 +94,7 @@ onMounted(async () => {
 }
 
 .tab-item.is-active {
-  color: #fff;
+  color: var(--white);
 }
 
 .tab-indicator {

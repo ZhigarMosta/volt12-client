@@ -25,12 +25,32 @@
 :root {
     /* Red */
     --red: #e2000f;
+    --red-dark: #c40713;
 
     /* Gray */
     --gray: #F8F8F8;
     --gray-light: #B9B9B9;
+    --gray-border: #dddddd;
+    --gray-placeholder: #999999;
+    --gray-placeholder-2: #afafaf;
+    --gray-dark: #666666;
+    --gray-lighter: #f5f5f5;
+    --gray-shimmer: #e0e0e0;
+    --gray-shimmer-light: #e8e8e8;
+    --gray-hover: #d0d0d0;
 
     /* Black*/
     --black: #2D2D2D;
     --gray-light-rgb: 185, 185, 185;
+
+    /* White */
+    --white: #ffffff;
+
+    /* Error */
+    --error: #dc3545;
+
+    /* Additional */
+    --text-dark: #333333;
+    --red-special: #e31b23;
+    --gray-extra-light: #EBEBEB;
 }

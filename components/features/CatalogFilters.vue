@@ -34,7 +34,7 @@
           v-if="catalogCharacteristicWithoutGroup.length"
           width="292"
           height="1"
-          color="#B9B9B9"
+          color="var(--gray-light)"
       />
       <div v-if="catalogCharacteristicWithoutGroup.length" class="characteristic-without-groups">
         <div
@@ -54,7 +54,7 @@
               v-if="index < catalogCharacteristicWithoutGroup.length - 1"
               width="292"
               height="1"
-              color="#B9B9B9"
+              color="var(--gray-light)"
           />
         </div>
       </div>
@@ -62,7 +62,7 @@
           v-if="catalogCharacteristicWithGroup.length"
           width="292"
           height="1"
-          color="#B9B9B9"
+          color="var(--gray-light)"
           margin-top="24px"
       />
       <div
@@ -89,7 +89,7 @@
             v-if="groupIndex < catalogCharacteristicWithGroup.length - 1"
             width="292"
             height="1"
-            color="#B9B9B9"
+            color="var(--gray-light)"
             margin-top="24px"
         />
       </div>
@@ -184,7 +184,7 @@ const localMaxPrice = computed({
   height: 18px;
   width: 60px;
   border-radius: 6px;
-  background: linear-gradient(90deg, #e0e0e0 25%, #e8e8e8 50%, #e0e0e0 75%);
+  background: linear-gradient(90deg, var(--gray-shimmer) 25%, var(--gray-shimmer-light) 50%, var(--gray-shimmer) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   margin-bottom: 18px;
@@ -200,14 +200,14 @@ const localMaxPrice = computed({
   flex: 1;
   height: 40px;
   border-radius: 6px;
-  background: linear-gradient(90deg, #e0e0e0 25%, #e8e8e8 50%, #e0e0e0 75%);
+  background: linear-gradient(90deg, var(--gray-shimmer) 25%, var(--gray-shimmer-light) 50%, var(--gray-shimmer) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
 
 .skeleton-divider {
   height: 1px;
-  background: #e0e0e0;
+  background: var(--gray-shimmer);
   margin-bottom: 24px;
 }
 
@@ -228,7 +228,7 @@ const localMaxPrice = computed({
   height: 20px;
   border-radius: 3px;
   flex-shrink: 0;
-  background: linear-gradient(90deg, #e0e0e0 25%, #e8e8e8 50%, #e0e0e0 75%);
+  background: linear-gradient(90deg, var(--gray-shimmer) 25%, var(--gray-shimmer-light) 50%, var(--gray-shimmer) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
@@ -237,7 +237,7 @@ const localMaxPrice = computed({
   height: 15px;
   width: 60%;
   border-radius: 4px;
-  background: linear-gradient(90deg, #e0e0e0 25%, #e8e8e8 50%, #e0e0e0 75%);
+  background: linear-gradient(90deg, var(--gray-shimmer) 25%, var(--gray-shimmer-light) 50%, var(--gray-shimmer) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }

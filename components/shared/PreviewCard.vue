@@ -15,12 +15,12 @@ defineProps<{
           fill="url(#paint0_radial_289_3320)"/>
       <path
           d="M33 0.47287C33 -1.44514 34.5549 -3 36.4729 -3H329.527C331.445 -3 333 -1.44514 333 0.472868C333 60.4107 284.411 109 224.473 109H141.527C81.5893 109 33 60.4107 33 0.47287Z"
-          fill="#EBEBEB"/>
+          fill="var(--gray-extra-light)"/>
       <defs>
         <radialGradient id="paint0_radial_289_3320" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse"
                         gradientTransform="translate(186 68) rotate(90) scale(71 186)">
-          <stop stop-color="white"/>
-          <stop offset="1" stop-color="#EBEBEB"/>
+          <stop stop-color="var(--white)"/>
+          <stop offset="1" stop-color="var(--gray-extra-light)"/>
         </radialGradient>
       </defs>
     </svg>

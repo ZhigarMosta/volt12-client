@@ -22,14 +22,14 @@
   font-family: 'NT Somic', sans-serif;
   font-weight: bold;
   font-size: 20px;
-  color: #fff;
+  color: var(--white);
 }
 
 .call-us-phone {
   font-family: 'NT Somic', sans-serif;
   font-weight: bold;
   font-size: 30px;
-  color: #fff;
+  color: var(--white);
   margin-right: 14px;
 }
 
@@ -37,7 +37,7 @@
   font-family: 'NT Somic', sans-serif;
   font-weight: bold;
   font-size: 20px;
-  color: #fff;
+  color: var(--white);
   text-align: right;
 }
 

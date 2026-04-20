@@ -66,7 +66,7 @@
 <style scoped>
 /* Typography */
 .header__text {
-  @apply font-['NT_Somic'] font-medium text-[14px] content-center text-[#b9b9b9];
+  @apply font-['NT_Somic'] font-medium text-[14px] content-center text-[var(--gray-light)];
 }
 
 /* Icons */
@@ -144,7 +144,7 @@
 }
 
 .header__search-input::placeholder {
-  @apply text-[#b9b9b9];
+  @apply text-[var(--gray-light)];
 }
 
 .header__actions {

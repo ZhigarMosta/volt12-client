@@ -32,23 +32,23 @@ defineProps<{
 }
 
 .ui-btn--red {
-  background: #e2000f;
-  color: #f8f8f8;
+  background: var(--red);
+  color: var(--gray);
 }
 
 .ui-btn--red:hover {
-  background: #c40713;
-  color: #f8f8f8;
+  background: var(--red-dark);
+  color: var(--gray);
 }
 
 .ui-btn--white {
-  background: #fff;
-  color: #2d2d2d;
+  background: var(--white);
+  color: var(--black);
 }
 
 .ui-btn--white:hover {
-  background: #ddd;
-  color: #2d2d2d;
+  background: var(--gray-border);
+  color: var(--black);
 }
 
 .ui-btn--sm {

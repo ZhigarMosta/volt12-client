@@ -9,7 +9,7 @@
   font-family: 'NT Somic', sans-serif;
   font-weight: bold;
   font-size: 30px;
-  color: #fff;
+  color: var(--white);
   text-transform: uppercase
 }
 @media (max-width: 744px) {

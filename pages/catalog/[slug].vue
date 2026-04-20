@@ -43,7 +43,7 @@
                 >
                   <path
                       d="M8.07088 0.292915C7.68035 -0.097609 7.04719 -0.097609 6.65666 0.292915L0.292702 6.65688C-0.0978227 7.0474 -0.0978227 7.68057 0.292702 8.07109C0.683226 8.46161 1.31639 8.46161 1.70692 8.07109L7.36377 2.41424L13.0206 8.07109C13.4111 8.46161 14.0443 8.46161 14.4348 8.07109C14.8254 7.68057 14.8254 7.0474 14.4348 6.65688L8.07088 0.292915ZM7.36377 1.00012H8.36377V1.00002H7.36377H6.36377V1.00012H7.36377Z"
-                      fill="#B9B9B9"/>
+                      fill="var(--gray-light)"/>
                 </svg>
               </div>
               <div class="sort-popover" :class="{ 'sort-popover_open': isSortPopoverOpen }">
@@ -53,7 +53,7 @@
                       class="sort-divider"
                       width="160"
                       height="1"
-                      color="#B9B9B9"
+                      color="var(--gray-light)"
                   />
                   <button
                       class="sort-text-select"
@@ -67,10 +67,10 @@
           </div>
           <button class="mobile">
             <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect width="44" height="44" rx="8" fill="#E2000F" />
-              <rect x="11" y="26.8889" width="11" height="2.44444" rx="1.22222" fill="#F8F8F8" />
-              <rect x="11" y="20.7778" width="17.1111" height="2.44444" rx="1.22222" fill="#F8F8F8" />
-              <rect x="11" y="14.6666" width="22" height="2.44444" rx="1.22222" fill="#F8F8F8" />
+              <rect width="44" height="44" rx="8" fill="var(--red)" />
+              <rect x="11" y="26.8889" width="11" height="2.44444" rx="1.22222" fill="var(--gray)" />
+              <rect x="11" y="20.7778" width="17.1111" height="2.44444" rx="1.22222" fill="var(--gray)" />
+              <rect x="11" y="14.6666" width="22" height="2.44444" rx="1.22222" fill="var(--gray)" />
             </svg>
           </button>
         </div>
@@ -765,7 +765,7 @@ watch(searchQuery, () => {
   gap: 2px;
 }
 .search_text {
-  @apply font-['NT_Somic'] font-medium text-[14px] content-center text-[#b9b9b9];
+  @apply font-['NT_Somic'] font-medium text-[14px] content-center text-[var(--gray-light)];
 }
 .sorts{
   display: flex;
@@ -791,7 +791,7 @@ watch(searchQuery, () => {
 }
 
 .header__search-input::placeholder {
-  @apply text-[#b9b9b9];
+  @apply text-[var(--gray-light)];
 }
 
 .sort-view{
@@ -814,7 +814,7 @@ watch(searchQuery, () => {
   font-family: 'NT Somic', sans-serif;
   font-weight: 500;
   font-size: 14px;
-  color: #000;
+  color: var(--black);
 }
 
 .sort-arrow-up{
@@ -854,7 +854,7 @@ watch(searchQuery, () => {
 .no-items {
   text-align: center;
   padding: 40px;
-  color: #666;
+  color: var(--gray-dark);
   font-size: 16px;
 }
 
@@ -873,7 +873,7 @@ watch(searchQuery, () => {
   height: 14px;
   width: 60%;
   border-radius: 4px;
-  background: linear-gradient(90deg, #e0e0e0 25%, #e8e8e8 50%, #e0e0e0 75%);
+  background: linear-gradient(90deg, var(--gray-shimmer) 25%, var(--gray-shimmer-light) 50%, var(--gray-shimmer) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
@@ -881,7 +881,7 @@ watch(searchQuery, () => {
 .skeleton-card-image {
   height: 138px;
   border-radius: 8px;
-  background: linear-gradient(90deg, #e0e0e0 25%, #e8e8e8 50%, #e0e0e0 75%);
+  background: linear-gradient(90deg, var(--gray-shimmer) 25%, var(--gray-shimmer-light) 50%, var(--gray-shimmer) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
@@ -890,7 +890,7 @@ watch(searchQuery, () => {
   height: 20px;
   width: 80px;
   border-radius: 4px;
-  background: linear-gradient(90deg, #e0e0e0 25%, #e8e8e8 50%, #e0e0e0 75%);
+  background: linear-gradient(90deg, var(--gray-shimmer) 25%, var(--gray-shimmer-light) 50%, var(--gray-shimmer) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
@@ -899,7 +899,7 @@ watch(searchQuery, () => {
   height: 51px;
   width: 307px;
   border-radius: 8px;
-  background: linear-gradient(90deg, #e0e0e0 25%, #e8e8e8 50%, #e0e0e0 75%);
+  background: linear-gradient(90deg, var(--gray-shimmer) 25%, var(--gray-shimmer-light) 50%, var(--gray-shimmer) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   flex-shrink: 0;
@@ -909,7 +909,7 @@ watch(searchQuery, () => {
   height: 45px;
   width: 195px;
   border-radius: 8px;
-  background: linear-gradient(90deg, #e0e0e0 25%, #e8e8e8 50%, #e0e0e0 75%);
+  background: linear-gradient(90deg, var(--gray-shimmer) 25%, var(--gray-shimmer-light) 50%, var(--gray-shimmer) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
@@ -924,7 +924,7 @@ watch(searchQuery, () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #666;
+  color: var(--gray-dark);
   font-style: italic;
   z-index: 10;
 }
@@ -932,13 +932,13 @@ watch(searchQuery, () => {
 .loading {
   padding: 40px;
   text-align: center;
-  color: #666;
+  color: var(--gray-dark);
 }
 
 .error {
   padding: 40px;
   text-align: center;
-  color: #dc3545;
+  color: var(--error);
 }
 .mobile{
   display: none;

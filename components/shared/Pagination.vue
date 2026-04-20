@@ -155,7 +155,7 @@ const visiblePages = computed(() => {
 }
 
 .page-btn:hover:not(:disabled):not(.active) {
-  background: #e8e8e8;
+  background: var(--gray-shimmer-light);
   opacity: 1;
 }
 
@@ -184,7 +184,7 @@ const visiblePages = computed(() => {
 .page-ellipsis {
   cursor: default;
   background: transparent;
-  color: #999;
+  color: var(--gray-placeholder);
   font-size: 18px;
   letter-spacing: 1px;
 }

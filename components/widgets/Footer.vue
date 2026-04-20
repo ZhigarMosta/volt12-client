@@ -52,11 +52,11 @@
   font-family: 'NT Somic', sans-serif;
   font-weight: 500;
   font-size: 14px;
-  color: #b9b9b9;
+  color: var(--gray-light);
 }
 .footer_last{
   height: 58px;
-  background: #f8f8f8;
+  background: var(--gray);
   display: flex;
   align-items: center;
   gap: 40px;
@@ -80,7 +80,7 @@
   font-family: 'NT Somic', sans-serif;
   font-weight: 500;
   font-size: 14px;
-  color: #B9B9B9;
+  color: var(--gray-light);
 }
 
 .footer__logo {

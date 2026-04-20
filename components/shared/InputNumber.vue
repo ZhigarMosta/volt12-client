@@ -71,7 +71,7 @@ const onKeydown = (event: KeyboardEvent) => {
   outline: none;
 }
 .price-input::placeholder{
-  color: #afafaf;
+  color: var(--gray-placeholder-2);
 }
 .price-input-container{
   display: flex;
