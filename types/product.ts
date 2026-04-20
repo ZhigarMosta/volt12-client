@@ -57,6 +57,7 @@ export interface CatalogItemsFilters {
     max?: number;
   };
   search?: string;
+  sortPrice?: number;
 }
 
 export interface CatalogItemsResponse {

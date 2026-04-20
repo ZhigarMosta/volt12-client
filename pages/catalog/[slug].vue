@@ -18,12 +18,44 @@
         </div>
         <div class="right-sort">
           <div class="sort-order-by">
-            <button class="sort">
-              <p class="sort-text">По цене</p>
-              <svg width="15" height="9" viewBox="0 0 15 9" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M8.07088 0.292915C7.68035 -0.097609 7.04719 -0.097609 6.65666 0.292915L0.292702 6.65688C-0.0978227 7.0474 -0.0978227 7.68057 0.292702 8.07109C0.683226 8.46161 1.31639 8.46161 1.70692 8.07109L7.36377 2.41424L13.0206 8.07109C13.4111 8.46161 14.0443 8.46161 14.4348 8.07109C14.8254 7.68057 14.8254 7.0474 14.4348 6.65688L8.07088 0.292915ZM7.36377 1.00012H8.36377V1.00002H7.36377H6.36377V1.00012H7.36377Z" fill="#B9B9B9" />
-              </svg>
-            </button>
+            <div class="sort" @mouseenter="isSortPopoverOpen = true" @mouseleave="isSortPopoverOpen = false">
+              <div class="sort-view" :class="{ 'sort-border_off': isSortPopoverOpen }">
+                <div class="sort-text-block">
+                  <p class="sort-text">Цена</p>
+                  <p class="sort-text-select">{{ SortPriceValues[currentSortPrice] }}</p>
+                </div>
+                <svg 
+                  v-if="currentSortPrice !== 0"
+                  width="15" 
+                  height="9" 
+                  viewBox="0 0 15 9" 
+                  fill="none" 
+                  xmlns="http://www.w3.org/2000/svg"
+                  :class="{ 'sort-arrow-up': currentSortPrice === 1, 'sort-arrow-down': currentSortPrice === 2 }"
+                >
+                  <path
+                      d="M8.07088 0.292915C7.68035 -0.097609 7.04719 -0.097609 6.65666 0.292915L0.292702 6.65688C-0.0978227 7.0474 -0.0978227 7.68057 0.292702 8.07109C0.683226 8.46161 1.31639 8.46161 1.70692 8.07109L7.36377 2.41424L13.0206 8.07109C13.4111 8.46161 14.0443 8.46161 14.4348 8.07109C14.8254 7.68057 14.8254 7.0474 14.4348 6.65688L8.07088 0.292915ZM7.36377 1.00012H8.36377V1.00002H7.36377H6.36377V1.00012H7.36377Z"
+                      fill="#B9B9B9"/>
+                </svg>
+              </div>
+              <div class="sort-popover" :class="{ 'sort-popover_open': isSortPopoverOpen }">
+                <div v-for="sort in getSortPriceValues"
+                     :key="sort.key" class="sort-popover-content">
+                  <Divider
+                      class="sort-divider"
+                      width="160"
+                      height="1"
+                      color="#B9B9B9"
+                  />
+                  <button
+                      class="sort-text-select"
+                      @click="selectSortPrice(sort.key)"
+                  >
+                    {{ sort.label }}
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
           <button class="mobile">
             <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -102,7 +134,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Catalog, Product, Characteristic, CharacteristicGroup, CatalogItemsFilters, CatalogItemsResponse } from '~/types/product';
+import type { Catalog, Product, Characteristic, CharacteristicGroup, CatalogItemsFilters } from '~/types/product';
 import { getCatalogs, getCatalogCharacteristics, getCatalogItems } from '~/services/productApi';
 
 const route = useRoute();
@@ -136,6 +168,25 @@ const loadingItems = ref(true);
 const loadingFilters = ref(false);
 
 const debouncedTime = 600;
+
+const currentSortPrice = ref(0);
+const isSortPopoverOpen = ref(false);
+const SortPriceValues: Record<number, string> = {
+  0: 'Не сортировать',
+  1: 'По возрастанию',
+  2: 'По убыванию',
+};
+
+const getSortPriceValues = computed(() => {
+  return Object.entries(SortPriceValues)
+    .filter(([key]) => Number(key) !== currentSortPrice.value)
+    .map(([key, label]) => ({ key: Number(key), label }));
+});
+
+const selectSortPrice = (key: number) => {
+  currentSortPrice.value = key;
+  isSortPopoverOpen.value = false;
+};
 
 // Вспомогательные функции для работы с URL фильтрами
 const parseFiltersFromUrl = () => {
@@ -200,12 +251,23 @@ const parseFiltersFromUrl = () => {
     urlSearchQuery = query.search as string;
   }
 
+  // Парсим сортировку
+  // Формат: sort=0|1|2
+  let urlSortPrice = 0;
+  if (query.sort) {
+    const parsed = parseInt(query.sort as string, 10);
+    if (!isNaN(parsed) && parsed >= 0 && parsed <= 2) {
+      urlSortPrice = parsed;
+    }
+  }
+
   return {
     standaloneIds: urlStandaloneIds,
     groupValues: urlGroupValues,
     minPrice: urlMinPrice,
     maxPrice: urlMaxPrice,
-    searchQuery: urlSearchQuery
+    searchQuery: urlSearchQuery,
+    sortPrice: urlSortPrice
   };
 };
 
@@ -238,6 +300,11 @@ const buildUrlFilters = () => {
     query['search'] = searchQuery.value;
   }
 
+  // Добавляем сортировку
+  if (currentSortPrice.value !== 0) {
+    query['sortPrice'] = currentSortPrice.value.toString();
+  }
+
   return query;
 };
 
@@ -255,7 +322,17 @@ const updateUrlFilters = () => {
 
 // Вычисляемое свойство для хлебных крошек фильтров
 const activeFiltersBreadcrumbs = computed(() => {
-  const breadcrumbs: Array<{ key: string; value: number | null; groupId: number | null; label: string }> = [];
+  const breadcrumbs: Array<{ key: string; value: number | null; groupId: null; label: string }> = [];
+
+  // Добавляем сортировку
+  if (currentSortPrice.value !== 0) {
+    breadcrumbs.push({
+      key: 'sortPrice',
+      value: null,
+      groupId: null,
+      label: SortPriceValues[currentSortPrice.value]
+    });
+  }
 
   // Добавляем фильтр по минимальной цене
   if (minPrice.value !== null) {
@@ -321,6 +398,8 @@ const removeFilter = (key: string, value: number | null, groupId: number | null 
     minPrice.value = null;
   } else if (key === 'maxPrice') {
     maxPrice.value = null;
+  } else if (key === 'sortPrice') {
+    currentSortPrice.value = 0;
   }
   currentPage.value = 1;
   // Не вызываем updateUrlFilters здесь, так как watch отследит изменение и обновит URL
@@ -329,6 +408,7 @@ const removeFilter = (key: string, value: number | null, groupId: number | null 
 const clearAllFilters = () => {
   selectedStandaloneIds.value = [];
   selectedGroupValues.value = {};
+  currentSortPrice.value = 0;
   currentPage.value = 1;
   // Не вызываем updateUrlFilters здесь, так как watch отследит изменение и обновит URL
 };
@@ -367,7 +447,8 @@ const fetchItems = async () => {
     page: currentPage.value,
     filterGroups: filterGroups.length > 0 ? filterGroups : undefined,
     price: Object.keys(priceFilter).length > 0 ? priceFilter : undefined,
-    search: searchQuery.value || undefined
+    search: searchQuery.value || undefined,
+    sortPrice: currentSortPrice.value || undefined
   };
 
   try {
@@ -425,12 +506,13 @@ watch(() => catalog.value, async (newCatalog) => {
       catalogCharacteristicWithGroup.value = characteristics.with_group;
 
       // Парсим фильтры из URL после загрузки характеристик
-      const { standaloneIds, groupValues, minPrice: urlMinPrice, maxPrice: urlMaxPrice, searchQuery: urlSearchQuery } = parseFiltersFromUrl();
+      const { standaloneIds, groupValues, minPrice: urlMinPrice, maxPrice: urlMaxPrice, searchQuery: urlSearchQuery, sortPrice: urlSortPrice } = parseFiltersFromUrl();
       selectedStandaloneIds.value = standaloneIds;
       selectedGroupValues.value = groupValues;
       minPrice.value = urlMinPrice;
       maxPrice.value = urlMaxPrice;
       searchQuery.value = urlSearchQuery || '';
+      currentSortPrice.value = urlSortPrice;
 
       // Парсим страницу из URL
       const urlPage = route.query.page ? parseInt(route.query.page as string, 10) : 1;
@@ -478,7 +560,7 @@ const updateFiltersUrlAndFetch = async () => {
   // Очищаем старые параметры фильтров в query
   const cleanQuery = { ...route.query };
   Object.keys(cleanQuery).forEach(key => {
-    if (key.startsWith('filters[') || key === 'price_min' || key === 'price_max') {
+    if (key.startsWith('filters[') || key === 'price_min' || key === 'price_max' || key === 'sortPrice') {
       delete cleanQuery[key];
     }
   });
@@ -575,10 +657,11 @@ watch(() => route.query, async (newQuery, oldQuery) => {
   const filtersChanged = JSON.stringify(oldFilters.map(k => oldQuery[k])) !== JSON.stringify(newFilters.map(k => newQuery[k]));
   const pageChanged = newQuery.page !== oldQuery.page;
   const searchChanged = newQuery.search !== oldQuery.search;
+  const sortChanged = newQuery.sort !== oldQuery.sort;
 
-  if (filtersChanged || pageChanged || searchChanged) {
+  if (filtersChanged || pageChanged || searchChanged || sortChanged) {
     // Парсим новые фильтры из URL
-    const { standaloneIds, groupValues, minPrice: urlMinPrice, maxPrice: urlMaxPrice, searchQuery: urlSearchQuery } = parseFiltersFromUrl();
+    const { standaloneIds, groupValues, minPrice: urlMinPrice, maxPrice: urlMaxPrice, searchQuery: urlSearchQuery, sortPrice: urlSortPrice } = parseFiltersFromUrl();
 
     // Обновляем состояние фильтров
     selectedStandaloneIds.value = standaloneIds;
@@ -586,6 +669,7 @@ watch(() => route.query, async (newQuery, oldQuery) => {
     minPrice.value = urlMinPrice;
     maxPrice.value = urlMaxPrice;
     searchQuery.value = urlSearchQuery || '';
+    currentSortPrice.value = urlSortPrice;
 
     // Обновляем страницу из URL
     const urlPage = newQuery.page ? parseInt(newQuery.page as string, 10) : 1;
@@ -619,6 +703,18 @@ watch([minPrice, maxPrice], ([newMin, newMax], [oldMin, oldMax]) => {
   debouncedUpdatePriceUrlAndFetch();
 }, { deep: true });
 
+// Watch для отслеживания изменений сортировки — обновляет URL и загружает данные с debouncing
+watch(currentSortPrice, (newSort, oldSort) => {
+  // Пропускаем первую инициализацию и начальную загрузку
+  if (oldSort === undefined || !isInitialLoadComplete) return;
+
+  // Пропускаем, если значение не изменилось
+  if (newSort === oldSort) return;
+
+  // Запускаем debounced функцию обновления URL и загрузки
+  debouncedUpdateFiltersUrlAndFetch();
+});
+
 // Watch для отслеживания изменений поискового запроса — обновляет URL и загружает данные с debouncing
 watch(searchQuery, () => {
   // Пропускаем начальную загрузку
@@ -630,6 +726,35 @@ watch(searchQuery, () => {
 </script>
 
 <style scoped>
+.sort-divider{
+  margin: 9px 0;
+}
+.sort-popover{
+  padding: 0 20px 16px 20px;
+  background: var(--gray);
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  position: absolute;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+  z-index: 10;
+  width: 195px;
+}
+.sort-border_off{
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+.sort-popover.sort-popover_open{
+  opacity: 1;
+  visibility: visible;
+}
+
+.sort-text-block{
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
 .search_text {
   @apply font-['NT_Somic'] font-medium text-[14px] content-center text-[#b9b9b9];
 }
@@ -660,21 +785,37 @@ watch(searchQuery, () => {
   @apply text-[#b9b9b9];
 }
 
-.sort{
+.sort-view{
   display: flex;
   align-items: center;
   justify-content: space-between;
-
-  width: 150px;
-  padding: 16px 20px;
+  width: 195px;
+  padding: 8px 17px;
   background: var(--gray);
   border-radius: 8px;
 }
 .sort-text{
   font-family: 'NT Somic', sans-serif;
   font-weight: 500;
-  font-size: 14px;
+  font-size: 11px;
+  color: var(--gray-light);
 }
+
+.sort-text-select{
+  font-family: 'NT Somic', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  color: #000;
+}
+
+.sort-arrow-up{
+  transform: rotate(0deg);
+}
+
+.sort-arrow-down{
+  transform: rotate(180deg);
+}
+
 .catalog-page {
   padding: 0 70px;
   margin-bottom: 62px;
@@ -801,17 +942,6 @@ watch(searchQuery, () => {
 }
 
 @media (max-width: 744px) {
-  .sort{
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    width: max-content;
-    padding: 16px 20px;
-    background: var(--gray);
-    border-radius: 8px;
-    gap: 8px;
-  }
   .catalog-page {
     padding: 0 20px;
     margin-bottom: 58px;
