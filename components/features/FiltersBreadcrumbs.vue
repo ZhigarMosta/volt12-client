@@ -7,7 +7,7 @@
       <div class="skeleton-pill" />
     </template>
     <template v-else>
-      <span class="breadcrumbs-title">Фильтры:</span>
+      <span class="breadcrumbs-title">Примененные фильтры</span>
       <div class="breadcrumbs-list">
         <span
             v-for="breadcrumb in breadcrumbs"
@@ -19,8 +19,11 @@
               class="breadcrumb-remove"
               @click="$emit('remove', breadcrumb.key, breadcrumb.value, breadcrumb.groupId)"
               aria-label="Удалить фильтр"
-          >
-            ×
+          ><svg width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                  d="M0.3 0H2.175L3.915 2.28L5.67 0H7.515L4.845 3.48L7.815 7.365H5.94L3.885 4.68L1.83 7.365H0L2.97 3.51L0.3 0Z"
+                  fill="#2D2D2D"/>
+            </svg>
           </button>
         </span>
       </div>
@@ -65,7 +68,7 @@ defineEmits<{
 .breadcrumbs-title {
   font-family: 'NT Somic', sans-serif;
   font-weight: 500;
-  font-size: 14px;
+  font-size: 15px;
   color: var(--black);
   margin-right: 5px;
 }
@@ -80,26 +83,27 @@ defineEmits<{
 .breadcrumb-item {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 4px 10px;
+  gap: 10px;
+  padding: 8px 10px 8px 20px;
   background: var(--white);
-  border: 1px solid var(--gray-border);
-  border-radius: 16px;
-  font-size: 13px;
-  color: var(--black);
-  font-family: 'NT Somic', sans-serif;
+  border: 1px solid var(--gray-light);
+  border-radius: 100px;
 }
 
 .breadcrumb-label {
   white-space: nowrap;
+  font-family: 'NT Somic', sans-serif;
+  font-weight: 500;
+  font-size: 15px;
+  color: var(--black);
 }
 
 .breadcrumb-remove {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   padding: 0;
   border: none;
   background: var(--gray-shimmer);

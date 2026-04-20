@@ -363,6 +363,16 @@ const activeFiltersBreadcrumbs = computed(() => {
     });
   }
 
+  // Добавляем поисковый запрос
+  if (searchQuery.value) {
+    breadcrumbs.push({
+      key: 'search',
+      value: null,
+      groupId: null,
+      label: `Поиск: ${searchQuery.value}`
+    });
+  }
+
   // Добавляем standalone фильтры
   selectedStandaloneIds.value.forEach(id => {
     const characteristic = catalogCharacteristicWithoutGroup.value.find(c => c.id === id);
@@ -409,6 +419,8 @@ const removeFilter = (key: string, value: number | null, groupId: number | null 
     maxPrice.value = null;
   } else if (key === 'sortPrice') {
     currentSortPrice.value = 0;
+  } else if (key === 'search') {
+    searchQuery.value = '';
   }
   currentPage.value = 1;
   // Не вызываем updateUrlFilters здесь, так как watch отследит изменение и обновит URL
@@ -418,6 +430,9 @@ const clearAllFilters = () => {
   selectedStandaloneIds.value = [];
   selectedGroupValues.value = {};
   currentSortPrice.value = 0;
+  minPrice.value = null;
+  maxPrice.value = null;
+  searchQuery.value = '';
   currentPage.value = 1;
   // Не вызываем updateUrlFilters здесь, так как watch отследит изменение и обновит URL
 };
