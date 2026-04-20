@@ -7,7 +7,10 @@
     <template v-else>
       <Navigate :items="breadcrumbsItems" />
       <div class="sorts">
-        <div class="header__search left-sort">
+        <template v-if="loadingFilters">
+          <div class="header__search left-sort skeleton-search"/>
+        </template>
+        <div v-else class="header__search left-sort">
           <input
             v-model="searchQuery"
             class="header__search-input search_text"
@@ -18,7 +21,12 @@
         </div>
         <div class="right-sort">
           <div class="sort-order-by">
-            <div class="sort" @mouseenter="isSortPopoverOpen = true" @mouseleave="isSortPopoverOpen = false">
+            <template v-if="loadingFilters">
+              <div class="right-sort">
+                <div class="sort skeleton-sort" />
+              </div>
+            </template>
+            <div v-else class="sort" @mouseenter="isSortPopoverOpen = true" @mouseleave="isSortPopoverOpen = false">
               <div class="sort-view" :class="{ 'sort-border_off': isSortPopoverOpen }">
                 <div class="sort-text-block">
                   <p class="sort-text">Цена</p>
@@ -252,10 +260,10 @@ const parseFiltersFromUrl = () => {
   }
 
   // Парсим сортировку
-  // Формат: sort=0|1|2
+  // Формат: sortPrice=0|1|2
   let urlSortPrice = 0;
-  if (query.sort) {
-    const parsed = parseInt(query.sort as string, 10);
+  if (query.sortPrice) {
+    const parsed = parseInt(query.sortPrice as string, 10);
     if (!isNaN(parsed) && parsed >= 0 && parsed <= 2) {
       urlSortPrice = parsed;
     }
@@ -326,11 +334,12 @@ const activeFiltersBreadcrumbs = computed(() => {
 
   // Добавляем сортировку
   if (currentSortPrice.value !== 0) {
+    const sortLabel = currentSortPrice.value === 1 ? 'Цена по возрастанию' : 'Цена по убыванию';
     breadcrumbs.push({
       key: 'sortPrice',
       value: null,
       groupId: null,
-      label: SortPriceValues[currentSortPrice.value]
+      label: sortLabel
     });
   }
 
@@ -657,7 +666,7 @@ watch(() => route.query, async (newQuery, oldQuery) => {
   const filtersChanged = JSON.stringify(oldFilters.map(k => oldQuery[k])) !== JSON.stringify(newFilters.map(k => newQuery[k]));
   const pageChanged = newQuery.page !== oldQuery.page;
   const searchChanged = newQuery.search !== oldQuery.search;
-  const sortChanged = newQuery.sort !== oldQuery.sort;
+  const sortChanged = newQuery.sortPrice !== oldQuery.sortPrice;
 
   if (filtersChanged || pageChanged || searchChanged || sortChanged) {
     // Парсим новые фильтры из URL
@@ -881,6 +890,25 @@ watch(searchQuery, () => {
   height: 20px;
   width: 80px;
   border-radius: 4px;
+  background: linear-gradient(90deg, #e0e0e0 25%, #e8e8e8 50%, #e0e0e0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.skeleton-search {
+  height: 51px;
+  width: 307px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #e0e0e0 25%, #e8e8e8 50%, #e0e0e0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  flex-shrink: 0;
+}
+
+.skeleton-sort {
+  height: 45px;
+  width: 195px;
+  border-radius: 8px;
   background: linear-gradient(90deg, #e0e0e0 25%, #e8e8e8 50%, #e0e0e0 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
