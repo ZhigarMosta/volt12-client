@@ -1,12 +1,12 @@
 <template>
   <div class="main-page">
-    <PreviewCards class="preview-cards"/>
-    <PopularProducts class="popular-products"/>
-    <AlarmSelection class="alarm-selection"/>
+<!--    <PreviewCards class="preview-cards"/>-->
+<!--    <PopularProducts class="popular-products"/>-->
+<!--    <AlarmSelection class="alarm-selection"/>-->
     <PopularCatalogs class="popular-catalogs"/>
-    <InstallAlarm class="install-alarm"/>
+<!--    <InstallAlarm class="install-alarm"/>-->
     <FeedbackFromMaps class="feedback-from-map"/>
-    <CallUs class="call-us"/>
+<!--    <CallUs class="call-us"/>-->
   </div>
 </template>
 

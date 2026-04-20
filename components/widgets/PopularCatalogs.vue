@@ -59,10 +59,11 @@ const selectedCatalogId = ref<number | null>(null);
 const catalogNames = computed(() => catalogs.value.map(c => c.name));
 
 const fetchCatalogItems = async () => {
-  return await getCatalogItems({
+  const response = await getCatalogItems({
     catalogId: selectedCatalogId.value,
     limit: 12
   });
+  return response.items || [];
 };
 
 const updateSelectedCatalog = (index: number) => {
