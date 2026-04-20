@@ -175,7 +175,7 @@ const selectedGroupValues = ref<Record<number, number[]>>({});
 const currentPage = ref(1);
 const totalPages = ref(1);
 const totalItems = ref(0);
-const limit = ref(1);
+const limit = ref(2);
 const loadingItems = ref(true);
 const loadingFilters = ref(false);
 
@@ -439,7 +439,6 @@ const clearAllFilters = async () => {
   searchQuery.value = '';
   currentPage.value = 1;
 
-  const filterParams = buildUrlFilters();
   const cleanQuery = { ...route.query };
   Object.keys(cleanQuery).forEach(key => {
     if (key.startsWith('filters[') || key === 'price_min' || key === 'price_max' || key === 'sortPrice' || key === 'search') {
@@ -452,6 +451,7 @@ const clearAllFilters = async () => {
     query: cleanQuery
   });
 
+  isUpdatingFromInternalChange = false;
   await fetchItems();
 };
 
@@ -747,6 +747,10 @@ watch([selectedStandaloneIds, selectedGroupValues], () => {
   // Пропускаем первую инициализацию и начальную загрузку
   if (!isInitialLoadComplete) return;
 
+  if(isUpdatingFromInternalChange){
+    return;
+  }
+
   // Запускаем debounced функцию обновления URL и загрузки
   debouncedUpdateFiltersUrlAndFetch();
 }, { deep: true });
@@ -755,6 +759,10 @@ watch([selectedStandaloneIds, selectedGroupValues], () => {
 watch([minPrice, maxPrice], ([newMin, newMax], [oldMin, oldMax]) => {
   // Пропускаем первую инициализацию и начальную загрузку
   if ((oldMin === undefined && oldMax === undefined) || !isInitialLoadComplete) return;
+
+  if(isUpdatingFromInternalChange){
+    return;
+  }
 
   // Пропускаем, если значения не изменились
   if (newMin === oldMin && newMax === oldMax) return;
@@ -768,6 +776,10 @@ watch(currentSortPrice, (newSort, oldSort) => {
   // Пропускаем первую инициализацию и начальную загрузку
   if (oldSort === undefined || !isInitialLoadComplete) return;
 
+  if(isUpdatingFromInternalChange){
+    return;
+  }
+
   // Пропускаем, если значение не изменилось
   if (newSort === oldSort) return;
 
@@ -779,6 +791,10 @@ watch(currentSortPrice, (newSort, oldSort) => {
 watch(searchQuery, () => {
   // Пропускаем начальную загрузку
   if (!isInitialLoadComplete) return;
+
+  if(isUpdatingFromInternalChange){
+    return;
+  }
 
   // Запускаем debounced функцию обновления URL и загрузки
   debouncedUpdateSearchUrlAndFetch();
