@@ -175,7 +175,7 @@ const selectedGroupValues = ref<Record<number, number[]>>({});
 const currentPage = ref(1);
 const totalPages = ref(1);
 const totalItems = ref(0);
-const limit = ref(15);
+const limit = ref(1);
 const loadingItems = ref(true);
 const loadingFilters = ref(false);
 
@@ -430,7 +430,7 @@ const removeFilter = (key: string, value: number | null, groupId: number | null 
   // Не вызываем updateUrlFilters здесь, так как watch отследит изменение и обновит URL
 };
 
-const clearAllFilters = () => {
+const clearAllFilters = async () => {
   selectedStandaloneIds.value = [];
   selectedGroupValues.value = {};
   currentSortPrice.value = 0;
@@ -438,7 +438,21 @@ const clearAllFilters = () => {
   maxPrice.value = null;
   searchQuery.value = '';
   currentPage.value = 1;
-  // Не вызываем updateUrlFilters здесь, так как watch отследит изменение и обновит URL
+
+  const filterParams = buildUrlFilters();
+  const cleanQuery = { ...route.query };
+  Object.keys(cleanQuery).forEach(key => {
+    if (key.startsWith('filters[') || key === 'price_min' || key === 'price_max' || key === 'sortPrice' || key === 'search') {
+      delete cleanQuery[key];
+    }
+  });
+
+  isUpdatingFromInternalChange = true;
+  await router.push({
+    query: cleanQuery
+  });
+
+  await fetchItems();
 };
 
 const { data: catalogsData, error: fetchError, pending } = await useAsyncData('catalogs', () => getCatalogs());
@@ -509,10 +523,28 @@ const onFilterChange = () => {
   currentPage.value = 1;
 };
 
-const changePage = (page: number) => {
+const changePage = async (page: number) => {
   if (page < 1 || page > totalPages.value) return;
   currentPage.value = page;
-  // Watch автоматически обновит URL при изменении currentPage
+
+  const filterParams = buildUrlFilters();
+  const cleanQuery = { ...route.query };
+  Object.keys(cleanQuery).forEach(key => {
+    if (key.startsWith('filters[') || key === 'price_min' || key === 'price_max' || key === 'sortPrice' || key === 'search') {
+      delete cleanQuery[key];
+    }
+  });
+
+  isUpdatingFromInternalChange = true;
+  await router.push({
+    query: {
+      ...cleanQuery,
+      ...filterParams,
+      page: page > 1 ? page.toString() : undefined
+    }
+  });
+
+  await fetchItems();
 };
 
 const clearGroup = (groupId: number) => {
@@ -710,10 +742,10 @@ watch(() => route.query, async (newQuery, oldQuery) => {
   }
 }, { deep: true });
 
-// Watch для отслеживания изменений фильтров и страницы — обновляет URL и загружает данные с debouncing
-watch([selectedStandaloneIds, selectedGroupValues, currentPage], ([newStandalone, newGroups, newPage], [oldStandalone, oldGroups, oldPage]) => {
+// Watch для отслеживания изменений фильтров — обновляет URL и загружает данные с debouncing
+watch([selectedStandaloneIds, selectedGroupValues], () => {
   // Пропускаем первую инициализацию и начальную загрузку
-  if ((!oldStandalone && !oldGroups) || !isInitialLoadComplete) return;
+  if (!isInitialLoadComplete) return;
 
   // Запускаем debounced функцию обновления URL и загрузки
   debouncedUpdateFiltersUrlAndFetch();
