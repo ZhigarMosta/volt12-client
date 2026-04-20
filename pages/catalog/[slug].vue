@@ -544,6 +544,7 @@ const changePage = async (page: number) => {
     }
   });
 
+  isUpdatingFromInternalChange = false;
   await fetchItems();
 };
 
@@ -634,6 +635,7 @@ const updateFiltersUrlAndFetch = async () => {
     }
   });
 
+  isUpdatingFromInternalChange = false;
   // Загружаем данные после обновления URL
   await fetchItems();
 };
@@ -665,6 +667,7 @@ const updatePriceUrlAndFetch = async () => {
     }
   });
 
+  isUpdatingFromInternalChange = false;
   // Загружаем данные после обновления URL
   await fetchItems();
 };
@@ -693,6 +696,7 @@ const updateSearchUrlAndFetch = async () => {
     }
   });
 
+  isUpdatingFromInternalChange = false;
   // Загружаем данные после обновления URL
   await fetchItems();
 };
@@ -745,6 +749,7 @@ watch(() => route.query, async (newQuery, oldQuery) => {
 // Watch для отслеживания изменений фильтров — обновляет URL и загружает данные с debouncing
 watch([selectedStandaloneIds, selectedGroupValues], () => {
   // Пропускаем первую инициализацию и начальную загрузку
+  console.log(!isInitialLoadComplete, isUpdatingFromInternalChange)
   if (!isInitialLoadComplete) return;
 
   if(isUpdatingFromInternalChange){
