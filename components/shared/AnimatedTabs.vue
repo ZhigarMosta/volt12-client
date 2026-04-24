@@ -1,20 +1,27 @@
 <template>
   <div class="tabs-container">
-    <div
-        v-for="(tab, index) in tabs"
-        :key="index"
-        :ref="(el) => (tabRefs[index] = el)"
-        class="tab-item"
-        :class="{ 'is-active': modelValue === index && isReady }"
-        @click="selectTab(index)"
-    >
-      {{ tab }}
-    </div>
-    <div
-        class="tab-indicator"
-        :class="{ 'animate-transition': isReady }"
-        :style="indicatorStyle"
-    ></div>
+    <template v-if="loading">
+      <div v-for="i in skeletonCount" :key="i" class="tab-item-skeleton">
+        <div class="skeleton-text" />
+      </div>
+    </template>
+    <template v-else>
+      <div
+          v-for="(tab, index) in tabs"
+          :key="index"
+          :ref="(el) => (tabRefs[index] = el)"
+          class="tab-item"
+          :class="{ 'is-active': modelValue === index && isReady }"
+          @click="selectTab(index)"
+      >
+        {{ tab }}
+      </div>
+      <div
+          class="tab-indicator"
+          :class="{ 'animate-transition': isReady }"
+          :style="indicatorStyle"
+      ></div>
+    </template>
   </div>
 </template>
 
@@ -23,7 +30,9 @@ import { ref, computed, watch, onMounted, nextTick } from 'vue';
 
 const props = defineProps({
   tabs: { type: Array, required: true },
-  modelValue: { type: Number, default: 0 }
+  modelValue: { type: Number, default: 0 },
+  loading: { type: Boolean, default: false },
+  skeletonCount: { type: Number, default: 4 }
 });
 
 const emit = defineEmits(['update:modelValue']);
@@ -111,5 +120,29 @@ onMounted(async () => {
 
 .tab-indicator.animate-transition {
   transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.tab-item-skeleton {
+  padding: 20px 44px;
+}
+
+.skeleton-text {
+  width: 100px;
+  height: 20px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--gray-shimmer) 25%, var(--gray-shimmer-light) 50%, var(--gray-shimmer) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@media (max-width: 744px) {
+  .tab-item {
+    padding: 15px 20px;
+    font-size: 12px;
+  }
 }
 </style>

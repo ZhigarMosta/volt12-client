@@ -16,7 +16,7 @@ import FeedbackFromMap from '~/components/shared/FeedbackFromMap.vue';
 const sliderBreakpoints = {
   0: {
     slidesPerView: 1,
-    slidesPerGroup: 2,
+    slidesPerGroup: 1,
     grid: { rows: 2 },
     spaceBetween: 20
   },

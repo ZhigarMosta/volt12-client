@@ -1,13 +1,13 @@
 <template>
   <section class="popular-catalogs">
-    <div v-if="loading" class="loading">Загрузка...</div>
-    <div v-else-if="catalogs.length > 0">
-      <AnimatedTabs
-          class="tabs"
+    <AnimatedTabs
+        class="tabs"
         v-model="activeTabIndex"
         :tabs="catalogNames"
-      />
-
+        :loading="loading"
+        :skeleton-count="3"
+    />
+    <div v-if="!loading && catalogs.length > 0">
       <Slider
           v-if="selectedCatalogId"
           :key="selectedCatalogId"
@@ -106,12 +106,4 @@ onMounted(() => {
 .tabs{
   margin-bottom: 41px;
 }
-.loading,
-.no-data {
-  text-align: center;
-  padding: 40px;
-  font-size: 18px;
-  color: #666;
-}
-
 </style>
