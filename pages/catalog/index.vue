@@ -1,6 +1,6 @@
 <template>
   <div class="catalogs-widget">
-    <H2 class="h2">Каталоги</H2>
+    <Navigate :items="breadcrumbsItems" />
     <div class="catalogs-grid">
       <CatalogCard
           v-for="catalog in catalogs"
@@ -16,11 +16,17 @@ import { getCatalogs } from '~/services/productApi';
 import CatalogCard from '~/components/shared/CatalogCard.vue';
 
 const { data: catalogs } = await useAsyncData('catalogs', () => getCatalogs());
+const breadcrumbsItems = computed(() => [
+  { to: '/', text: 'Главная' },
+  { to: '/catalog', text: 'Каталог' }
+]);
 </script>
 
 <style scoped>
 .catalogs-widget {
-  margin-top: 51px;
+  margin-top: 37px;
+  padding: 0 70px;
+  margin-bottom: 88px;
 }
 
 .h2 {
@@ -29,7 +35,7 @@ const { data: catalogs } = await useAsyncData('catalogs', () => getCatalogs());
 
 .catalogs-grid {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 20px;
 }
 
@@ -39,11 +45,13 @@ const { data: catalogs } = await useAsyncData('catalogs', () => getCatalogs());
   }
 
   .catalogs-widget {
-    margin-top: 48px;
+    margin-top: 31px;
+    padding: 0 37px;
+    margin-bottom: 58px;
   }
 
   .catalogs-grid {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 16px;
   }
 }
@@ -54,15 +62,13 @@ const { data: catalogs } = await useAsyncData('catalogs', () => getCatalogs());
   }
 
   .catalogs-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: 1fr;
     gap: 12px;
   }
-}
-
-@media (max-width: 480px) {
-  .catalogs-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+  .catalogs-widget {
+    padding: 0 20px;
+    margin-bottom: 36px;
+    margin-top: 36px;
   }
 }
 </style>

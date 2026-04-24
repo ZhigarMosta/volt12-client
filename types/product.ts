@@ -29,6 +29,10 @@ export interface Catalog {
   id: number;
   name: string;
   slug: string;
+  img_link?: string;
+  imgAlt?: string;
+  imgTitle?: string;
+  items_count?: number;
 }
 
 export interface Characteristic {

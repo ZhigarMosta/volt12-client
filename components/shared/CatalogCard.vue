@@ -1,87 +1,84 @@
 <template>
   <NuxtLink :to="`/catalog/${catalog.slug}`" class="catalog-card">
-    <div class="catalog-icon">
-      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M3 7C3 5.34315 4.34315 4 6 4H18C19.6569 4 21 5.34315 21 7V17C21 18.6569 19.6569 20 18 20H6C4.34315 20 3 18.6569 3 17V7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M3 7L12 13L21 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M9 20V13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+    <div class="catalog-content">
+      <img
+          v-if="imageUrl"
+          :src="imageUrl"
+          :alt="catalog.imgAlt || catalog.name"
+          :title="catalog.imgTitle || catalog.name"
+          class="catalog-image"
+      />
+      <div class="catalog-inf">
+        <div class="catalog-name">{{ catalog.name }}</div>
+        <div class="catalog-count">{{ catalog.items_count }} товаров</div>
+      </div>
     </div>
-    <div class="catalog-name">{{ catalog.name }}</div>
   </NuxtLink>
 </template>
 
 <script setup lang="ts">
 import type { Catalog } from '~/types/product';
 
-defineProps<{
+const props = defineProps<{
   catalog: Catalog;
 }>();
+
+const baseURL = useRuntimeConfig().public.apiBase;
+
+const imageUrl = computed(() => {
+  const path = props.catalog.img_link ?? '';
+  if (!path) return '';
+  if (/^https?:\/\//i.test(path)) return path;
+  return baseURL.replace(/\/+$/, '') + '/' + path.replace(/^\/+/, '');
+});
 </script>
 
 <style scoped>
 .catalog-card {
+  border: 1px solid rgba(185, 185, 185, 0.38);
+  border-radius: 16px;
+  width: 100%;
+  height: 157px;
+}
+.catalog-content{
+  display: flex;
+  gap: 16px;
+  margin: 27px 0 0 18px;
+}
+.catalog-inf{
   display: flex;
   flex-direction: column;
-  align-items: center;
+  gap: 8px;
   justify-content: center;
-padding: 24px 16px;
-  background: var(--white);
-  border-radius: 16px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  color: var(--text-dark);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  min-width: 0;
+  padding-right: 8px;
 }
-
-.catalog-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-}
-
-.catalog-icon {
-  width: 64px;
-  height: 64px;
-  margin-bottom: 16px;
-  color: var(--red-special);
-}
-
-.catalog-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-}
-
-.catalog-icon {
-  width: 64px;
-  height: 64px;
-  margin-bottom: 16px;
-  color: #e31b23;
-}
-
-.catalog-icon svg {
-  width: 100%;
-  height: 100%;
+.catalog-image {
+  width: 121px;
+  height: 101px;
+  object-fit: cover;
 }
 
 .catalog-name {
-  font-size: 16px;
-  font-weight: 600;
-  text-align: center;
-  line-height: 1.3;
+  font-family: 'NT Somic', sans-serif;
+  font-weight: bold;
+  font-size: 24px;
+  color: var(--black);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-@media (max-width: 744px) {
-  .catalog-card {
-    padding: 20px 12px;
-  }
+.catalog-count {
+  font-family: 'NT Somic', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--gray-light);
+}
 
-  .catalog-icon {
-    width: 48px;
-    height: 48px;
-    margin-bottom: 12px;
-  }
-
+@media (max-width: 1100px) {
   .catalog-name {
-    font-size: 14px;
+    font-size: 20px;
   }
 }
 </style>
