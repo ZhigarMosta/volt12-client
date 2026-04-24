@@ -1,21 +1,37 @@
 <template>
-  <component
-      :is="to ? 'NuxtLink' : 'button'"
+  <NuxtLink
+      v-if="to"
       :to="to"
-      :class="['ui-btn', `ui-btn--${variant}`, `ui-btn--${size}`, `ui-btn--${verticalSpacing}`, { 'ui-btn--full': fullWidth }]"
+      :class="btnClass"
   >
     <slot />
-  </component>
+  </NuxtLink>
+  <button
+      v-else
+      :class="btnClass"
+  >
+    <slot />
+  </button>
 </template>
 
 <script setup lang="ts">
-defineProps<{
+const props = withDefaults(defineProps<{
   to?: string
   variant?: 'red' | 'white'
   size?: 'sm' | 'lg'
   fullWidth?: boolean
   verticalSpacing?: 'default' | 'compact'
-}>()
+}>(), {
+  verticalSpacing: 'default'
+})
+
+const btnClass = computed(() => [
+  'ui-btn',
+  `ui-btn--${props.variant}`,
+  `ui-btn--${props.size}`,
+  `ui-btn--${props.verticalSpacing}`,
+  { 'ui-btn--full': props.fullWidth }
+])
 </script>
 
 <style scoped>
