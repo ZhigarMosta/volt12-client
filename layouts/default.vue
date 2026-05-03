@@ -5,7 +5,7 @@
     <main class="main">
       <slot />
     </main>
-
+    <CookieAcceptPanel />
     <Footer />
   </div>
 </template>
