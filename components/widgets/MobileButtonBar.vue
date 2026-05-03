@@ -28,5 +28,6 @@ const handleOpenSearch = () => {
   background: var(--white);
   box-shadow: 0 -2px 10px rgba(var(--gray-light-rgb), 0.2);
   z-index: 100;
+  border: 1px solid var(--gray);
 }
 </style>
