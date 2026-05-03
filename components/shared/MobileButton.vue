@@ -37,9 +37,6 @@ const handleClick = () => {
 
 <style scoped>
 .mobile-button {
-  background: none;
-  border: none;
-  padding: 0;
   cursor: pointer;
   display: flex;
   align-items: center;

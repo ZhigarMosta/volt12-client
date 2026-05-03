@@ -1,9 +1,13 @@
 <template>
   <div class="mobile-button-bar">
     <MobileSearchButton @open-search="handleOpenSearch" />
-    <MobileButton icon="/icons/compare.svg" alt="Compare" to="/some-page" />
-    <MobileButton icon="/icons/cart.svg" alt="Cart" to="/another-page" />
-    <MobileButton icon="/icons/profile.svg" alt="Profile" to="/third-page" />
+    <MobileButton
+      v-for="(button, index) in buttons"
+      :key="index"
+      :icon="button.icon"
+      :alt="button.alt"
+      :to="button.to"
+    />
   </div>
 </template>
 
@@ -13,6 +17,12 @@ const emit = defineEmits(['open-search'])
 const handleOpenSearch = () => {
   emit('open-search')
 }
+
+const buttons = [
+  { icon: '/icons/compare.svg', alt: 'Compare', to: '/compare' },
+  { icon: '/icons/cart.svg', alt: 'Cart', to: '/cart' },
+  { icon: '/icons/profile.svg', alt: 'Profile', to: '/profile' }
+]
 </script>
 
 <style scoped>
@@ -26,7 +36,12 @@ const handleOpenSearch = () => {
   align-items: center;
   justify-content: space-around;
   background: var(--white);
-  box-shadow: 0 -2px 10px rgba(var(--gray-light-rgb), 0.2);
-  z-index: 100;
+  z-index: 11;
+}
+
+@media (min-width: 744px) {
+  .mobile-button-bar {
+    display: none;
+  }
 }
 </style>

@@ -7,9 +7,7 @@
     </main>
 
     <Footer />
-    <div class="mobile-button-bar-container">
-      <MobileButtonBar @open-search="handleOpenSearch" />
-    </div>
+    <MobileButtonBar @open-search="handleOpenSearch" />
   </div>
 </template>
 
@@ -29,19 +27,5 @@ const handleOpenSearch = () => {
 
 .main {
   flex: 1;
-}
-
-.mobile-button-bar-container {
-  display: none;
-}
-
-@media (max-width: 744px) {
-  .mobile-button-bar-container {
-    display: block;
-  }
-  
-  .main {
-    padding-bottom: 67px;
-  }
 }
 </style>
