@@ -40,8 +40,4 @@
 .social-link:hover .svg-circle {
   fill: var(--red);
 }
-
-.social-link:hover .svg-icon {
-  fill: var(--white);
-}
 </style>
