@@ -23,7 +23,7 @@
   </div>
 </template>
 
-<style>
+<style scoped>
 .social-icons {
   display: flex;
   align-items: center;

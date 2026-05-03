@@ -5,7 +5,7 @@ export default defineNuxtConfig({
         }
     },
     css: ['~/assets/css/reset.css', '~/assets/css/variables.css'],
-    modules: ['@nuxtjs/tailwindcss'],
+    modules: ['@nuxtjs/tailwindcss', '@nuxt/image'],
     components: [
         {
             path: '~/components',
