@@ -9,12 +9,22 @@
   <button
       v-else
       :class="btnClass"
+      @click="handleClick"
   >
     <slot />
-  </button>
+  </button> 
 </template>
 
 <script setup lang="ts">
+
+const emit = defineEmits<{
+  click: []
+}>()
+
+const handleClick = () => {
+  emit('click')
+}
+
 const props = withDefaults(defineProps<{
   to?: string
   variant?: 'red' | 'white'
