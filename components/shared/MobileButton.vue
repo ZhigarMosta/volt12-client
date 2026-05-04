@@ -1,5 +1,5 @@
 <template>
-  <button class="mobile-button" type="button" @click="handleClick">
+  <NuxtLink class="mobile-button" :to="props.to">
     <NuxtImg
       :src="icon"
       width="29"
@@ -7,10 +7,10 @@
       :alt="alt"
       class="mobile-button-icon"
     />
-  </button>
+  </NuxtLink>
 </template>
 
-<script setup>
+<script setup lang="ts">
 const props = defineProps({
   icon: {
     type: String,
@@ -18,21 +18,13 @@ const props = defineProps({
   },
   alt: {
     type: String,
-    default: 'Icon'
+    required: true
   },
   to: {
     type: String,
-    default: ''
+    required: true
   }
 })
-
-const router = useRouter()
-
-const handleClick = () => {
-  if (props.to) {
-    router.push(props.to)
-  }
-}
 </script>
 
 <style scoped>

@@ -1,6 +1,6 @@
 <template>
   <div class="mobile-button-bar">
-    <MobileSearchButton @open-search="handleOpenSearch" />
+    <MobileSearchButton />
     <MobileButton
       v-for="(button, index) in buttons"
       :key="index"
@@ -11,13 +11,7 @@
   </div>
 </template>
 
-<script setup>
-const emit = defineEmits(['open-search'])
-
-const handleOpenSearch = () => {
-  emit('open-search')
-}
-
+<script setup lang="ts">
 const buttons = [
   { icon: '/icons/compare.svg', alt: 'Compare', to: '/compare' },
   { icon: '/icons/cart.svg', alt: 'Cart', to: '/cart' },

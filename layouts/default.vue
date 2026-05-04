@@ -7,14 +7,11 @@
     </main>
 
     <Footer />
-    <MobileButtonBar @open-search="handleOpenSearch" />
+    <MobileButtonBar />
   </div>
 </template>
 
-<script setup>
-const handleOpenSearch = () => {
-  // логика открытия поиска
-}
+<script setup lang="ts">
 </script>
 
 <style scoped>

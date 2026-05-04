@@ -10,12 +10,13 @@
   </button>
 </template>
 
-<script setup>
+<script setup lang="ts">
 const emit = defineEmits(['open-search'])
 
 const handleClick = () => {
   emit('open-search')
 }
+
 </script>
 
 <style scoped>
