@@ -126,7 +126,7 @@
     height: 26px;
   }
 
-  .footer :deep(.social-link img) {
+  .footer :deep(.social-link svg) {
     width: 26px;
     height: 26px;
   }

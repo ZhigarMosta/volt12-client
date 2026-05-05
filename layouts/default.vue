@@ -7,10 +7,11 @@
     </main>
     <CookieAcceptPanel />
     <Footer />
+    <MobileButtonBar />
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 </script>
 
 <style scoped>
