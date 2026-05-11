@@ -54,10 +54,21 @@
           <img class="header__action-icon" src="../../public/icons/cart.svg" alt="cart">
           <p class="header__text">Корзина</p>
         </NuxtLink>
-        <NuxtLink to="/" class="header__action header__action--profile">
-          <img class="header__action-icon" src="../../public/icons/profile.svg" alt="profile">
-          <p class="header__text">Войти</p>
-        </NuxtLink>
+        <div
+            class="header__profile-wrapper"
+            @mouseenter="showProfileMenu = true"
+            @mouseleave="showProfileMenu = false"
+        >
+          <NuxtLink to="/profile" class="header__action header__action--profile">
+            <img class="header__action-icon" src="../../public/icons/profile.svg" alt="profile">
+            <p class="header__text">{{ isAuthenticated ? user?.name : 'Войти' }}</p>
+          </NuxtLink>
+          <Transition name="fade">
+            <div v-if="showProfileMenu && isAuthenticated" class="header__profile-dropdown">
+              <button @click="handleLogout" class="header__dropdown-item">Выйти</button>
+            </div>
+          </Transition>
+        </div>
       </div>
     </div>
   </header>
@@ -159,6 +170,48 @@
   @apply ml-[10px];
 }
 
+.header__profile-wrapper {
+  position: relative;
+}
+
+.header__profile-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  min-width: 150px;
+  background: var(--white);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  padding: 8px 0;
+  z-index: 100;
+}
+
+.header__dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  font-size: 14px;
+  color: var(--black);
+}
+
+.header__dropdown-item:hover {
+  background: var(--gray);
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
 /* Hamburger menu */
 .header__burger {
   @apply hidden w-[36px] h-[36px] min-w-[36px] min-h-[36px] rounded-full bg-[var(--red)] border-none cursor-pointer items-center justify-center;
@@ -249,9 +302,17 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
+const { isAuthenticated, user, logoutUser } = useAuth();
+
 const isMenuOpen = ref(false);
+const showProfileMenu = ref(false);
 
 const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value;
+};
+
+const handleLogout = async () => {
+  await logoutUser();
+  showProfileMenu.value = false;
 };
 </script>
