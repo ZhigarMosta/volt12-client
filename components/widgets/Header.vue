@@ -46,7 +46,7 @@
         <img class="header__search-icon" src="../../public/icons/search.svg" alt="search">
       </div>
       <div class="header__actions">
-        <NuxtLink to="/" class="header__action">
+        <NuxtLink to="/compare" class="header__action">
           <img class="header__action-icon" src="../../public/icons/compare.svg" alt="compare">
           <p class="header__text">Сравнение</p>
         </NuxtLink>

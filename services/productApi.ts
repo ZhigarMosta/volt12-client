@@ -91,3 +91,24 @@ export function getProductImageTitle(product: Product): string | undefined {
   }
   return undefined;
 }
+
+export async function addToCompare(catalogItemId: number): Promise<void> {
+  const apiBase = getApiBase();
+  await $fetch(`${apiBase}/volt12/compare/add`, {
+    method: 'POST',
+    credentials: 'include',
+    body: { catalog_item_id: catalogItemId }
+  });
+}
+
+export async function getCompareList(): Promise<any[]> {
+  const apiBase = getApiBase();
+  try {
+    const res = await $fetch<{ success: boolean; data: any[] }>(`${apiBase}/volt12/compare/list`, {
+      credentials: 'include'
+    });
+    return res.data ?? [];
+  } catch {
+    return [];
+  }
+}

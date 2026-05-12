@@ -125,6 +125,7 @@
               <CatalogItem
                   v-for="item in catalogItems"
                   :key="item.id"
+                  :productId="item.id"
                   :images="item.catalogItemImages"
                   :title="item.name"
                   :subtitle="item.product_code"
@@ -175,7 +176,7 @@ const selectedGroupValues = ref<Record<number, number[]>>({});
 const currentPage = ref(1);
 const totalPages = ref(1);
 const totalItems = ref(0);
-const limit = ref(2);
+const limit = ref(15);
 const loadingItems = ref(true);
 const loadingFilters = ref(false);
 
@@ -749,7 +750,6 @@ watch(() => route.query, async (newQuery, oldQuery) => {
 // Watch для отслеживания изменений фильтров — обновляет URL и загружает данные с debouncing
 watch([selectedStandaloneIds, selectedGroupValues], () => {
   // Пропускаем первую инициализацию и начальную загрузку
-  console.log(!isInitialLoadComplete, isUpdatingFromInternalChange)
   if (!isInitialLoadComplete) return;
 
   if(isUpdatingFromInternalChange){
