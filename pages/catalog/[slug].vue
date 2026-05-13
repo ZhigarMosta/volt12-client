@@ -103,11 +103,13 @@
         <div class="items-column">
           <div v-if="loadingItems" class="loading-overlay"></div>
 
-          <div v-if="catalogItems.length === 0 && !loadingItems" class="no-items">
-            <p class="no-found-text">Ничего не найдено</p>
-            <p class="no-found-recommend">Попробуйте изменить критерии поиска</p>
-            <button class="reset-filters" @click="clearAllFilters">По умолчанию</button>
-          </div>
+          <EmptyState
+              v-if="catalogItems.length === 0 && !loadingItems"
+              title="Ничего не найдено"
+              subtitle="Попробуйте изменить критерии поиска"
+              button-text="По умолчанию"
+              :on-click="clearAllFilters"
+          />
 
           <div class="products-grid">
             <template v-if="loadingItems">
@@ -807,30 +809,7 @@ watch(searchQuery, () => {
 </script>
 
 <style scoped>
-.no-found-text{
-  font-family: 'NT Somic', sans-serif;
-  font-weight: 500;
-  font-size: 20px;
-  color: var(--black);
-}
 
-.no-found-recommend{
-  font-family: 'NT Somic', sans-serif;
-  font-weight: 500;
-  font-size: 15px;
-  color: var(--gray-light);
-}
-.reset-filters{
-  border-radius: 8px;
-  padding: 4px 21px 8px;
-  background: var(--red);
-  margin-top: 28px;
-
-  font-family: 'NT Somic', sans-serif;
-  font-weight: 500;
-  font-size: 14px;
-  color: var(--white);
-}
 .sort-divider{
   margin: 9px 0;
 }
@@ -945,13 +924,6 @@ watch(searchQuery, () => {
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
-}
-
-.no-items {
-  text-align: center;
-  padding: 40px;
-  color: var(--gray-dark);
-  font-size: 16px;
 }
 
 .skeleton-card {

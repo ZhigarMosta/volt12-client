@@ -37,12 +37,19 @@
           nav-top="105px"
       />
     </template>
-    <div v-else class="empty">Нет товаров для сравнения</div>
+    <EmptyState
+        v-else
+        title="Пока сравнивать нечего"
+        subtitle="Отметьте нужные товары в каталоге"
+        button-text="В каталог"
+        :on-click="goToCatalog"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import CompareItem from '~/components/shared/CompareItem.vue';
 import TabSlide from '~/components/shared/TabSlide.vue';
 import FilterRadio from '~/components/shared/FilterRadio.vue';
@@ -101,6 +108,11 @@ const sliderHeightStyle = computed(() => {
   };
 });
 
+const router = useRouter();
+function goToCatalog() {
+  router.push('/catalog');
+}
+
 onMounted(async () => {
   try {
     catalogs.value = await getCompareList();
@@ -122,7 +134,7 @@ onMounted(async () => {
 .compare-page {
   padding: 30px 70px;
 }
-.loading, .empty {
+.loading {
   text-align: center;
   font-size: 18px;
   padding: 60px 0;
