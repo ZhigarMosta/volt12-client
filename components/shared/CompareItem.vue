@@ -9,7 +9,7 @@
           </svg>
         </button>
       </div>
-      <img class="img" :src="productImage" :alt="product?.name">
+      <NuxtImg class="img" :src="productImage" :alt="product?.name"/>
       <div class="bottom">
         <p class="price">₽ {{ product?.price }}</p>
         <div class="actions">
