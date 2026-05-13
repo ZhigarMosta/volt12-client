@@ -40,8 +40,8 @@
           @reachEnd="isEnd = true"
           @fromEdge="onFromEdge"
       >
-        <swiper-slide class="swiper-slide" v-for="item in items" :key="item.id">
-          <component :is="slideComponent" :product="item" :feedback="item" />
+        <swiper-slide class="swiper-slide" v-for="(item, index) in items" :key="item.id">
+          <component :is="slideComponent" v-bind="getSlideProps(item, index)" />
         </swiper-slide>
       </swiper>
       <button v-if="showNavigation" v-show="!isEnd" ref="nextBtn" class="nav-btn nav-next" :style="{ top: navTop }">
@@ -93,7 +93,9 @@ interface Props {
   slideComponent?: Component | string;
   swiperClass?: string;
   showNavigation?: boolean;
+  showPagination?: boolean;
   navTop?: string;
+  slideProps?: (item: any, index: number) => Record<string, any>;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -108,8 +110,14 @@ const props = withDefaults(defineProps<Props>(), {
   slideComponent: ProductCard,
   swiperClass: '',
   showNavigation: false,
-  navTop: '50%'
+  showPagination: true,
+  navTop: '50%',
+  slideProps: (item: any, index: number) => ({ product: item, feedback: item })
 });
+
+function getSlideProps(item: any, index: number): Record<string, any> {
+  return props.slideProps(item, index);
+}
 
 const resolvedSlidesPerGroup = computed(() => {
   if (props.slidesPerView === 'auto') return 1;
@@ -125,9 +133,7 @@ const navConfig = computed(() => {
 });
 
 const paginationConfig = computed(() => {
-  if (props.slidesPerView === 'auto') {
-    return { clickable: true, dynamicBullets: true };
-  }
+  if (!props.showPagination) return undefined;
   return { clickable: true };
 });
 
@@ -136,8 +142,9 @@ const loading = ref(false);
 const error = ref<any>(null);
 
 const modules = computed(() => {
-  const mods: any[] = [Pagination];
-  if (props.slidesPerView !== 'auto') mods.unshift(Grid);
+  const mods: any[] = [];
+  if (props.showPagination) mods.push(Pagination);
+  if (props.slidesPerView !== 'auto') mods.push(Grid);
   if (props.showNavigation) mods.push(Navigation);
   return mods;
 });

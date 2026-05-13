@@ -4,45 +4,16 @@
     <template v-else-if="catalogs.length > 0">
       <div class="top-bur">
         <div class="tabs-wrapper">
-      <button v-show="!isBeginning" class="tabs-nav nav-prev">
-        <svg width="42" height="42" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg" style="transform: scaleX(-1)">
-          <circle cx="21" cy="21" r="21" fill="#E2000F" />
-          <path d="M25.7072 21.7071C26.0977 21.3166 26.0977 20.6834 25.7072 20.2929L19.3432 13.9289C18.9527 13.5384 18.3196 13.5384 17.929 13.9289C17.5385 14.3195 17.5385 14.9526 17.929 15.3431L23.5859 21L17.929 26.6569C17.5385 27.0474 17.5385 27.6805 17.929 28.0711C18.3196 28.4616 18.9527 28.4616 19.3432 28.0711L25.7072 21.7071ZM25 21V22H25.0001V21V20H25V21Z" fill="white" />
-        </svg>
-      </button>
-      <swiper
+      <Slider
           class="tabs-swiper"
+          :items="catalogs"
           :slides-per-view="'auto'"
           :space-between="21"
-          :navigation="{ prevEl: '.tabs-nav.nav-prev', nextEl: '.tabs-nav.nav-next' }"
-          :modules="[Navigation]"
-          @init="onSwiperInit"
-          @slideChange="onSlideChange"
-          @reachBeginning="isBeginning = true"
-          @reachEnd="isEnd = true"
-          @fromEdge="onFromEdge"
-      >
-        <swiper-slide
-            v-for="(cat, index) in catalogs"
-            :key="cat.catalog.id"
-            class="tabs-slide"
-            :class="{ active: activeCatalogIndex === index }"
-            @click="activeCatalogIndex = index"
-        >
-          <button class="select-catalog">
-            <NuxtImg class="catalog_img" v-if="cat.catalog.img?.link" :src="`${baseURL}/${cat.catalog.img.link}`" :alt="cat.catalog.img.alt" :title="cat.catalog.img.title" />
-            <p class="catalog_name">{{ cat.catalog.name }}</p>
-            <p class="tab-count">{{ cat.items.length }}</p>
-          </button>
-          <div class="active-bar" />
-        </swiper-slide>
-      </swiper>
-      <button v-show="!isEnd" class="tabs-nav nav-next">
-        <svg width="42" height="42" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="21" cy="21" r="21" fill="#E2000F" />
-          <path d="M25.7072 21.7071C26.0977 21.3166 26.0977 20.6834 25.7072 20.2929L19.3432 13.9289C18.9527 13.5384 18.3196 13.5384 17.929 13.9289C17.5385 14.3195 17.5385 14.9526 17.929 15.3431L23.5859 21L17.929 26.6569C17.5385 27.0474 17.5385 27.6805 17.929 28.0711C18.3196 28.4616 18.9527 28.4616 19.3432 28.0711L25.7072 21.7071ZM25 21V22H25.0001V21V20H25V21Z" fill="white" />
-        </svg>
-      </button>
+          :slide-component="TabSlide"
+          :slide-props="tabSlideProps"
+          show-navigation
+          show-pagination
+      />
         </div>
         <div class="filter-radios">
           <FilterRadio value="all" name="Все характеристики" v-model="filterMode" />
@@ -61,7 +32,7 @@
           :slides-per-view="'auto'"
           :space-between="23"
           :slide-component="CompareItem"
-          :showNavigation="true"
+          show-navigation
           nav-top="105px"
       />
     </template>
@@ -71,11 +42,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { Swiper, SwiperSlide } from 'swiper/vue';
-import { Navigation } from 'swiper/modules';
-import 'swiper/css';
-import 'swiper/css/navigation';
 import CompareItem from '~/components/shared/CompareItem.vue';
+import TabSlide from '~/components/shared/TabSlide.vue';
 import FilterRadio from '~/components/shared/FilterRadio.vue';
 import { getCompareList } from '~/services/productApi';
 
@@ -83,23 +51,15 @@ const loading = ref(true);
 const catalogs = ref<any[]>([]);
 const activeCatalogIndex = ref(0);
 const filterMode = ref('all');
-const isBeginning = ref(true);
-const isEnd = ref(false);
 
-function onSwiperInit(swiper: any) {
-  isBeginning.value = swiper.isBeginning;
-  isEnd.value = swiper.maxTranslate() >= 0 || swiper.progress >= 1;
-}
-
-function onSlideChange(swiper: any) {
-  isBeginning.value = swiper.isBeginning;
-  isEnd.value = swiper.maxTranslate() >= 0 || swiper.progress >= 1;
-}
-
-function onFromEdge(swiper: any) {
-  isBeginning.value = swiper.isBeginning;
-  isEnd.value = swiper.maxTranslate() >= 0 || swiper.progress >= 1;
-}
+const tabSlideProps = (item: any, index: number) => ({
+  name: item.catalog?.name,
+  count: item.items?.length ?? 0,
+  img: item.catalog?.img,
+  index,
+  isActive: index === activeCatalogIndex.value,
+  onSelect: (i: number) => { activeCatalogIndex.value = i; }
+});
 
 const filteredCharacteristics = computed(() => {
   const cat = catalogs.value[activeCatalogIndex.value];
@@ -135,36 +95,9 @@ onMounted(async () => {
     loading.value = false;
   }
 });
-const config = useRuntimeConfig();
-const baseURL = computed(() => config.public.apiBase as string);
-
 </script>
 
 <style scoped>
-.catalog_name{
-  font-family: 'NT Somic', sans-serif;
-  font-weight: 500;
-  font-size: 14px;
-  color: #000;
-}
-.select-catalog{
-  display: flex;
-  gap: 12.5px;
-  padding: 0 30px 0 10px;
-  justify-content: space-between;
-  align-items: center;
-  background: var(--gray);
-  border-radius: 8px;
-  cursor: pointer;
-  border: 1px solid transparent;
-  white-space: nowrap;
-}
-
-.catalog_img{
-  width: 50px;
-  height: 50px;
-}
-
 .slider {
   --slider-desktop-height: 843px;
   --slider-tablet-height: 823px;
@@ -197,42 +130,13 @@ const baseURL = computed(() => config.public.apiBase as string);
 .tabs-swiper {
   flex: 1;
   min-width: 0;
+  --slider-desktop-height: auto;
 }
-.tabs-slide {
-  width: auto !important;
-  height: auto;
-  cursor: pointer;
-}
-.active-bar {
-  margin-top: 6px;
-  height: 4px;
-  border-radius: 100px;
-  background: var(--red);
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-.tabs-slide.active .active-bar {
-  opacity: 1;
-}
-.tabs-nav {
-  position: absolute;
-  z-index: 10;
-  top: 50%;
-  transform: translateY(-50%);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  padding: 0;
-  line-height: 0;
-}
-.tabs-wrapper .nav-prev {
+.tabs-wrapper :deep(.nav-prev) {
   left: -21px;
   margin-top: -5px;
 }
-.tabs-wrapper .nav-next {
+.tabs-wrapper :deep(.nav-next) {
   right: -21px;
   margin-top: -5px;
 }
@@ -241,13 +145,6 @@ const baseURL = computed(() => config.public.apiBase as string);
   gap: 16px;
   flex-shrink: 0;
   margin-bottom: 10px;
-}
-
-.tab-count {
-  font-family: 'NT Somic', sans-serif;
-  font-weight: 500;
-  font-size: 14px;
-  color: var(--gray-light);
 }
 
 .catalog-characteristics {
