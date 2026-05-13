@@ -23,6 +23,7 @@
       </div>
     </div>
     <template v-else-if="catalogs.length > 0">
+      <Navigate :items="breadcrumbsItems" />
       <div class="top-bur">
         <div class="tabs-wrapper">
           <Slider
@@ -143,6 +144,10 @@ onMounted(async () => {
     loading.value = false;
   }
 });
+const breadcrumbsItems = computed(() => [
+  { to: '/', text: 'Главная' },
+  { to: '/compare', text: 'Сравнение' }
+]);
 </script>
 
 <style scoped>
@@ -267,6 +272,7 @@ onMounted(async () => {
   align-items: center;
   gap: 48px;
   margin-bottom: 24px;
+  margin-top: 30px;
 }
 .tabs-wrapper {
   position: relative;
