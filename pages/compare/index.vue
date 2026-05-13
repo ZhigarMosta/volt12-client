@@ -4,20 +4,20 @@
     <template v-else-if="catalogs.length > 0">
       <div class="top-bur">
         <div class="tabs-wrapper">
-      <Slider
-          class="tabs-swiper"
-          :items="catalogs"
-          :slides-per-view="'auto'"
-          :space-between="21"
-          :slide-component="TabSlide"
-          :slide-props="tabSlideProps"
-          show-navigation
-          show-pagination
-      />
+          <Slider
+              class="tabs-swiper"
+              slides-per-view="auto"
+              :items="catalogs"
+              :space-between="21"
+              :slide-component="TabSlide"
+              :slide-props="tabSlideProps"
+              show-navigation
+              :showPagination="false"
+          />
         </div>
         <div class="filter-radios">
-          <FilterRadio value="all" name="Все характеристики" v-model="filterMode" />
-          <FilterRadio value="differences" name="Только отличия" v-model="filterMode" />
+          <FilterRadio value="all" name="Все характеристики" v-model="filterMode"/>
+          <FilterRadio value="differences" name="Только отличия" v-model="filterMode"/>
         </div>
       </div>
       <div class="catalog-characteristics">
@@ -28,10 +28,11 @@
       <Slider
           class="slider"
           v-if="currentItems.length > 0"
+          slides-per-view="auto"
           :items="currentItems"
-          :slides-per-view="'auto'"
           :space-between="23"
           :slide-component="CompareItem"
+          :style="sliderHeightStyle"
           show-navigation
           nav-top="105px"
       />
@@ -86,6 +87,20 @@ const currentItems = computed(() => {
   }));
 });
 
+const characteristicsCount = computed(() => {
+  const cat = catalogs.value[activeCatalogIndex.value];
+  return cat?.catalog?.characteristics?.length ?? 0;
+});
+
+const sliderHeightStyle = computed(() => {
+  const height = 284 + characteristicsCount.value * 62;
+  return {
+    '--slider-desktop-height': `${height}px`,
+    '--slider-tablet-height': `${height}px`,
+    '--slider-mobile-height': `${height}px`,
+  };
+});
+
 onMounted(async () => {
   try {
     catalogs.value = await getCompareList();
@@ -98,14 +113,14 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.slider {
-  --slider-desktop-height: 843px;
-  --slider-tablet-height: 823px;
-  --slider-mobile-height: 809px;
+.tabs-swiper {
+  --slider-desktop-height: 62px;
+  --slider-tablet-height: 62px;
+  --slider-mobile-height: 62px;
 }
 
 .compare-page {
-  padding: 40px 70px;
+  padding: 30px 70px;
 }
 .loading, .empty {
   text-align: center;
@@ -130,7 +145,6 @@ onMounted(async () => {
 .tabs-swiper {
   flex: 1;
   min-width: 0;
-  --slider-desktop-height: auto;
 }
 .tabs-wrapper :deep(.nav-prev) {
   left: -21px;
@@ -171,5 +185,32 @@ onMounted(async () => {
   font-size: 14px;
   color: #b9b9b9;
   text-align: center;
+}
+@media (max-width: 1100px) {
+  .compare-page {
+    padding: 37px 37px;
+  }
+}
+@media (max-width: 744px) {
+  .compare-page {
+    padding: 37px 20px;
+    overflow-x: hidden;
+  }
+  .top-bur {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .tabs-wrapper :deep(.nav-prev) {
+    left: -10px;
+  }
+  .tabs-wrapper :deep(.nav-next) {
+    right: -10px;
+  }
+  .slider :deep(.nav-prev) {
+    left: -10px;
+  }
+  .slider :deep(.nav-next) {
+    right: -10px;
+  }
 }
 </style>

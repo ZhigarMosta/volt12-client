@@ -53,6 +53,7 @@ const imgSrc = computed(() => {
 .catalog_img {
   width: 50px;
   height: 50px;
+  object-fit: cover;
 }
 .catalog_name {
   font-family: 'NT Somic', sans-serif;
