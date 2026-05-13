@@ -26,16 +26,15 @@
                 v-for="(cat, index) in catalogs"
                 :key="cat.catalog.id"
                 class="tabs-slide"
+                :class="{ active: activeCatalogIndex === index }"
+                @click="activeCatalogIndex = index"
             >
-              <button
-                  :class="{ active: activeCatalogIndex === index }"
-                  @click="activeCatalogIndex = index"
-                  class="select-catalog"
-              >
+              <button class="select-catalog">
                 <NuxtImg class="catalog_img" v-if="cat.catalog.img?.link" :src="`${baseURL}/${cat.catalog.img.link}`" :alt="cat.catalog.img.alt" :title="cat.catalog.img.title" />
                 <p class="catalog_name">{{ cat.catalog.name }}</p>
                 <p class="tab-count">{{ cat.items.length }}</p>
               </button>
+              <div class="active-bar" />
             </swiper-slide>
           </swiper>
           <button v-show="!isEnd" class="nav-btn nav-next">
@@ -108,17 +107,17 @@ const isEnd = ref(false);
 
 function onSwiperInit(swiper: any) {
   isBeginning.value = swiper.isBeginning;
-  isEnd.value = swiper.progress >= 1;
+  isEnd.value = swiper.maxTranslate() >= 0 || swiper.progress >= 1;
 }
 
 function onSlideChange(swiper: any) {
   isBeginning.value = swiper.isBeginning;
-  isEnd.value = swiper.progress >= 1;
+  isEnd.value = swiper.maxTranslate() >= 0 || swiper.progress >= 1;
 }
 
 function onFromEdge(swiper: any) {
   isBeginning.value = swiper.isBeginning;
-  isEnd.value = swiper.progress >= 1;
+  isEnd.value = swiper.maxTranslate() >= 0 || swiper.progress >= 1;
 }
 
 const filteredCharacteristics = computed(() => {
@@ -179,12 +178,6 @@ const baseURL = computed(() => config.public.apiBase as string);
   border: 1px solid transparent;
   white-space: nowrap;
 }
-.select-catalog.active,
-button.active .select-catalog {
-  background: var(--red);
-  color: white;
-  border-color: var(--red);
-}
 
 .catalog_img{
   width: 50px;
@@ -227,6 +220,18 @@ button.active .select-catalog {
 .tabs-slide {
   width: auto !important;
   height: auto;
+  cursor: pointer;
+}
+.active-bar {
+  margin-top: 6px;
+  height: 4px;
+  border-radius: 100px;
+  background: var(--red);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.tabs-slide.active .active-bar {
+  opacity: 1;
 }
 .nav-btn {
   position: absolute;
@@ -244,14 +249,17 @@ button.active .select-catalog {
 }
 .nav-prev {
   left: -21px;
+  margin-top: -5px;
 }
 .nav-next {
   right: -21px;
+  margin-top: -5px;
 }
 .filter-radios {
   display: flex;
   gap: 16px;
   flex-shrink: 0;
+  margin-bottom: 10px;
 }
 
 .tab-count {
