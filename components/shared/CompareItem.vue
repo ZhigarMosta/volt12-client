@@ -68,6 +68,7 @@ function hasCharacteristic(characteristicId: number): boolean {
 .compare-item {
   display: flex;
   flex-direction: column;
+  width: 267px;
 }
 .catalog-item{
   border: 1px solid rgba(185, 185, 185, 0.38);

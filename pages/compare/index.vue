@@ -4,45 +4,45 @@
     <template v-else-if="catalogs.length > 0">
       <div class="top-bur">
         <div class="tabs-wrapper">
-          <button v-show="!isBeginning" class="nav-btn nav-prev">
-            <svg width="42" height="42" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg" style="transform: scaleX(-1)">
-              <circle cx="21" cy="21" r="21" fill="#E2000F" />
-              <path d="M25.7072 21.7071C26.0977 21.3166 26.0977 20.6834 25.7072 20.2929L19.3432 13.9289C18.9527 13.5384 18.3196 13.5384 17.929 13.9289C17.5385 14.3195 17.5385 14.9526 17.929 15.3431L23.5859 21L17.929 26.6569C17.5385 27.0474 17.5385 27.6805 17.929 28.0711C18.3196 28.4616 18.9527 28.4616 19.3432 28.0711L25.7072 21.7071ZM25 21V22H25.0001V21V20H25V21Z" fill="white" />
-            </svg>
+      <button v-show="!isBeginning" class="tabs-nav nav-prev">
+        <svg width="42" height="42" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg" style="transform: scaleX(-1)">
+          <circle cx="21" cy="21" r="21" fill="#E2000F" />
+          <path d="M25.7072 21.7071C26.0977 21.3166 26.0977 20.6834 25.7072 20.2929L19.3432 13.9289C18.9527 13.5384 18.3196 13.5384 17.929 13.9289C17.5385 14.3195 17.5385 14.9526 17.929 15.3431L23.5859 21L17.929 26.6569C17.5385 27.0474 17.5385 27.6805 17.929 28.0711C18.3196 28.4616 18.9527 28.4616 19.3432 28.0711L25.7072 21.7071ZM25 21V22H25.0001V21V20H25V21Z" fill="white" />
+        </svg>
+      </button>
+      <swiper
+          class="tabs-swiper"
+          :slides-per-view="'auto'"
+          :space-between="21"
+          :navigation="{ prevEl: '.tabs-nav.nav-prev', nextEl: '.tabs-nav.nav-next' }"
+          :modules="[Navigation]"
+          @init="onSwiperInit"
+          @slideChange="onSlideChange"
+          @reachBeginning="isBeginning = true"
+          @reachEnd="isEnd = true"
+          @fromEdge="onFromEdge"
+      >
+        <swiper-slide
+            v-for="(cat, index) in catalogs"
+            :key="cat.catalog.id"
+            class="tabs-slide"
+            :class="{ active: activeCatalogIndex === index }"
+            @click="activeCatalogIndex = index"
+        >
+          <button class="select-catalog">
+            <NuxtImg class="catalog_img" v-if="cat.catalog.img?.link" :src="`${baseURL}/${cat.catalog.img.link}`" :alt="cat.catalog.img.alt" :title="cat.catalog.img.title" />
+            <p class="catalog_name">{{ cat.catalog.name }}</p>
+            <p class="tab-count">{{ cat.items.length }}</p>
           </button>
-          <swiper
-              class="tabs-swiper"
-              :slides-per-view="'auto'"
-              :space-between="21"
-              :navigation="{ prevEl: '.nav-prev', nextEl: '.nav-next' }"
-              :modules="[Navigation]"
-              @init="onSwiperInit"
-              @slideChange="onSlideChange"
-              @reachBeginning="isBeginning = true"
-              @reachEnd="isEnd = true"
-              @fromEdge="onFromEdge"
-          >
-            <swiper-slide
-                v-for="(cat, index) in catalogs"
-                :key="cat.catalog.id"
-                class="tabs-slide"
-                :class="{ active: activeCatalogIndex === index }"
-                @click="activeCatalogIndex = index"
-            >
-              <button class="select-catalog">
-                <NuxtImg class="catalog_img" v-if="cat.catalog.img?.link" :src="`${baseURL}/${cat.catalog.img.link}`" :alt="cat.catalog.img.alt" :title="cat.catalog.img.title" />
-                <p class="catalog_name">{{ cat.catalog.name }}</p>
-                <p class="tab-count">{{ cat.items.length }}</p>
-              </button>
-              <div class="active-bar" />
-            </swiper-slide>
-          </swiper>
-          <button v-show="!isEnd" class="nav-btn nav-next">
-            <svg width="42" height="42" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="21" cy="21" r="21" fill="#E2000F" />
-              <path d="M25.7072 21.7071C26.0977 21.3166 26.0977 20.6834 25.7072 20.2929L19.3432 13.9289C18.9527 13.5384 18.3196 13.5384 17.929 13.9289C17.5385 14.3195 17.5385 14.9526 17.929 15.3431L23.5859 21L17.929 26.6569C17.5385 27.0474 17.5385 27.6805 17.929 28.0711C18.3196 28.4616 18.9527 28.4616 19.3432 28.0711L25.7072 21.7071ZM25 21V22H25.0001V21V20H25V21Z" fill="white" />
-            </svg>
-          </button>
+          <div class="active-bar" />
+        </swiper-slide>
+      </swiper>
+      <button v-show="!isEnd" class="tabs-nav nav-next">
+        <svg width="42" height="42" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="21" cy="21" r="21" fill="#E2000F" />
+          <path d="M25.7072 21.7071C26.0977 21.3166 26.0977 20.6834 25.7072 20.2929L19.3432 13.9289C18.9527 13.5384 18.3196 13.5384 17.929 13.9289C17.5385 14.3195 17.5385 14.9526 17.929 15.3431L23.5859 21L17.929 26.6569C17.5385 27.0474 17.5385 27.6805 17.929 28.0711C18.3196 28.4616 18.9527 28.4616 19.3432 28.0711L25.7072 21.7071ZM25 21V22H25.0001V21V20H25V21Z" fill="white" />
+        </svg>
+      </button>
         </div>
         <div class="filter-radios">
           <FilterRadio value="all" name="Все характеристики" v-model="filterMode" />
@@ -58,8 +58,11 @@
           class="slider"
           v-if="currentItems.length > 0"
           :items="currentItems"
-          :breakpoints="sliderBreakpoints"
+          :slides-per-view="'auto'"
+          :space-between="23"
           :slide-component="CompareItem"
+          :showNavigation="true"
+          nav-top="105px"
       />
     </template>
     <div v-else class="empty">Нет товаров для сравнения</div>
@@ -75,28 +78,6 @@ import 'swiper/css/navigation';
 import CompareItem from '~/components/shared/CompareItem.vue';
 import FilterRadio from '~/components/shared/FilterRadio.vue';
 import { getCompareList } from '~/services/productApi';
-
-const sliderBreakpoints = {
-  0: {
-    slidesPerView: 4,
-    slidesPerGroup: 1,
-    grid: { rows: 1 },
-    spaceBetween: 23
-  },
-  744: {
-    slidesPerView: 4,
-    slidesPerGroup: 1,
-    grid: { rows: 1 },
-    spaceBetween: 23
-  },
-  1100: {
-    slidesPerView: 4,
-    slidesPerGroup: 1,
-    grid: { rows: 1 },
-    spaceBetween: 23
-  }
-};
-
 
 const loading = ref(true);
 const catalogs = ref<any[]>([]);
@@ -233,7 +214,7 @@ const baseURL = computed(() => config.public.apiBase as string);
 .tabs-slide.active .active-bar {
   opacity: 1;
 }
-.nav-btn {
+.tabs-nav {
   position: absolute;
   z-index: 10;
   top: 50%;
@@ -247,11 +228,11 @@ const baseURL = computed(() => config.public.apiBase as string);
   padding: 0;
   line-height: 0;
 }
-.nav-prev {
+.tabs-wrapper .nav-prev {
   left: -21px;
   margin-top: -5px;
 }
-.nav-next {
+.tabs-wrapper .nav-next {
   right: -21px;
   margin-top: -5px;
 }
