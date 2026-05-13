@@ -1,6 +1,27 @@
 <template>
   <div class="compare-page">
-    <div v-if="loading" class="loading">Загрузка...</div>
+    <div v-if="loading" class="compare-skeleton">
+      <div class="sk-top-bur">
+        <div class="sk-tabs">
+          <div class="sk-tab" v-for="i in 4" :key="i" />
+        </div>
+        <div class="sk-radios">
+          <div class="sk-radio" v-for="i in 2" :key="i" />
+        </div>
+      </div>
+      <div class="sk-body">
+        <div class="sk-chars">
+          <div class="sk-char" v-for="i in 4" :key="i" />
+        </div>
+        <div class="sk-cards">
+          <div class="sk-card" v-for="i in 4" :key="i">
+            <div class="sk-card-img" />
+            <div class="sk-card-name" />
+            <div class="sk-card-price" />
+          </div>
+        </div>
+      </div>
+    </div>
     <template v-else-if="catalogs.length > 0">
       <div class="top-bur">
         <div class="tabs-wrapper">
@@ -134,11 +155,111 @@ onMounted(async () => {
 .compare-page {
   padding: 30px 70px;
 }
-.loading {
-  text-align: center;
-  font-size: 18px;
-  padding: 60px 0;
-  color: var(--gray-light);
+.compare-skeleton {
+  padding: 30px 70px;
+}
+.sk-top-bur {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 48px;
+  margin-bottom: 24px;
+}
+.sk-tabs {
+  display: flex;
+  gap: 21px;
+  flex: 1;
+}
+.sk-tab {
+  height: 50px;
+  border-radius: 8px;
+  flex: 1;
+  max-width: 200px;
+  background: linear-gradient(90deg, var(--gray-shimmer) 25%, var(--gray-shimmer-light) 50%, var(--gray-shimmer) 75%);
+  background-size: 200% 100%;
+  animation: sk-shimmer 1.5s infinite;
+}
+.sk-radios {
+  display: flex;
+  gap: 16px;
+  flex-shrink: 0;
+}
+.sk-radio {
+  width: 120px;
+  height: 24px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--gray-shimmer) 25%, var(--gray-shimmer-light) 50%, var(--gray-shimmer) 75%);
+  background-size: 200% 100%;
+  animation: sk-shimmer 1.5s infinite;
+}
+.sk-body {
+  display: flex;
+  gap: 23px;
+  margin-top: 24px;
+}
+.sk-chars {
+  margin-top: 250px;
+  position: absolute;
+  left: calc(50% - 70px);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 44px;
+  align-items: center;
+  pointer-events: none;
+}
+.sk-char {
+  width: 80px;
+  height: 18px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--gray-shimmer) 25%, var(--gray-shimmer-light) 50%, var(--gray-shimmer) 75%);
+  background-size: 200% 100%;
+  animation: sk-shimmer 1.5s infinite;
+}
+.sk-cards {
+  height: 500px;
+  display: flex;
+  gap: 23px;
+  overflow: hidden;
+}
+.sk-card {
+  width: 267px;
+  flex-shrink: 0;
+  border: 1px solid rgba(185, 185, 185, 0.38);
+  border-radius: 16px;
+  padding: 17px 14px 22px 19px;
+  background: #fff;
+}
+.sk-card-img {
+  width: 167px;
+  height: 124px;
+  border-radius: 8px;
+  margin: 0 auto;
+  background: linear-gradient(90deg, var(--gray-shimmer) 25%, var(--gray-shimmer-light) 50%, var(--gray-shimmer) 75%);
+  background-size: 200% 100%;
+  animation: sk-shimmer 1.5s infinite;
+}
+.sk-card-name {
+  width: 70%;
+  height: 14px;
+  margin-top: 14px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--gray-shimmer) 25%, var(--gray-shimmer-light) 50%, var(--gray-shimmer) 75%);
+  background-size: 200% 100%;
+  animation: sk-shimmer 1.5s infinite;
+}
+.sk-card-price {
+  width: 40%;
+  height: 20px;
+  margin-top: 27px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--gray-shimmer) 25%, var(--gray-shimmer-light) 50%, var(--gray-shimmer) 75%);
+  background-size: 200% 100%;
+  animation: sk-shimmer 1.5s infinite;
+}
+@keyframes sk-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 .top-bur {
   display: flex;
@@ -165,6 +286,10 @@ onMounted(async () => {
 .tabs-wrapper :deep(.nav-next) {
   right: -21px;
   margin-top: -5px;
+}
+.slider :deep(.swiper-pagination) {
+  top: 0;
+  margin-top: 225px;
 }
 .filter-radios {
   display: flex;

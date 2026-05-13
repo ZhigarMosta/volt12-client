@@ -47,9 +47,7 @@ const imgSrc = computed(() => {
   white-space: nowrap;
   width: 100%;
 }
-.tab-slide.active .select-catalog {
-  border-color: var(--red);
-}
+
 .catalog_img {
   width: 50px;
   height: 50px;
