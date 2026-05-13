@@ -39,6 +39,7 @@
           @reachBeginning="isBeginning = true"
           @reachEnd="isEnd = true"
           @fromEdge="onFromEdge"
+          @update="onSwiperUpdate"
       >
         <swiper-slide class="swiper-slide" v-for="(item, index) in items" :key="item.id">
           <component :is="slideComponent" v-bind="getSlideProps(item, index)" />
@@ -219,6 +220,7 @@ function onSwiperInit(swiper: any) {
 
 function onSlideChange(swiper: any) { checkEdges(swiper); }
 function onFromEdge(swiper: any) { checkEdges(swiper); }
+function onSwiperUpdate(swiper: any) { checkEdges(swiper); }
 
 onMounted(() => {
   fetchData();
