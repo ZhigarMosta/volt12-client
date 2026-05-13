@@ -79,6 +79,35 @@ export interface CatalogItemsParams {
   limit: number;
 }
 
+export interface ServiceGroup {
+  id: number;
+  name: string;
+  position: number;
+  img_link: string | null;
+  service_count: number;
+}
+
+export interface Service {
+  id: number;
+  name: string;
+  description: string | null;
+  short_description: string | null;
+  position: number | null;
+  img_link: string | null;
+  service_group_id: number | null;
+}
+
+export interface ServicesResponse {
+  items: Service[];
+  groups: ServiceGroup[];
+  meta: {
+    total_items: number;
+    total_pages: number;
+    current_page: number;
+    limit: number;
+  };
+}
+
 export interface Feedback {
   id?: number;
   user_name: string;

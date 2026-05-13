@@ -26,44 +26,16 @@
                 <div class="sort skeleton-sort" />
               </div>
             </template>
-            <div v-else class="sort" @mouseenter="isSortPopoverOpen = true" @mouseleave="isSortPopoverOpen = false">
-              <div class="sort-view" :class="{ 'sort-border_off': isSortPopoverOpen }">
-                <div class="sort-text-block">
-                  <p class="sort-text">Цена</p>
-                  <p class="sort-text-select">{{ SortPriceValues[currentSortPrice] }}</p>
-                </div>
-                <svg 
-                  v-if="currentSortPrice !== 0"
-                  width="15" 
-                  height="9" 
-                  viewBox="0 0 15 9" 
-                  fill="none" 
-                  xmlns="http://www.w3.org/2000/svg"
-                  :class="{ 'sort-arrow-up': currentSortPrice === 1, 'sort-arrow-down': currentSortPrice === 2 }"
-                >
-                  <path
-                      d="M8.07088 0.292915C7.68035 -0.097609 7.04719 -0.097609 6.65666 0.292915L0.292702 6.65688C-0.0978227 7.0474 -0.0978227 7.68057 0.292702 8.07109C0.683226 8.46161 1.31639 8.46161 1.70692 8.07109L7.36377 2.41424L13.0206 8.07109C13.4111 8.46161 14.0443 8.46161 14.4348 8.07109C14.8254 7.68057 14.8254 7.0474 14.4348 6.65688L8.07088 0.292915ZM7.36377 1.00012H8.36377V1.00002H7.36377H6.36377V1.00012H7.36377Z"
-                      fill="var(--gray-light)"/>
-                </svg>
-              </div>
-              <div class="sort-popover" :class="{ 'sort-popover_open': isSortPopoverOpen }">
-                <div v-for="sort in getSortPriceValues"
-                     :key="sort.key" class="sort-popover-content">
-                  <Divider
-                      class="sort-divider"
-                      width="160"
-                      height="1"
-                      color="var(--gray-light)"
-                  />
-                  <button
-                      class="sort-text-select"
-                      @click="selectSortPrice(sort.key)"
-                  >
-                    {{ sort.label }}
-                  </button>
-                </div>
-              </div>
-            </div>
+            <SortSelect
+                v-if="!loadingFilters"
+                label="Цена"
+                :options="sortPriceOptions"
+                :model-value="currentSortPrice"
+                :show-arrow="currentSortPrice !== 0"
+                :arrow-up="currentSortPrice === 1"
+                :arrow-down="currentSortPrice === 2"
+                @update:model-value="selectSortPrice"
+            />
           </div>
           <button class="mobile">
             <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -185,22 +157,14 @@ const loadingFilters = ref(false);
 const debouncedTime = 600;
 
 const currentSortPrice = ref(0);
-const isSortPopoverOpen = ref(false);
-const SortPriceValues: Record<number, string> = {
-  0: 'Не сортировать',
-  1: 'По возрастанию',
-  2: 'По убыванию',
-};
+const sortPriceOptions = [
+  { value: 0, label: 'Не сортировать' },
+  { value: 1, label: 'По возрастанию' },
+  { value: 2, label: 'По убыванию' },
+];
 
-const getSortPriceValues = computed(() => {
-  return Object.entries(SortPriceValues)
-    .filter(([key]) => Number(key) !== currentSortPrice.value)
-    .map(([key, label]) => ({ key: Number(key), label }));
-});
-
-const selectSortPrice = (key: number) => {
-  currentSortPrice.value = key;
-  isSortPopoverOpen.value = false;
+const selectSortPrice = (key: number | string | null) => {
+  currentSortPrice.value = Number(key);
 };
 
 // Вспомогательные функции для работы с URL фильтрами
@@ -809,36 +773,6 @@ watch(searchQuery, () => {
 </script>
 
 <style scoped>
-
-.sort-divider{
-  margin: 9px 0;
-}
-.sort-popover{
-  padding: 0 20px 16px 20px;
-  background: var(--gray);
-  border-bottom-left-radius: 8px;
-  border-bottom-right-radius: 8px;
-  position: absolute;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.2s ease, visibility 0.2s ease;
-  z-index: 10;
-  width: 195px;
-}
-.sort-border_off{
-  border-bottom-left-radius: 0 !important;
-  border-bottom-right-radius: 0 !important;
-}
-.sort-popover.sort-popover_open{
-  opacity: 1;
-  visibility: visible;
-}
-
-.sort-text-block{
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
 .search_text {
   @apply font-['NT_Somic'] font-medium text-[14px] content-center text-[var(--gray-light)];
 }
@@ -867,37 +801,6 @@ watch(searchQuery, () => {
 
 .header__search-input::placeholder {
   @apply text-[var(--gray-light)];
-}
-
-.sort-view{
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 195px;
-  padding: 8px 17px;
-  background: var(--gray);
-  border-radius: 8px;
-}
-.sort-text{
-  font-family: 'NT Somic', sans-serif;
-  font-weight: 500;
-  font-size: 11px;
-  color: var(--gray-light);
-}
-
-.sort-text-select{
-  font-family: 'NT Somic', sans-serif;
-  font-weight: 500;
-  font-size: 14px;
-  color: var(--black);
-}
-
-.sort-arrow-up{
-  transform: rotate(0deg);
-}
-
-.sort-arrow-down{
-  transform: rotate(180deg);
 }
 
 .catalog-page {

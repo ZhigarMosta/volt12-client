@@ -6,7 +6,8 @@ import type {
   CatalogItemsFilters,
   CatalogItemsResponse,
   CatalogCharacteristics,
-  Feedback
+  Feedback,
+  ServicesResponse
 } from '~/types/product';
 
 /**
@@ -110,5 +111,31 @@ export async function getCompareList(): Promise<any[]> {
     return res.data ?? [];
   } catch {
     return [];
+  }
+}
+
+export async function getServices(params: {
+  service_group_id?: number | null;
+  search?: string;
+  page?: number;
+  limit?: number;
+}): Promise<ServicesResponse> {
+  const apiBase = getApiBase();
+  try {
+    return await $fetch<ServicesResponse>(`${apiBase}/volt12/services`, {
+      method: 'POST',
+      body: {
+        service_group_id: params.service_group_id ?? null,
+        search: params.search ?? '',
+        page: params.page ?? 1,
+        limit: params.limit ?? 12,
+      }
+    });
+  } catch {
+    return {
+      items: [],
+      groups: [],
+      meta: { total_items: 0, total_pages: 0, current_page: 1, limit: 12 }
+    };
   }
 }
