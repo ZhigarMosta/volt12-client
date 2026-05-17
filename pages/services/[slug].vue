@@ -1,16 +1,28 @@
 <template>
   <div class="service-detail">
-    <div v-if="pending" class="loading">Загрузка...</div>
+    <template v-if="pending">
+      <div class="detail-wrapper">
+        <div class="sk-title"/>
+        <div class="detail-context">
+          <div class="sk-image"/>
+          <div class="sk-text">
+            <div class="sk-line"/>
+            <div class="sk-line"/>
+            <div class="sk-line sk-line--short"/>
+          </div>
+        </div>
+      </div>
+    </template>
     <div v-else-if="error" class="error">Ошибка: {{ error.message }}</div>
     <div v-else-if="!service" class="error">Услуга не найдена</div>
 
     <template v-else>
-      <Navigate :items="breadcrumbsItems" />
+      <Navigate :items="breadcrumbsItems"/>
 
       <div class="detail-wrapper">
         <h1 class="detail-title">{{ service.name }}</h1>
         <div class="detail-context">
-          <NuxtImg v-if="imgSrc" :src="imgSrc" :alt="service.name" class="service-image" />
+          <NuxtImg v-if="imgSrc" :src="imgSrc" :alt="service.name" class="service-image"/>
           <div v-if="service.description" class="detail-description" v-html="service.description"></div>
         </div>
       </div>
@@ -19,12 +31,12 @@
         <h2 class="related-title">Похожие услуги</h2>
         <div class="related-grid">
           <ServiceCard
-            v-for="item in visibleRelated"
-            :key="item.id"
-            :slug="item.slug"
-            :name="item.name"
-            :img-link="item.img_link"
-            :short-description="item.short_description"
+              v-for="item in visibleRelated"
+              :key="item.id"
+              :slug="item.slug"
+              :name="item.name"
+              :img-link="item.img_link"
+              :short-description="item.short_description"
           />
         </div>
       </div>
@@ -33,9 +45,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
-import type { Service, RelatedService } from '~/types/product';
-import { getServiceBySlug } from '~/services/productApi';
+import {ref, computed, onMounted, onUnmounted} from 'vue';
+import type {Service, RelatedService} from '~/types/product';
+import {getServiceBySlug} from '~/services/productApi';
 
 const route = useRoute();
 const slug = computed(() => route.params.slug as string);
@@ -46,8 +58,8 @@ const pending = ref(true);
 const error = ref<Error | null>(null);
 
 const breadcrumbsItems = computed(() => [
-  { to: '/', text: 'Главная' },
-  { to: '/services', text: 'Услуги' }
+  {to: '/', text: 'Главная'},
+  {to: '/services', text: 'Услуги'}
 ]);
 
 const config = useRuntimeConfig();
@@ -96,27 +108,94 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+@keyframes sk-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.sk-breadcrumbs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 36px;
+}
+
+.sk-breadcrumb {
+  height: 14px;
+  width: 80px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--gray-shimmer) 25%, var(--gray-shimmer-light) 50%, var(--gray-shimmer) 75%);
+  background-size: 200% 100%;
+  animation: sk-shimmer 1.5s infinite;
+}
+
+.sk-breadcrumb:nth-child(2) {
+  width: 60px;
+}
+
+.sk-breadcrumb:nth-child(3) {
+  width: 100px;
+}
+
+.sk-title {
+  height: 32px;
+  width: 40%;
+  border-radius: 6px;
+  margin-bottom: 24px;
+  margin-top: 95px;
+  background: linear-gradient(90deg, var(--gray-shimmer) 25%, var(--gray-shimmer-light) 50%, var(--gray-shimmer) 75%);
+  background-size: 200% 100%;
+  animation: sk-shimmer 1.5s infinite;
+}
+
+.sk-image {
+  float: right;
+  width: 400px;
+  height: 335px;
+  border-radius: 16px;
+  margin: 0 0 20px 65px;
+  background: linear-gradient(90deg, var(--gray-shimmer) 25%, var(--gray-shimmer-light) 50%, var(--gray-shimmer) 75%);
+  background-size: 200% 100%;
+  animation: sk-shimmer 1.5s infinite;
+}
+
+.sk-text {
+  overflow: hidden;
+}
+
+.sk-line {
+  height: 16px;
+  width: 100%;
+  border-radius: 6px;
+  margin-bottom: 14px;
+  background: linear-gradient(90deg, var(--gray-shimmer) 25%, var(--gray-shimmer-light) 50%, var(--gray-shimmer) 75%);
+  background-size: 200% 100%;
+  animation: sk-shimmer 1.5s infinite;
+}
+
+.sk-line--short {
+  width: 60%;
+}
+
 .service-detail {
   padding: 0 70px;
   margin-bottom: 62px;
 }
 
-.loading,
 .error {
   padding: 40px;
   text-align: center;
   font-family: 'NT Somic', sans-serif;
   font-weight: 500;
   font-size: 18px;
-}
-
-.error {
   color: var(--error);
 }
 
 .detail-wrapper {
   width: 100%;
-  margin-top: 36px;
 }
 
 .detail-context {
@@ -144,6 +223,7 @@ onUnmounted(() => {
   color: var(--black);
   margin-bottom: 10px;
 }
+
 .related-wrapper {
   margin-top: 35px;
 }
