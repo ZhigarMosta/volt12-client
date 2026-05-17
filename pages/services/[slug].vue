@@ -96,10 +96,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.detail-description table {
-  border-collapse: collapse;
-  width: 100%;
-}
 .service-detail {
   padding: 0 70px;
   margin-bottom: 62px;
@@ -125,6 +121,7 @@ onUnmounted(() => {
 
 .detail-context {
   width: 100%;
+  overflow: hidden;
 }
 
 .detail-description {
@@ -148,7 +145,7 @@ onUnmounted(() => {
   margin-bottom: 10px;
 }
 .related-wrapper {
-  margin-top: 60px;
+  margin-top: 35px;
 }
 
 .related-title {
