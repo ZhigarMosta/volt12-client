@@ -1,5 +1,5 @@
 <template>
-  <div class="service-card">
+  <NuxtLink :to="`/services/${slug}`" class="service-card">
     <NuxtImg v-if="imgSrc" :src="imgSrc" class="service-img" :alt="name" />
     <div v-else class="service-img-placeholder" />
     <div class="service-content">
@@ -9,13 +9,14 @@
       </div>
       <UiButton class="more" variant="red" size="sm">Подробней</UiButton>
     </div>
-  </div>
+  </NuxtLink>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
 
 const props = defineProps<{
+  slug: string
   name: string
   shortDescription?: string | null
   imgLink?: string | null

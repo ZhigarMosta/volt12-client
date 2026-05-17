@@ -7,6 +7,8 @@ import type {
   CatalogItemsResponse,
   CatalogCharacteristics,
   Feedback,
+  Service,
+  RelatedService,
   ServicesResponse
 } from '~/types/product';
 
@@ -111,6 +113,16 @@ export async function getCompareList(): Promise<any[]> {
     return res.data ?? [];
   } catch {
     return [];
+  }
+}
+
+export async function getServiceBySlug(slug: string): Promise<{ service: Service; related: RelatedService[] } | null> {
+  const apiBase = getApiBase();
+  try {
+    const res = await $fetch<{ success: boolean; item: Service; related: RelatedService[] }>(`${apiBase}/volt12/services/${slug}`);
+    return res.success ? { service: res.item, related: res.related ?? [] } : null;
+  } catch {
+    return null;
   }
 }
 

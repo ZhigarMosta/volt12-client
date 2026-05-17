@@ -90,6 +90,7 @@ export interface ServiceGroup {
 export interface Service {
   id: number;
   name: string;
+  slug: string;
   description: string | null;
   short_description: string | null;
   position: number | null;
@@ -106,6 +107,14 @@ export interface ServicesResponse {
     current_page: number;
     limit: number;
   };
+}
+
+export interface RelatedService {
+  id: number;
+  name: string;
+  slug: string;
+  img_link: string;
+  short_description: string | null;
 }
 
 export interface Feedback {

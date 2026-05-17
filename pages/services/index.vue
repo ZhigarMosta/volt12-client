@@ -58,6 +58,7 @@
           <ServiceCard
               v-for="item in items"
               :key="item.id"
+              :slug="item.slug"
               :name="item.name"
               :short-description="item.short_description"
               :img-link="item.img_link"
