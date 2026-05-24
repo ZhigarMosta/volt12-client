@@ -1,5 +1,5 @@
 <template>
-  <div class="slider-wrapper">
+  <div class="slider-wrapper" :class="{ 'is-vertical': direction === 'vertical' }">
     <div v-if="loading" class="skeleton-container" :style="{ gridTemplateColumns: `repeat(${skeletonSlidesPerView}, 1fr)` }">
       <template v-if="isProductComponent">
         <div v-for="i in skeletonCount" :key="i" class="skeleton-product-card">
@@ -17,7 +17,7 @@
       </template>
     </div>
     <div v-else class="slider-content">
-      <button v-if="showNavigation" v-show="!isBeginning" ref="prevBtn" class="nav-btn nav-prev" :style="{ top: navTop }">
+      <button v-if="showNavigation" v-show="!isBeginning" ref="prevBtn" class="nav-btn nav-prev" :style="navPrevStyle">
         <svg width="42" height="42" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg" style="transform: scaleX(-1)">
           <circle cx="21" cy="21" r="21" fill="#E2000F" />
           <path d="M25.7072 21.7071C26.0977 21.3166 26.0977 20.6834 25.7072 20.2929L19.3432 13.9289C18.9527 13.5384 18.3196 13.5384 17.929 13.9289C17.5385 14.3195 17.5385 14.9526 17.929 15.3431L23.5859 21L17.929 26.6569C17.5385 27.0474 17.5385 27.6805 17.929 28.0711C18.3196 28.4616 18.9527 28.4616 19.3432 28.0711L25.7072 21.7071ZM25 21V22H25.0001V21V20H25V21Z" fill="white" />
@@ -25,9 +25,10 @@
       </button>
       <swiper
           class="swiper"
+          :direction="direction"
           :slides-per-view="slidesPerView"
           :slides-per-group="resolvedSlidesPerGroup"
-          :grid="slidesPerView !== 'auto' ? { rows: gridRows } : undefined"
+          :grid="gridConfig"
           :space-between="spaceBetween"
           :pagination="paginationConfig"
           :navigation="navConfig"
@@ -45,7 +46,7 @@
           <component :is="slideComponent" v-bind="getSlideProps(item, index)" />
         </swiper-slide>
       </swiper>
-      <button v-if="showNavigation" v-show="!isEnd" ref="nextBtn" class="nav-btn nav-next" :style="{ top: navTop }">
+      <button v-if="showNavigation" v-show="!isEnd" ref="nextBtn" class="nav-btn nav-next" :style="navNextStyle">
         <svg width="42" height="42" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="21" cy="21" r="21" fill="#E2000F" />
           <path d="M25.7072 21.7071C26.0977 21.3166 26.0977 20.6834 25.7072 20.2929L19.3432 13.9289C18.9527 13.5384 18.3196 13.5384 17.929 13.9289C17.5385 14.3195 17.5385 14.9526 17.929 15.3431L23.5859 21L17.929 26.6569C17.5385 27.0474 17.5385 27.6805 17.929 28.0711C18.3196 28.4616 18.9527 28.4616 19.3432 28.0711L25.7072 21.7071ZM25 21V22H25.0001V21V20H25V21Z" fill="white" />
@@ -96,6 +97,7 @@ interface Props {
   showNavigation?: boolean;
   showPagination?: boolean;
   navTop?: string;
+  direction?: 'horizontal' | 'vertical';
   slideProps?: (item: any, index: number) => Record<string, any>;
 }
 
@@ -112,9 +114,13 @@ const props = withDefaults(defineProps<Props>(), {
   swiperClass: '',
   showNavigation: false,
   showPagination: true,
-  navTop: '50%',
+  direction: 'horizontal',
   slideProps: (item: any, index: number) => ({ product: item, feedback: item })
 });
+
+const emit = defineEmits<{
+  slideChange: [index: number];
+}>();
 
 function getSlideProps(item: any, index: number): Record<string, any> {
   return props.slideProps(item, index);
@@ -124,6 +130,19 @@ const resolvedSlidesPerGroup = computed(() => {
   if (props.slidesPerView === 'auto') return 1;
   return props.slidesPerGroup;
 });
+
+const gridConfig = computed(() => {
+  if (props.direction === 'vertical' || props.slidesPerView === 'auto') return undefined;
+  return { rows: props.gridRows };
+});
+
+const navPrevStyle = computed(() => (
+    props.direction === 'vertical' ? {} : { top: props.navTop }
+));
+
+const navNextStyle = computed(() => (
+    props.direction === 'vertical' ? {} : { top: props.navTop }
+));
 
 const prevBtn = ref<HTMLElement | null>(null);
 const nextBtn = ref<HTMLElement | null>(null);
@@ -145,7 +164,7 @@ const error = ref<any>(null);
 const modules = computed(() => {
   const mods: any[] = [];
   if (props.showPagination) mods.push(Pagination);
-  if (props.slidesPerView !== 'auto') mods.push(Grid);
+  if (props.slidesPerView !== 'auto' && props.direction === 'horizontal') mods.push(Grid);
   if (props.showNavigation) mods.push(Navigation);
   return mods;
 });
@@ -201,6 +220,7 @@ const fetchData = async () => {
 
 const isBeginning = ref(true);
 const isEnd = ref(false);
+const swiperInstance = ref<any>(null);
 
 function checkEdges(swiper: any) {
   if (!props.showNavigation) return;
@@ -209,6 +229,7 @@ function checkEdges(swiper: any) {
 }
 
 function onSwiperInit(swiper: any) {
+  swiperInstance.value = swiper;
   if (props.showNavigation && prevBtn.value && nextBtn.value) {
     swiper.params.navigation.prevEl = prevBtn.value;
     swiper.params.navigation.nextEl = nextBtn.value;
@@ -218,7 +239,16 @@ function onSwiperInit(swiper: any) {
   checkEdges(swiper);
 }
 
-function onSlideChange(swiper: any) { checkEdges(swiper); }
+function slideTo(index: number) {
+  swiperInstance.value?.slideTo(index);
+}
+
+defineExpose({ slideTo });
+
+function onSlideChange(swiper: any) {
+  checkEdges(swiper);
+  emit('slideChange', swiper.activeIndex);
+}
 function onFromEdge(swiper: any) { checkEdges(swiper); }
 function onSwiperUpdate(swiper: any) { checkEdges(swiper); }
 
@@ -241,11 +271,10 @@ onMounted(() => {
   padding: 0;
   line-height: 0;
 }
-.nav-prev {
-  left: -21px;
-}
-.nav-next {
-  right: -21px;
+.slider-wrapper.is-vertical .slider-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .slider-wrapper {
@@ -364,7 +393,6 @@ onMounted(() => {
 @media (max-width: 1100px) {
   .swiper, .loading {
     height: var(--slider-tablet-height, 823px);
-    padding-bottom: 50px;
   }
   .skeleton-container {
     height: var(--slider-tablet-height, 823px);

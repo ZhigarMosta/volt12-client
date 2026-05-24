@@ -1,5 +1,5 @@
 <template>
-  <NuxtLink to="/" class="product-card">
+  <NuxtLink :to="`/product/${product.slug}`" class="product-card">
     <img 
       class="product-img" 
       :src="imageUrl" 

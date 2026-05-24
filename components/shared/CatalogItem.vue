@@ -1,7 +1,9 @@
 <template>
   <div
       class="image-split-card"
+      :class="{ 'is-clickable': slug }"
       ref="card"
+      @click="onCardClick"
   >
     <p class="title">{{ title }}</p>
     <div class="image-action">
@@ -28,7 +30,7 @@
         </div>
       </div>
       <div class="actions">
-        <button class="action">
+        <button class="action" @click.stop>
           <svg class="favorite" width="25" height="21" viewBox="0 0 25 21" fill="none"
                xmlns="http://www.w3.org/2000/svg">
             <path
@@ -36,7 +38,7 @@
                 stroke="var(--black)" stroke-width="2"/>
           </svg>
         </button>
-        <button class="action" @click="onCompareClick">
+        <button class="action" @click.stop="onCompareClick">
           <svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path fill-rule="evenodd" clip-rule="evenodd"
                   d="M17.68 0.00455729C19.5294 0.0982503 21 1.62738 21 3.5V17.5L20.9954 17.68C20.9048 19.4697 19.4697 20.9048 17.68 20.9954L17.5 21H3.5C1.62738 21 0.0982502 19.5294 0.00455729 17.68L0 17.5V3.5C2.25493e-07 1.567 1.567 5.63724e-08 3.5 0H17.5L17.68 0.00455729ZM3.5 1.75C2.5335 1.75 1.75 2.5335 1.75 3.5V17.5C1.75 18.4665 2.5335 19.25 3.5 19.25H4.95833V5.83333C4.95833 5.35008 5.35008 4.95833 5.83333 4.95833C6.31658 4.95833 6.70833 5.35008 6.70833 5.83333V19.25H9.625V11.6667C9.625 11.1834 10.0168 10.7917 10.5 10.7917C10.9832 10.7917 11.375 11.1834 11.375 11.6667V19.25H14.2917V9.33333C14.2917 8.85008 14.6834 8.45833 15.1667 8.45833C15.6499 8.45833 16.0417 8.85008 16.0417 9.33333V19.25H17.5C18.4665 19.25 19.25 18.4665 19.25 17.5V3.5C19.25 2.5335 18.4665 1.75 17.5 1.75H3.5Z"
@@ -51,7 +53,7 @@
       <div class="price-block">
         <p class="price">₽ {{ price }}</p>
         <div class="actions-mobile">
-          <button class="action">
+          <button class="action" @click.stop>
             <svg class="favorite" width="25" height="21" viewBox="0 0 25 21" fill="none"
                  xmlns="http://www.w3.org/2000/svg">
               <path
@@ -59,7 +61,7 @@
                   stroke="var(--black)" stroke-width="2"/>
             </svg>
           </button>
-          <button class="action" @click="onCompareClick">
+          <button class="action" @click.stop="onCompareClick">
             <svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path fill-rule="evenodd" clip-rule="evenodd"
                     d="M17.68 0.00455729C19.5294 0.0982503 21 1.62738 21 3.5V17.5L20.9954 17.68C20.9048 19.4697 19.4697 20.9048 17.68 20.9954L17.5 21H3.5C1.62738 21 0.0982502 19.5294 0.00455729 17.68L0 17.5V3.5C2.25493e-07 1.567 1.567 5.63724e-08 3.5 0H17.5L17.68 0.00455729ZM3.5 1.75C2.5335 1.75 1.75 2.5335 1.75 3.5V17.5C1.75 18.4665 2.5335 19.25 3.5 19.25H4.95833V5.83333C4.95833 5.35008 5.35008 4.95833 5.83333 4.95833C6.31658 4.95833 6.70833 5.35008 6.70833 5.83333V19.25H9.625V11.6667C9.625 11.1834 10.0168 10.7917 10.5 10.7917C10.9832 10.7917 11.375 11.1834 11.375 11.6667V19.25H14.2917V9.33333C14.2917 8.85008 14.6834 8.45833 15.1667 8.45833C15.6499 8.45833 16.0417 8.85008 16.0417 9.33333V19.25H17.5C18.4665 19.25 19.25 18.4665 19.25 17.5V3.5C19.25 2.5335 18.4665 1.75 17.5 1.75H3.5Z"
@@ -68,7 +70,7 @@
           </button>
         </div>
       </div>
-      <UiButton class="btn-card" fullWidth vertical-spacing="compact" variant="red">
+      <UiButton class="btn-card" fullWidth vertical-spacing="compact" variant="red" @click.stop>
         В корзину
       </UiButton>
     </div>
@@ -93,8 +95,14 @@ const props = defineProps<{
   subtitle?: string;
   price: string | number;
   productId?: number;
+  slug?: string;
   onAdd?: () => void;
 }>();
+
+function onCardClick() {
+  if (!props.slug) return;
+  navigateTo(`/product/${props.slug}`);
+}
 
 const { isAuthenticated } = useAuth();
 
@@ -196,6 +204,10 @@ function onCompareClick() {
   justify-content: right;
 }
 
+.image-split-card.is-clickable {
+  cursor: pointer;
+}
+
 .image-split-card {
   width: 100%;
   height: 100%;
@@ -226,6 +238,8 @@ function onCompareClick() {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  max-width: 167px;
+  max-height: 138px;
 }
 
 .placeholder {
@@ -332,5 +346,14 @@ function onCompareClick() {
   .price {
     font-size: 16px;
   }
+  .product-image {
+    max-width: 141px;
+    max-height: 116px;
+  }
+  .image-stage {
+    min-width: 141px;
+    min-height: 116px;
+  }
+
 }
 </style>

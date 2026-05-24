@@ -6,6 +6,7 @@ import type {
   CatalogItemsFilters,
   CatalogItemsResponse,
   CatalogCharacteristics,
+  CatalogItemDetailResponse,
   Feedback,
   Service,
   RelatedService,
@@ -64,6 +65,22 @@ export async function getCatalogItems(params: CatalogItemsFilters): Promise<Cata
     method: 'POST',
     body: params
   });
+}
+
+export async function getCatalogItemDetail(slug: string): Promise<CatalogItemDetailResponse | null> {
+  const apiBase = getApiBase();
+  try {
+    const res = await $fetch<CatalogItemDetailResponse>(`${apiBase}/volt12/catalog_items/detail`, {
+      method: 'POST',
+      body: {
+        slug,
+        recently_viewed_ids: [],
+      },
+    });
+    return res.success ? res : null;
+  } catch {
+    return null;
+  }
 }
 
 /**

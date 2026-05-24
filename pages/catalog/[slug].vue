@@ -100,6 +100,7 @@
                   v-for="item in catalogItems"
                   :key="item.id"
                   :productId="item.id"
+                  :slug="item.slug"
                   :images="item.catalogItemImages"
                   :title="item.name"
                   :subtitle="item.product_code"

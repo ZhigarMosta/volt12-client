@@ -125,3 +125,48 @@ export interface Feedback {
   message: string;
   feedback_link: string;
 }
+
+export interface CatalogItemDetailImage {
+  id: number;
+  img_link: string;
+  alt?: string;
+  title?: string;
+  position?: number;
+}
+
+export interface CatalogItemDetail {
+  id: number;
+  name: string;
+  slug: string;
+  price: number;
+  description: string | null;
+  short_description: string | null;
+  product_code: string;
+  is_new: boolean;
+  is_popular: boolean;
+  is_published: boolean;
+  position: number;
+  catalog_id: number | null;
+  images: CatalogItemDetailImage[];
+  characteristics: {
+    without_group: Characteristic[];
+    with_group: CharacteristicGroup[];
+  };
+}
+
+export interface RelatedCatalogItem {
+  id: number;
+  name: string;
+  slug: string;
+  price: number;
+  img_link: string | null;
+  product_code: string;
+}
+
+export interface CatalogItemDetailResponse {
+  success: boolean;
+  item: CatalogItemDetail;
+  related: RelatedCatalogItem[];
+  recently_viewed: RelatedCatalogItem[];
+  error?: string;
+}
