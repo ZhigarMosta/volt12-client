@@ -10,8 +10,7 @@
         </div>
       </div>
     </template>
-    <div v-else-if="error" class="error">Ошибка: {{ error.message }}</div>
-    <div v-else-if="!item" class="error">Товар не найден</div>
+    <div v-if="!item" class="error">Товар не найден</div>
 
     <template v-else>
       <Navigate :items="breadcrumbsItems"/>
@@ -26,12 +25,15 @@
       <div class="product-hero">
         <div class="gallery-block">
           <div class="gallery-main-image-container">
-            <img
-                v-if="displayedGalleryImage"
-                :src="displayedGalleryImage.url"
-                :alt="displayedGalleryImage.alt || item.name"
-                class="gallery-main-image"
-            />
+            <Transition name="gallery-fade">
+              <img
+                  v-if="displayedGalleryImage"
+                  :key="displayedImageIndex"
+                  :src="displayedGalleryImage.url"
+                  :alt="displayedGalleryImage.alt || item.name"
+                  class="gallery-main-image"
+              />
+            </Transition>
           </div>
           <Slider
               v-if="gallerySlides.length > 1 && !isGalleryMobile"
@@ -421,18 +423,34 @@ const isTabletWidth = computed(() => windowWidth.value > TABLET_WIDTH);
 
 .gallery-main-image-container {
   order: 2;
+  position: relative;
   display: flex;
+  max-height: 410px;
   border: 1px solid rgba(185, 185, 185, 0.38);
   border-radius: 16px;
   overflow: hidden;
 }
+
 .gallery-main-image {
   width: 100%;
-  max-height: 410px;
-  max-width: 410px;
+  height: 100%;
   object-fit: contain;
-  flex: 1;
-  min-width: 0;
+  display: block;
+}
+
+.gallery-fade-enter-active,
+.gallery-fade-leave-active {
+  transition: opacity 0.35s ease;
+}
+
+.gallery-fade-leave-active {
+  position: absolute;
+  inset: 0;
+}
+
+.gallery-fade-enter-from,
+.gallery-fade-leave-to {
+  opacity: 0;
 }
 
 .product-info {
@@ -532,14 +550,18 @@ const isTabletWidth = computed(() => windowWidth.value > TABLET_WIDTH);
   .product-detail {
     padding: 0 37px;
   }
-  .gallery-main-image {
-    max-width: 100%;
-  }
-  .short-description{
-    max-width: 100%;
-  }
-  .gallery-block,.gallery-main-image,.gallery-main-image-container {
+  .gallery-block,
+  .gallery-main-image-container {
     width: 100%;
+    max-width: 100%;
+  }
+
+  .gallery-main-image-container {
+    height: min(410px, calc(100vw - 74px));
+  }
+
+  .short-description {
+    max-width: 100%;
   }
 }
 
@@ -559,6 +581,7 @@ const isTabletWidth = computed(() => windowWidth.value > TABLET_WIDTH);
   .gallery-main-image-container {
     order: 1;
     width: 100%;
+    height: min(320px, calc(100vw - 40px));
   }
 
   .gallery-slider-mobile {
@@ -580,11 +603,6 @@ const isTabletWidth = computed(() => windowWidth.value > TABLET_WIDTH);
 
   .gallery-slider-mobile :deep(.nav-next) {
     right: 0;
-  }
-
-  .gallery-main-image {
-    max-width: 100%;
-    max-height: 320px;
   }
 
   .product-actions {
