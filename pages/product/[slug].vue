@@ -25,21 +25,6 @@
 
       <div class="product-hero">
         <div class="gallery-block">
-          <Slider
-              v-if="gallerySlides.length > 1"
-              ref="gallerySliderRef"
-              class="gallery-slider"
-              :items="gallerySlides"
-              direction="vertical"
-              :slides-per-view="4"
-              :slides-per-group="1"
-              :grid-rows="1"
-              :space-between="14"
-              :show-navigation="gallerySlides.length > 4"
-              :show-pagination="false"
-              :slide-component="ProductGalleryThumb"
-              :slide-props="gallerySlideProps"
-          />
           <div class="gallery-main-image-container">
             <img
                 v-if="displayedGalleryImage"
@@ -48,6 +33,23 @@
                 class="gallery-main-image"
             />
           </div>
+          <Slider
+              v-if="gallerySlides.length > 1"
+              :key="galleryDirection"
+              ref="gallerySliderRef"
+              class="gallery-slider"
+              :class="{ 'gallery-slider--horizontal': isGalleryMobile }"
+              :items="gallerySlides"
+              :direction="galleryDirection"
+              :slides-per-view="gallerySlidesPerView"
+              :slides-per-group="1"
+              :grid-rows="1"
+              :space-between="14"
+              :show-navigation="gallerySlides.length > 4"
+              :show-pagination="false"
+              :slide-component="ProductGalleryThumb"
+              :slide-props="gallerySlideProps"
+          />
         </div>
 
         <div class="product-info" >
@@ -131,7 +133,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import type { CatalogItemDetail, RelatedCatalogItem } from '~/types/product';
 import { addToCompare, getCatalogItemDetail } from '~/services/productApi';
 import { formatPrice } from '~/utils/format';
@@ -229,7 +231,22 @@ function onCompareClick() {
   addToCompare(item.value.id);
 }
 
+const MOBILE_WIDTH = 744;
+const TABLET_WIDTH = 1100;
+const windowWidth = ref(0);
+
+const isGalleryMobile = computed(() => windowWidth.value > 0 && windowWidth.value <= MOBILE_WIDTH);
+const galleryDirection = computed(() => (isGalleryMobile.value ? 'horizontal' : 'vertical'));
+const gallerySlidesPerView = computed(() => (isGalleryMobile.value ? 'auto' : 4));
+
+function updateWindowWidth() {
+  windowWidth.value = window.innerWidth;
+}
+
 onMounted(async () => {
+  updateWindowWidth();
+  window.addEventListener('resize', updateWindowWidth);
+
   const recentlyViewedIds = useRecentlyViewedIds();
 
   try {
@@ -248,10 +265,12 @@ onMounted(async () => {
     pending.value = false;
   }
 });
-const tabletWidth = 1100;
-const isTabletWidth = computed(() => {
-  return window.innerWidth > tabletWidth;
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateWindowWidth);
 });
+
+const isTabletWidth = computed(() => windowWidth.value > TABLET_WIDTH);
 
 </script>
 
@@ -385,12 +404,15 @@ const isTabletWidth = computed(() => {
 }
 
 .gallery-slider {
+  order: 1;
   --slider-desktop-height: 410px;
   --slider-tablet-height: 410px;
   --slider-mobile-height: 410px;
   width: 98px;
 }
-.gallery-main-image-container{
+
+.gallery-main-image-container {
+  order: 2;
   display: flex;
   border: 1px solid rgba(185, 185, 185, 0.38);
   border-radius: 16px;
@@ -508,6 +530,9 @@ const isTabletWidth = computed(() => {
   .short-description{
     max-width: 100%;
   }
+  .gallery-block,.gallery-main-image,.gallery-main-image-container {
+    width: 100%;
+  }
 }
 
 @media (max-width: 744px) {
@@ -519,10 +544,37 @@ const isTabletWidth = computed(() => {
   }
   .gallery-block {
     flex-direction: column;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .gallery-main-image-container {
+    order: 1;
+    width: 100%;
+  }
+
+  .gallery-slider {
+    order: 2;
+  }
+
+  .gallery-main-image {
+    max-width: 100%;
+    max-height: 320px;
   }
 
   .gallery-slider {
     width: 100%;
+    --slider-desktop-height: 88px;
+    --slider-tablet-height: 88px;
+    --slider-mobile-height: 88px;
+  }
+
+  .gallery-slider--horizontal :deep(.swiper) {
+    height: 88px;
+  }
+
+  .gallery-slider--horizontal :deep(.slider-content) {
+    padding: 0 36px;
   }
 
   .product-actions {
