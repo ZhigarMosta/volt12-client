@@ -71,4 +71,20 @@ function onHoverLeave() {
   transition: opacity 0.2s;
   opacity: 0;
 }
+
+@media (max-width: 744px) {
+  .gallery-active{
+    order: 2;
+  }
+  .gallery-thumb{
+    order: 1;
+  }
+  .gallery{
+    flex-direction: column;
+  }
+  .gallery-active {
+    height: 4px;
+    width: 88px;
+  }
+}
 </style>

@@ -34,14 +34,12 @@
             />
           </div>
           <Slider
-              v-if="gallerySlides.length > 1"
-              :key="galleryDirection"
+              v-if="gallerySlides.length > 1 && !isGalleryMobile"
               ref="gallerySliderRef"
               class="gallery-slider"
-              :class="{ 'gallery-slider--horizontal': isGalleryMobile }"
               :items="gallerySlides"
-              :direction="galleryDirection"
-              :slides-per-view="gallerySlidesPerView"
+              direction="vertical"
+              :slides-per-view="4"
               :slides-per-group="1"
               :grid-rows="1"
               :space-between="14"
@@ -49,6 +47,18 @@
               :show-pagination="false"
               :slide-component="ProductGalleryThumb"
               :slide-props="gallerySlideProps"
+          />
+          <Slider
+              v-if="gallerySlides.length > 1 && isGalleryMobile"
+              ref="gallerySliderRef"
+              class="products-slider gallery-slider-mobile"
+              slides-per-view="auto"
+              :items="gallerySlides"
+              :slide-props="gallerySlideProps"
+              :space-between="23"
+              :slide-component="ProductGalleryThumb"
+              show-navigation
+              :show-pagination="false"
           />
         </div>
 
@@ -236,8 +246,6 @@ const TABLET_WIDTH = 1100;
 const windowWidth = ref(0);
 
 const isGalleryMobile = computed(() => windowWidth.value > 0 && windowWidth.value <= MOBILE_WIDTH);
-const galleryDirection = computed(() => (isGalleryMobile.value ? 'horizontal' : 'vertical'));
-const gallerySlidesPerView = computed(() => (isGalleryMobile.value ? 'auto' : 4));
 
 function updateWindowWidth() {
   windowWidth.value = window.innerWidth;
@@ -553,28 +561,30 @@ const isTabletWidth = computed(() => windowWidth.value > TABLET_WIDTH);
     width: 100%;
   }
 
-  .gallery-slider {
+  .gallery-slider-mobile {
     order: 2;
+    width: 100%;
+    --slider-mobile-height: 100px;
+  }
+
+  .gallery-slider-mobile :deep(.nav-prev),
+  .gallery-slider-mobile :deep(.nav-next) {
+    top: 50%;
+    right: auto;
+    transform: translateY(-50%);
+  }
+
+  .gallery-slider-mobile :deep(.nav-prev) {
+    left: 0;
+  }
+
+  .gallery-slider-mobile :deep(.nav-next) {
+    right: 0;
   }
 
   .gallery-main-image {
     max-width: 100%;
     max-height: 320px;
-  }
-
-  .gallery-slider {
-    width: 100%;
-    --slider-desktop-height: 88px;
-    --slider-tablet-height: 88px;
-    --slider-mobile-height: 88px;
-  }
-
-  .gallery-slider--horizontal :deep(.swiper) {
-    height: 88px;
-  }
-
-  .gallery-slider--horizontal :deep(.slider-content) {
-    padding: 0 36px;
   }
 
   .product-actions {
