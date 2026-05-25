@@ -126,6 +126,12 @@ export interface Feedback {
   feedback_link: string;
 }
 
+export interface ProductCharacteristic {
+  id: number;
+  name: string;
+  exist: boolean;
+}
+
 export interface CatalogItemDetailImage {
   id: number;
   img_link: string;
@@ -146,12 +152,10 @@ export interface CatalogItemDetail {
   is_popular: boolean;
   is_published: boolean;
   position: number;
+  count: number;
   catalog_id: number | null;
   images: CatalogItemDetailImage[];
-  characteristics: {
-    without_group: Characteristic[];
-    with_group: CharacteristicGroup[];
-  };
+  characteristics: ProductCharacteristic[];
 }
 
 export interface RelatedCatalogItem {

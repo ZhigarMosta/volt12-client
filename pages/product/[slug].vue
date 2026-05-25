@@ -52,10 +52,10 @@
 
         <div class="product-info" >
           <div v-if="isTabletWidth">
-            <InStock :count="100" />
+            <InStock :count="item.count" />
           </div>
 
-          <p v-if="item.description" class="short-description" >{{ item.short_description }}</p>
+          <div v-if="item.description" class="short-description" v-html="item.short_description"/>
 
           <p class="product-price">{{ formatPrice(item.price) }}</p>
 
@@ -87,44 +87,45 @@
       </div>
 
       <section class="characteristics-section">
-        <h2 class="section-title">Характеристики</h2>
+        <h2 class="section-title characteristics-title">Характеристики</h2>
 
         <div v-if="item.description" class="characteristics-description" v-html="item.description"/>
 
-<!--        <div v-if="specRows.length" class="spec-table">-->
-<!--          <div v-for="(row, idx) in specRows" :key="idx" class="spec-row">-->
-<!--            <span class="spec-label">{{ row.label }}</span>-->
-<!--            <span class="spec-value">{{ row.value }}</span>-->
-<!--          </div>-->
-<!--        </div>-->
-      </section>
-
-      <section v-if="related.length > 0" class="products-section">
-        <h2 class="section-title mb-like-h">Вам может понравиться</h2>
-        <Slider
-            class="slider-mb-like"
-            slides-per-view="auto"
-            :items="related"
-            :slide-props="catalogItemSlideProps"
-            :space-between="23"
-            :slide-component="CatalogItem"
-            show-navigation
-            :show-pagination="false"
+        <ProductCharacteristics
+            v-if="item.characteristics.length"
+            :characteristics="item.characteristics"
         />
       </section>
 
-      <section v-if="recentlyViewed.length > 0" class="products-section">
-        <h2 class="section-title mb-like-h">Вы смотрели</h2>
-        <Slider
-            class="products-slider"
-            :items="recentlyViewed"
-            :slide-component="CatalogItem"
-            :slide-props="catalogItemSlideProps"
-            :breakpoints="productSliderBreakpoints"
-            :show-navigation="false"
-            :show-pagination="false"
-        />
-      </section>
+      <div class="more-products">
+        <section v-if="related.length > 0" class="products-section">
+          <h2 class="section-title mb-like-h">Вам может понравиться</h2>
+          <Slider
+              class="slider-mb-like"
+              slides-per-view="auto"
+              :items="related"
+              :slide-props="catalogItemSlideProps"
+              :space-between="23"
+              :slide-component="CatalogItem"
+              show-navigation
+              :show-pagination="false"
+          />
+        </section>
+
+        <section v-if="recentlyViewed.length > 0" class="products-section">
+          <h2 class="section-title mb-like-h">Вы смотрели</h2>
+          <Slider
+              class="products-slider"
+              slides-per-view="auto"
+              :items="recentlyViewed"
+              :slide-props="catalogItemSlideProps"
+              :space-between="23"
+              :slide-component="CatalogItem"
+              show-navigation
+              :show-pagination="false"
+          />
+        </section>
+      </div>
     </template>
   </div>
 </template>
@@ -134,9 +135,9 @@ import { ref, computed, onMounted } from 'vue';
 import type { CatalogItemDetail, RelatedCatalogItem } from '~/types/product';
 import { addToCompare, getCatalogItemDetail } from '~/services/productApi';
 import { formatPrice } from '~/utils/format';
+import { pushRecentlyViewedId, useRecentlyViewedIds } from '~/utils/recentlyViewed';
 import ProductGalleryThumb from '~/components/shared/ProductGalleryThumb.vue';
 import CatalogItem from '~/components/shared/CatalogItem.vue';
-import CompareItem from "~/components/shared/CompareItem.vue";
 
 type GallerySlide = {
   id: number;
@@ -162,30 +163,8 @@ const gallerySliderRef = ref<{ slideTo: (index: number) => void } | null>(null);
 
 const breadcrumbsItems = computed(() => [
   { to: '/', text: 'Главная' },
-  { to: '/catalog', text: 'Каталог' },
-  { to: route.path, text: item.value?.name ?? 'Товар' },
+  { to: '/catalog', text: 'Каталог' }
 ]);
-
-const productSliderBreakpoints = {
-  0: {
-    slidesPerView: 1,
-    slidesPerGroup: 1,
-    grid: { rows: 1 },
-    spaceBetween: 12,
-  },
-  744: {
-    slidesPerView: 2,
-    slidesPerGroup: 2,
-    grid: { rows: 1 },
-    spaceBetween: 12,
-  },
-  1100: {
-    slidesPerView: 4,
-    slidesPerGroup: 4,
-    grid: { rows: 1 },
-    spaceBetween: 20,
-  },
-};
 
 const galleryImages = computed<GallerySlide[]>(() => {
   if (!item.value?.images?.length) return [];
@@ -251,12 +230,17 @@ function onCompareClick() {
 }
 
 onMounted(async () => {
+  const recentlyViewedIds = useRecentlyViewedIds();
+
   try {
-    const result = await getCatalogItemDetail(slug.value);
+    const result = await getCatalogItemDetail(slug.value, recentlyViewedIds.value);
     if (result) {
       item.value = result.item;
       related.value = result.related ?? [];
-      recentlyViewed.value = result.recently_viewed ?? [];
+      recentlyViewed.value = (result.recently_viewed ?? []).filter(
+          (viewed) => viewed.id !== result.item.id,
+      );
+      pushRecentlyViewedId(recentlyViewedIds, result.item.id);
     }
   } catch (e: unknown) {
     error.value = e instanceof Error ? e : new Error('Не удалось загрузить товар');
@@ -272,19 +256,22 @@ const isTabletWidth = computed(() => {
 </script>
 
 <style scoped>
+.more-products{
+  margin-bottom: 137px;
+}
 .mb-like-h {
   margin-bottom: 33px;
 }
-.slider-mb-like{
+.slider-mb-like, .products-slider{
   --slider-desktop-height: 272px;
   --slider-tablet-height: 272px;
   --slider-mobile-height: 272px;
 }
-.slider-mb-like :deep(.nav-prev), .slider-mb-like :deep(.nav-next){
+.slider-mb-like :deep(.nav-prev), .slider-mb-like :deep(.nav-next),.products-slider :deep(.nav-prev), .products-slider :deep(.nav-next){
   top: -45px;
   right: 0;
 }
-.slider-mb-like :deep(.nav-prev){
+.slider-mb-like :deep(.nav-prev), .products-slider :deep(.nav-prev){
   right: 64px;
 }
 
@@ -431,6 +418,7 @@ const isTabletWidth = computed(() => {
   line-height: 1.5;
   color: var(--black);
   opacity: 0.7;
+  max-width: 536px;
 }
 
 .product-price {
@@ -478,6 +466,10 @@ const isTabletWidth = computed(() => {
   color: var(--black);
 }
 
+.characteristics-title {
+  margin-bottom: 24px;
+}
+
 .characteristics-section {
   margin-bottom: 48px;
 }
@@ -492,42 +484,18 @@ const isTabletWidth = computed(() => {
   margin-bottom: 24px;
 }
 
-.spec-table {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px 40px;
-}
-
-.spec-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  font-family: 'NT Somic', sans-serif;
-  font-size: 14px;
-}
-
-.spec-label {
-  color: var(--black);
-  opacity: 0.5;
-}
-
-.spec-value {
-  font-weight: 500;
-  color: var(--black);
-  text-align: right;
+.characteristics-section :deep(.characteristics-list) {
+  margin-top: 0;
 }
 
 .products-section {
   margin-bottom: 48px;
 }
 
-.products-slider {
-  --slider-desktop-height: 310px;
-  --slider-tablet-height: 310px;
-  --slider-mobile-height: 310px;
-}
-
 @media (max-width: 1100px) {
+  .more-products{
+    margin-bottom: 56px;
+  }
   .product-hero {
     flex-direction: column;
   }
@@ -537,9 +505,15 @@ const isTabletWidth = computed(() => {
   .gallery-main-image {
     max-width: 100%;
   }
+  .short-description{
+    max-width: 100%;
+  }
 }
 
 @media (max-width: 744px) {
+  .more-products{
+    margin-bottom: 32px;
+  }
   .product-detail {
     padding: 0 20px;
   }
@@ -549,11 +523,6 @@ const isTabletWidth = computed(() => {
 
   .gallery-slider {
     width: 100%;
-  }
-
-  .products-slider :deep(.slider-wrapper.is-vertical .swiper) {
-    width: 100%;
-    height: auto;
   }
 
   .product-actions {

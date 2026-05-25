@@ -67,14 +67,17 @@ export async function getCatalogItems(params: CatalogItemsFilters): Promise<Cata
   });
 }
 
-export async function getCatalogItemDetail(slug: string): Promise<CatalogItemDetailResponse | null> {
+export async function getCatalogItemDetail(
+  slug: string,
+  recentlyViewedIds: number[] = [],
+): Promise<CatalogItemDetailResponse | null> {
   const apiBase = getApiBase();
   try {
     const res = await $fetch<CatalogItemDetailResponse>(`${apiBase}/volt12/catalog_items/detail`, {
       method: 'POST',
       body: {
         slug,
-        recently_viewed_ids: [],
+        recently_viewed_ids: recentlyViewedIds,
       },
     });
     return res.success ? res : null;
