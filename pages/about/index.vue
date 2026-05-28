@@ -26,13 +26,59 @@
         </div>
       </div>
     </div>
+
+    <section class="about-gallery">
+      <Slider
+          class="about-gallery-slider"
+          :items="galleryImages"
+          :breakpoints="sliderBreakpoints"
+          :slide-component="AboutGallerySlide"
+          :slide-props="gallerySlideProps"
+      />
+    </section>
   </div>
 </template>
 
 <script setup lang="ts">
+import Slider from '~/components/features/Slider.vue';
+import AboutGallerySlide from '~/components/shared/AboutGallerySlide.vue';
+import type { AboutGalleryImage } from '~/types/about';
+
 useHead({
   title: 'О нас — Мастер 12 Вольт',
 });
+
+const sliderBreakpoints = {
+  0: {
+    slidesPerView: 2,
+    slidesPerGroup: 1,
+    grid: {rows: 1},
+    spaceBetween: 20,
+  },
+  744: {
+    slidesPerView: 2,
+    slidesPerGroup: 1,
+    grid: {rows: 1},
+    spaceBetween: 20,
+  },
+  1100: {
+    slidesPerView: 3,
+    slidesPerGroup: 1,
+    grid: {rows: 1},
+    spaceBetween: 20,
+  },
+};
+
+const galleryImages: AboutGalleryImage[] = [
+  {id: 1, src: '/images/about/gallery-1.jpg', alt: 'Фото 1'},
+  {id: 2, src: '/images/about/gallery-2.jpg', alt: 'Фото 2'},
+  {id: 3, src: '/images/about/gallery-3.jpg', alt: 'Фото 3'},
+  {id: 4, src: '/images/about/gallery-4.jpg', alt: 'Фото 4'},
+  {id: 5, src: '/images/about/gallery-5.jpg', alt: 'Фото 5'},
+  {id: 6, src: '/images/about/gallery-6.jpg', alt: 'Фото 6'},
+];
+
+const gallerySlideProps = (item: AboutGalleryImage) => ({image: item});
 
 const breadcrumbsItems = [
   {to: '/', text: 'Главная'},
@@ -41,9 +87,9 @@ const breadcrumbsItems = [
 
 const cards = [
   {icon: '/icons/user.svg', count: 12, text: 'Специалистов в штате'},
-  {icon: '/icons/medal.svg', count: 12, text: 'Года на работаем для Вас'},
-  {icon: '/icons/car-signal.svg', count: 12, text: 'Установлено сигнализаций'},
-  {icon: '/icons/users.svg', count: 12, text: 'Обслужено клиентов'},
+  {icon: '/icons/medal.svg', count: 1200, text: 'Года на работаем для Вас'},
+  {icon: '/icons/car-signal.svg', count: 10000, text: 'Установлено сигнализаций'},
+  {icon: '/icons/users.svg', count: 78, text: 'Обслужено клиентов'},
 ];
 </script>
 
@@ -83,12 +129,28 @@ const cards = [
 }
 
 .info {
+  container-type: inline-size;
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 10px;
-
   margin-top: 17px;
+}
+
+/* когда flex-wrap переносит .text и .cards в колонку — карточки сверху */
+@container (max-width: 1224px) {
+  .info .cards {
+    order: -1;
+    max-width: 100%;
+  }
+
+  .info .text {
+    width: 100%;
+  }
+
+  .info .description-text {
+    max-width: none;
+  }
 }
 
 .description-text {
@@ -120,6 +182,17 @@ const cards = [
   padding: 0 70px;
 }
 
+.about-gallery {
+  margin-top: 50px;
+  margin-bottom: 64px;
+}
+
+.about-gallery-slider {
+  --slider-desktop-height: 302px;
+  --slider-tablet-height: 240px;
+  --slider-mobile-height: 148px;
+}
+
 .card-icon {
   display: block;
   width: 50px;
@@ -131,11 +204,30 @@ const cards = [
   .about {
     padding: 0 37px;
   }
+  .cards{
+    padding: 31px 72px 27px 72px;
+  }
+  .about-gallery {
+    margin-top: 41px;
+    margin-bottom: 55px;
+  }
 }
 
 @media (max-width: 744px) {
   .about {
     padding: 0 20px;
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px 16px;
+    padding: 24px 20px;
+    justify-content: unset;
+  }
+  .about-gallery {
+    margin-top: 32px;
+    margin-bottom: 47px;
   }
 }
 </style>
