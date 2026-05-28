@@ -20,6 +20,8 @@
   flex-direction: column;
   min-height: 100vh;
   font-family: sans-serif;
+  max-width: 1440px;
+  margin: 0 auto;
 }
 
 .main {

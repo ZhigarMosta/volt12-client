@@ -17,13 +17,13 @@
           <img class="header__logo" src="../../public/icons/logo.webp" alt="logo">
         </NuxtLink>
         <nav class="header__nav">
-          <NuxtLink to="/" class="header__nav-link header__text">О компании</NuxtLink>
+          <NuxtLink to="/about" class="header__nav-link header__text">О компании</NuxtLink>
           <div class="header__nav-services">
             <NuxtLink to="/" class="header__nav-link header__text">Услуги</NuxtLink>
             <img src="../../public/icons/linkArrow.svg" alt="arrow">
           </div>
           <NuxtLink to="/" class="header__nav-link header__text">Спецпредложения</NuxtLink>
-          <NuxtLink to="/" class="header__nav-link header__text">Контакты</NuxtLink>
+          <NuxtLink to="/contacts" class="header__nav-link header__text">Контакты</NuxtLink>
         </nav>
       </div>
       <div class="header__location">

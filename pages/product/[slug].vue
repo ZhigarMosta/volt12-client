@@ -592,7 +592,7 @@ const isTabletWidth = computed(() => windowWidth.value > TABLET_WIDTH);
 
   .gallery-slider-mobile :deep(.nav-prev),
   .gallery-slider-mobile :deep(.nav-next) {
-    top: 50%;
+    top: 45%;
     right: auto;
     transform: translateY(-50%);
   }

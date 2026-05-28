@@ -1,7 +1,13 @@
 import type { User } from '~/types/user';
 import { getMe, login, logout, register } from '~/services/authApi';
+import { useClientContactStore } from '~/stores/clientContact';
 
 let fetched = false;
+
+function syncUserToClientContact(user: User | null) {
+  if (!import.meta.client || !user) return;
+  useClientContactStore().setFromUser(user);
+}
 
 export function useAuth() {
   const user = useState<User | null>('auth:user', () => null);
@@ -13,15 +19,18 @@ export function useAuth() {
     fetched = true;
     loading.value = true;
     user.value = await getMe();
+    syncUserToClientContact(user.value);
     loading.value = false;
   }
 
   async function loginUser(email: string, password: string) {
     user.value = await login(email, password);
+    syncUserToClientContact(user.value);
   }
 
   async function registerUser(name: string, email: string, password: string, phone?: string) {
     user.value = await register(name, email, password, phone);
+    syncUserToClientContact(user.value);
   }
 
   async function logoutUser() {

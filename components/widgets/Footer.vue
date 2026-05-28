@@ -12,8 +12,8 @@
       </div>
       <div class="footer__block footer__block--b">
         <p class="block_title">Полезная информация</p>
-        <NuxtLink to="/" class="block_text">О компании</NuxtLink>
-        <NuxtLink to="/" class="block_text">Контакты</NuxtLink>
+        <NuxtLink to="/about" class="block_text">О компании</NuxtLink>
+        <NuxtLink to="/contacts" class="block_text">Контакты</NuxtLink>
         <NuxtLink to="/catalog" class="block_text">Каталог</NuxtLink>
         <NuxtLink to="/" class="block_text">Услуги</NuxtLink>
         <NuxtLink to="/" class="block_text">Работа у нас</NuxtLink>
