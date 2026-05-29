@@ -47,6 +47,7 @@
           <div class="char-name">{{ ch.name }}</div>
         </div>
       </div>
+      <div class="wrapper-compare-products"></div>
       <Slider
           class="slider"
           v-if="currentItems.length > 0"
@@ -151,6 +152,26 @@ const breadcrumbsItems = computed(() => [
 </script>
 
 <style scoped>
+.slider{
+  margin-left: 23px;
+  margin-top: 46px;
+  width: unset;
+}
+.wrapper-compare-products{
+  border-radius: 28px;
+  width: 100%;
+  max-width: 1300px;
+  height: 282px;
+  background: var(--gray);
+
+  position: absolute;
+}
+.tabs-swiper :deep(.nav-prev),.tabs-swiper :deep(.nav-next) {
+  top: 31px;
+}
+.slider :deep(.nav-next){
+  right: 0;
+}
 .tabs-swiper {
   --slider-desktop-height: 62px;
   --slider-tablet-height: 62px;
@@ -305,13 +326,14 @@ const breadcrumbsItems = computed(() => [
 }
 
 .catalog-characteristics {
-  margin-top: 250px;
+  margin-top: 283px;
+  margin-left: 23px;
   position: absolute;
   left: calc(50% - 70px);
   z-index: 10;
   display: flex;
   flex-direction: column;
-  gap: 44px;
+  gap: 47px;
   align-items: center;
   pointer-events: none;
 }
