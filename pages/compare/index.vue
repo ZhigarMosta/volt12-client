@@ -42,23 +42,25 @@
           <FilterRadio value="differences" name="Только отличия" v-model="filterMode"/>
         </div>
       </div>
-      <div class="catalog-characteristics">
-        <div v-for="ch in filteredCharacteristics" :key="ch.id" class="char-row">
-          <div class="char-name">{{ ch.name }}</div>
+      <div class="compare-products-section">
+        <div class="wrapper-compare-products"></div>
+        <div class="catalog-characteristics">
+          <div v-for="ch in filteredCharacteristics" :key="ch.id" class="char-row">
+            <div class="char-name">{{ ch.name }}</div>
+          </div>
         </div>
+        <Slider
+            class="slider"
+            v-if="currentItems.length > 0"
+            slides-per-view="auto"
+            :items="currentItems"
+            :space-between="23"
+            :slide-component="CompareItem"
+            :style="sliderHeightStyle"
+            show-navigation
+            nav-top="105px"
+        />
       </div>
-      <div class="wrapper-compare-products"></div>
-      <Slider
-          class="slider"
-          v-if="currentItems.length > 0"
-          slides-per-view="auto"
-          :items="currentItems"
-          :space-between="23"
-          :slide-component="CompareItem"
-          :style="sliderHeightStyle"
-          show-navigation
-          nav-top="105px"
-      />
     </template>
     <EmptyState
         v-else
@@ -152,19 +154,35 @@ const breadcrumbsItems = computed(() => [
 </script>
 
 <style scoped>
-.slider{
+.slider {
+  position: relative;
+  z-index: 1;
   margin-left: 23px;
   margin-top: 46px;
-  width: unset;
+  width: 100%;
+  max-width: calc(100% - 23px);
+  min-width: 0;
+  box-sizing: border-box;
+  padding-top: 23px;
 }
-.wrapper-compare-products{
-  border-radius: 28px;
+
+.compare-products-section {
+  position: relative;
   width: 100%;
   max-width: 1300px;
-  height: 282px;
-  background: var(--gray);
+  min-width: 0;
+  overflow-x: clip;
+}
 
+.wrapper-compare-products {
+  border-radius: 28px;
   position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 262px;
+  background: var(--gray);
+  box-sizing: border-box;
 }
 .tabs-swiper :deep(.nav-prev),.tabs-swiper :deep(.nav-next) {
   top: 31px;
@@ -179,7 +197,9 @@ const breadcrumbsItems = computed(() => [
 }
 
 .compare-page {
+  position: relative;
   padding: 30px 70px;
+  box-sizing: border-box;
 }
 .compare-skeleton {
   padding: 30px 70px;
@@ -316,7 +336,7 @@ const breadcrumbsItems = computed(() => [
 }
 .slider :deep(.swiper-pagination) {
   top: 0;
-  margin-top: 225px;
+  margin-top: 240px;
 }
 .filter-radios {
   display: flex;
@@ -330,7 +350,7 @@ const breadcrumbsItems = computed(() => [
   margin-left: 23px;
   position: absolute;
   left: calc(50% - 70px);
-  z-index: 10;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   gap: 47px;
@@ -359,7 +379,6 @@ const breadcrumbsItems = computed(() => [
 @media (max-width: 744px) {
   .compare-page {
     padding: 37px 20px;
-    overflow-x: hidden;
   }
   .top-bur {
     flex-direction: column;
