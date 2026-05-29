@@ -292,6 +292,9 @@ function goToCatalog() {
   padding: 22px 24px 30px 24px;
   background: #fff;
   box-sizing: border-box;
+  position: sticky;
+  top: 20px;
+  align-self: flex-start;
 }
 
 .summary-title {

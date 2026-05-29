@@ -123,6 +123,7 @@ function handleLeave() {
 .item-checkbox-wrap {
   flex-shrink: 0;
   cursor: pointer;
+  align-self: flex-start;
 }
 
 .checkbox {
