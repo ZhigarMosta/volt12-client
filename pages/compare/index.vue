@@ -44,7 +44,7 @@
       </div>
       <div class="compare-products-section">
         <div class="wrapper-compare-products"></div>
-        <div class="catalog-characteristics">
+        <div class="catalog-characteristics" :class="{ 'catalog-characteristics--paginated': hasPagination }">
           <div v-for="ch in filteredCharacteristics" :key="ch.id" class="char-row">
             <div class="char-name">{{ ch.name }}</div>
           </div>
@@ -57,6 +57,7 @@
             :items="currentItems"
             :space-between="23"
             :slide-component="CompareItem"
+            :slide-props="compareSlideProps"
             :style="sliderHeightStyle"
             show-navigation
             nav-top="105px"
@@ -129,8 +130,21 @@ const characteristicsCount = computed(() => {
 const compareSliderRef = ref<InstanceType<typeof Slider> | null>(null);
 const hasPagination = ref(false);
 
+const compareSlideProps = computed(() => (item: any) => ({
+  product: item,
+  hasPagination: hasPagination.value,
+}));
+
 const sliderHeightStyle = computed(() => {
-  const paginationOffset = compareSliderRef.value?.swiperInstance.snapGrid?.length > 1 ? 20 : 0;
+  let paginationOffset;
+  if(compareSliderRef.value?.swiperInstance.snapGrid?.length >1){
+    paginationOffset = 30;
+    hasPagination.value = true;
+  }
+  else{
+    paginationOffset = 0;
+    hasPagination.value = false;
+  }
   const height = 284 + characteristicsCount.value * 62 + paginationOffset;
   return {
     '--slider-desktop-height': `${height}px`,
@@ -342,7 +356,7 @@ const breadcrumbsItems = computed(() => [
 }
 .slider :deep(.swiper-pagination) {
   top: 0;
-  margin-top: 240px;
+  margin-top: 252px;
 }
 .filter-radios {
   display: flex;
@@ -363,7 +377,9 @@ const breadcrumbsItems = computed(() => [
   align-items: center;
   pointer-events: none;
 }
-
+.catalog-characteristics--paginated{
+  margin-top: 313px;
+}
 .char-row {
   display: flex;
   justify-content: center;

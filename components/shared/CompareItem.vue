@@ -29,7 +29,7 @@
         </div>
       </div>
     </div>
-    <div class="characteristics">
+    <div class="characteristics" :class="{ 'characteristics--paginated': hasPagination }">
       <div v-for="ch in product?.catalog_characteristics" :key="ch.id">
         <span class="char-value">{{ hasCharacteristic(ch.id) ? 'да' : 'нет' }}</span>
       </div>
@@ -43,6 +43,7 @@ import { computed } from 'vue';
 const props = defineProps<{
   product?: any;
   feedback?: any;
+  hasPagination?: boolean;
 }>();
 
 const config = useRuntimeConfig();
@@ -123,6 +124,9 @@ function hasCharacteristic(characteristicId: number): boolean {
   display: flex;
   flex-direction: column;
   gap: 44px;
+}
+.characteristics--paginated {
+  margin-top: 103px;
 }
 .characteristic-row {
   display: flex;
