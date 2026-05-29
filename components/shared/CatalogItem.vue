@@ -70,9 +70,11 @@
           </button>
         </div>
       </div>
-      <UiButton class="btn-card" fullWidth vertical-spacing="compact" variant="red" @click.stop>
-        В корзину
-      </UiButton>
+      <div @click.stop>
+        <UiButton class="btn-card" fullWidth vertical-spacing="compact" variant="red" @click="onAddToCart">
+          В корзину
+        </UiButton>
+      </div>
     </div>
   </div>
 </template>
@@ -80,6 +82,7 @@
 <script setup lang="ts">
 import {computed, ref} from 'vue';
 import { addToCompare } from '~/services/productApi';
+import { addToCart } from '~/services/cartApi';
 
 type ImgItem = {
   img_link?: string;
@@ -172,6 +175,13 @@ function handleLeave() {
 }
 
 function onAddToCart() {
+  if (!isAuthenticated.value) {
+    console.log('не авторизован');
+    return;
+  }
+  if (props.productId) {
+    addToCart(props.productId);
+  }
   props.onAdd?.();
 }
 
