@@ -243,7 +243,7 @@ function slideTo(index: number) {
   swiperInstance.value?.slideTo(index);
 }
 
-defineExpose({ slideTo });
+defineExpose({ slideTo, swiperInstance });
 
 function onSlideChange(swiper: any) {
   checkEdges(swiper);

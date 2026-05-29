@@ -50,6 +50,7 @@
           </div>
         </div>
         <Slider
+            ref="compareSliderRef"
             class="slider"
             v-if="currentItems.length > 0"
             slides-per-view="auto"
@@ -73,7 +74,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch, nextTick } from 'vue';
+import type Slider from '~/components/features/Slider.vue';
 import { useRouter } from 'vue-router';
 import CompareItem from '~/components/shared/CompareItem.vue';
 import TabSlide from '~/components/shared/TabSlide.vue';
@@ -124,8 +126,12 @@ const characteristicsCount = computed(() => {
   return cat?.catalog?.characteristics?.length ?? 0;
 });
 
+const compareSliderRef = ref<InstanceType<typeof Slider> | null>(null);
+const hasPagination = ref(false);
+
 const sliderHeightStyle = computed(() => {
-  const height = 284 + characteristicsCount.value * 62;
+  const paginationOffset = compareSliderRef.value?.swiperInstance.snapGrid?.length > 1 ? 20 : 0;
+  const height = 284 + characteristicsCount.value * 62 + paginationOffset;
   return {
     '--slider-desktop-height': `${height}px`,
     '--slider-tablet-height': `${height}px`,
