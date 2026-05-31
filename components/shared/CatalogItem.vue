@@ -30,7 +30,7 @@
         </div>
       </div>
       <div class="actions">
-        <button class="action" @click.stop>
+        <button class="action" @click.stop="onFavoriteClick">
           <svg class="favorite" width="25" height="21" viewBox="0 0 25 21" fill="none"
                xmlns="http://www.w3.org/2000/svg">
             <path
@@ -53,7 +53,7 @@
       <div class="price-block">
         <p class="price">₽ {{ price }}</p>
         <div class="actions-mobile">
-          <button class="action" @click.stop>
+          <button class="action" @click.stop="onFavoriteClick">
             <svg class="favorite" width="25" height="21" viewBox="0 0 25 21" fill="none"
                  xmlns="http://www.w3.org/2000/svg">
               <path
@@ -83,6 +83,7 @@
 import {computed, ref} from 'vue';
 import { addToCompare } from '~/services/productApi';
 import { addToCart } from '~/services/cartApi';
+import { addToFavorites } from '~/services/favoritesApi';
 
 type ImgItem = {
   img_link?: string;
@@ -183,6 +184,16 @@ function onAddToCart() {
     addToCart(props.productId);
   }
   props.onAdd?.();
+}
+
+function onFavoriteClick() {
+  if (!isAuthenticated.value) {
+    console.log('не авторизован');
+    return;
+  }
+  if (props.productId) {
+    addToFavorites(props.productId);
+  }
 }
 
 function onCompareClick() {

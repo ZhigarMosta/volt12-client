@@ -37,10 +37,10 @@
       </button>
     </div>
     <div class="header__bottom">
-      <button class="header__catalog">
+      <NuxtLink class="header__catalog" to="/catalog">
         <img class="header__catalog-icon" src="../../public/icons/4squares.svg" alt="squares">
         <p class="header__catalog-text">Каталог</p>
-      </button>
+      </NuxtLink>
       <div class="header__search">
         <input class="header__search-input header__text" type="text" placeholder="Поиск по сайту">
         <img class="header__search-icon" src="../../public/icons/search.svg" alt="search">
@@ -50,7 +50,7 @@
           <img class="header__action-icon" src="../../public/icons/compare.svg" alt="compare">
           <p class="header__text">Сравнение</p>
         </NuxtLink>
-        <NuxtLink to="/" class="header__action">
+        <NuxtLink to="/cart" class="header__action">
           <img class="header__action-icon" src="../../public/icons/cart.svg" alt="cart">
           <p class="header__text">Корзина</p>
         </NuxtLink>

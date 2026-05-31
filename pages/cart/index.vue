@@ -54,7 +54,7 @@
             <span class="summary-total-label">Итого</span>
             <span class="summary-total-price">{{ formatPrice(totalPrice) }}</span>
           </div>
-          <button class="checkout-btn">Оформить заказ</button>
+          <button ref="checkoutBtnRef" class="checkout-btn" @click="goToCheckout">Оформить заказ</button>
         </aside>
       </div>
     </template>
@@ -73,6 +73,7 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useCart } from '~/utils/cart';
+import { useCheckoutOrder } from '~/utils/useCheckoutOrder';
 
 useHead({ title: 'Корзина — Мастер 12 Вольт' });
 
@@ -162,6 +163,21 @@ function deleteSelected() {
 
 function goToCatalog() {
   router.push('/catalog');
+}
+
+function goToCheckout() {
+  const { saveOrder } = useCheckoutOrder();
+  const toSave = selectedItems.value.length > 0 ? selectedItems.value : items.value;
+  saveOrder(
+    toSave.map((i) => ({
+      id: i.id,
+      catalogItemId: i.catalogItemId,
+      name: i.name,
+      price: i.price,
+      quantity: i.quantity,
+    }))
+  );
+  router.push('/checkout');
 }
 </script>
 

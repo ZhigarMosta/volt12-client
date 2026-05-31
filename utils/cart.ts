@@ -5,12 +5,11 @@ import {
   updateCartItem,
   removeCartItem,
   removeManyCartItems,
-  clearCart as apiClear,
 } from '~/services/cartApi';
 
 export function useCart() {
   const items = ref<CartItem[]>([]);
-  const loading = ref(false);
+  const loading = ref(true);
 
   async function load() {
     loading.value = true;
@@ -79,15 +78,5 @@ export function useCart() {
     }
   }
 
-  async function clearAll() {
-    const prev = [...items.value];
-    items.value = [];
-    try {
-      await apiClear();
-    } catch {
-      items.value = prev;
-    }
-  }
-
-  return { items, loading, load, addItem, removeItem, removeItems, increaseQty, decreaseQty, clearAll };
+  return { items, loading, load, addItem, removeItem, removeItems, increaseQty, decreaseQty };
 }
