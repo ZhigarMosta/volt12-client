@@ -412,8 +412,6 @@ async function handleSubmit() {
 /* Responsive */
 @media (max-width: 1100px) {
   .checkout-form {
-    flex: 1 1 0;
-    min-width: 0;
     width: 100%;
   }
 
@@ -424,23 +422,8 @@ async function handleSubmit() {
   .checkout-layout {
     flex-direction: column;
   }
-
-  .order-summary {
-    flex: none;
+  .order-summary{
     width: 100%;
-    position: static;
-  }
-
-  .submit-btn--desktop {
-    display: none;
-  }
-
-  .submit-btn--mobile {
-    display: flex;
-  }
-
-  .form-row--half {
-    max-width: 100%;
   }
 }
 
