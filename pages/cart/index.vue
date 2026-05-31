@@ -46,16 +46,14 @@
           />
         </div>
 
-        <aside class="cart-summary">
-          <h2 class="summary-title">Сумма корзины</h2>
-          <p class="summary-selected">{{ selectedCountLabel }}</p>
-          <div class="summary-divider"></div>
-          <div class="summary-row">
-            <span class="summary-total-label">Итого</span>
-            <span class="summary-total-price">{{ formatPrice(totalPrice) }}</span>
-          </div>
-          <button ref="checkoutBtnRef" class="checkout-btn" @click="goToCheckout">Оформить заказ</button>
-        </aside>
+        <OrderSummary
+          ref="orderSummaryRef"
+          title="Сумма корзины"
+          :subtitle="selectedCountLabel"
+          :total="totalPrice"
+          button-text="Оформить заказ"
+          @click="goToCheckout"
+        />
       </div>
     </template>
 
@@ -74,6 +72,7 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useCart } from '~/utils/cart';
 import { useCheckoutOrder } from '~/utils/useCheckoutOrder';
+import type OrderSummary from '~/components/features/OrderSummary.vue';
 
 useHead({ title: 'Корзина — Мастер 12 Вольт' });
 
@@ -85,6 +84,8 @@ const breadcrumbsItems = [
 ];
 
 const { items, loading, load, removeItem, removeItems, increaseQty, decreaseQty } = useCart();
+
+const orderSummaryRef = ref<InstanceType<typeof OrderSummary> | null>(null);
 
 onMounted(async () => {
   await load();
@@ -300,83 +301,6 @@ function goToCheckout() {
   width: 100%;
 }
 
-/* Summary */
-.cart-summary {
-  flex: 0 0 373px;
-  border: 1px solid rgba(185, 185, 185, 0.38);
-  border-radius: 8px;
-  padding: 22px 24px 30px 24px;
-  background: #fff;
-  box-sizing: border-box;
-  position: sticky;
-  top: 20px;
-  align-self: flex-start;
-}
-
-.summary-title {
-  font-family: 'NT Somic', sans-serif;
-  font-weight: bold;
-  font-size: 30px;
-  color: var(--black);
-}
-
-.summary-selected {
-  font-family: 'NT Somic', sans-serif;
-  font-weight: 500;
-  font-size: 15px;
-  color: var(--black);
-  opacity: 0.7;
-  margin-top: 3px;
-}
-
-.summary-divider {
-  height: 1px;
-  background: #e0e0e0;
-  margin-top: 16px;
-  margin-bottom: 7px;
-}
-
-.summary-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.summary-total-label {
-  font-family: 'NT Somic', sans-serif;
-  font-weight: bold;
-  font-size: 20px;
-  color: var(--black);
-}
-
-.summary-total-price {
-  font-family: 'NT Somic', sans-serif;
-  font-weight: bold;
-  font-size: 30px;
-  color: var(--red);
-}
-
-.checkout-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  padding: 14px;
-  margin-top: 17px;
-  background: var(--red);
-  border: none;
-  border-radius: 8px;
-  font-family: 'NT Somic', sans-serif;
-  font-weight: 500;
-  font-size: 14px;
-  color: #f8f8f8;
-  cursor: pointer;
-  transition: opacity 0.2s;
-}
-
-.checkout-btn:hover {
-  opacity: 0.9;
-}
 
 /* Skeleton */
 .cart-skeleton {

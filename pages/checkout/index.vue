@@ -4,7 +4,7 @@
 
     <h1 class="checkout-title">Детали оплаты</h1>
 
-    <div class="checkout-layout">
+    <div class="checkout-layout" v-if="!orderLoaded || cartItems.length">
       <!-- Form -->
       <form class="checkout-form" @submit.prevent="handleSubmit">
 
@@ -12,11 +12,16 @@
         <div class="form-row">
           <div class="form-field">
             <label class="form-label">Имя*</label>
-            <input v-model="form.firstName" class="form-input" type="text" placeholder="Иван" required />
+            <div v-if="authLoading" class="sk-input-field" />
+            <template v-else>
+              <input v-model="form.firstName" class="form-input" :class="{ 'form-input--error': errors.firstName }" type="text" placeholder="Иван" @input="clearError('firstName')" />
+              <span v-if="errors.firstName" class="field-error">{{ errors.firstName }}</span>
+            </template>
           </div>
           <div class="form-field">
             <label class="form-label">Фамилия*</label>
-            <input v-model="form.lastName" class="form-input" type="text" placeholder="Иванов" required />
+            <input v-model="form.lastName" class="form-input" :class="{ 'form-input--error': errors.lastName }" type="text" placeholder="Иванов" @input="clearError('lastName')" />
+            <span v-if="errors.lastName" class="field-error">{{ errors.lastName }}</span>
           </div>
         </div>
 
@@ -27,7 +32,7 @@
             <input v-model="form.street" class="form-input" type="text" placeholder="Улица" />
           </div>
           <div class="form-field">
-            <input v-model="form.house" class="form-input" type="text" placeholder="Дом" />
+            <input v-model="form.house" class="form-input input-home" type="text" placeholder="Дом" />
           </div>
         </div>
         <div class="form-row">
@@ -41,17 +46,20 @@
         <div class="form-row">
           <div class="form-field">
             <label class="form-label">Населённый пункт*</label>
-            <input v-model="form.city" class="form-input" type="text" placeholder="Челябинск" required />
+            <input v-model="form.city" class="form-input" :class="{ 'form-input--error': errors.city }" type="text" placeholder="Челябинск" @input="clearError('city')" />
+            <span v-if="errors.city" class="field-error">{{ errors.city }}</span>
           </div>
           <div class="form-field">
             <label class="form-label">Область/Район*</label>
-            <input v-model="form.region" class="form-input" type="text" placeholder="Челябинск" required />
+            <input v-model="form.region" class="form-input" :class="{ 'form-input--error': errors.region }" type="text" placeholder="Челябинск" @input="clearError('region')" />
+            <span v-if="errors.region" class="field-error">{{ errors.region }}</span>
           </div>
         </div>
         <div class="form-row form-row--half">
           <div class="form-field">
             <label class="form-label">Почтовый индекс*</label>
-            <input v-model="form.postalCode" class="form-input" type="text" placeholder="00000" required />
+            <input v-model="form.postalCode" class="form-input" :class="{ 'form-input--error': errors.postalCode }" type="text" placeholder="00000" @input="clearError('postalCode')" />
+            <span v-if="errors.postalCode" class="field-error">{{ errors.postalCode }}</span>
           </div>
         </div>
 
@@ -59,11 +67,19 @@
         <div class="form-row">
           <div class="form-field">
             <label class="form-label">Телефон*</label>
-            <input v-model="form.phone" class="form-input" type="tel" placeholder="+7(000)000-00-00" required />
+            <div v-if="authLoading" class="sk-input-field" />
+            <template v-else>
+              <input v-model="form.phone" class="form-input" :class="{ 'form-input--error': errors.phone }" type="tel" placeholder="+7(000)000-00-00" @input="clearError('phone')" />
+              <span v-if="errors.phone" class="field-error">{{ errors.phone }}</span>
+            </template>
           </div>
           <div class="form-field">
             <label class="form-label">Почта*</label>
-            <input v-model="form.email" class="form-input" type="email" placeholder="example@mail.com" required />
+            <div v-if="authLoading" class="sk-input-field" />
+            <template v-else>
+              <input v-model="form.email" class="form-input" :class="{ 'form-input--error': errors.email }" type="email" placeholder="example@mail.com" @input="clearError('email')" />
+              <span v-if="errors.email" class="field-error">{{ errors.email }}</span>
+            </template>
           </div>
         </div>
 
@@ -91,48 +107,44 @@
         <p v-if="submitSuccess" class="form-success">Заказ успешно оформлен! Мы свяжемся с вами.</p>
       </form>
 
-      <!-- Order summary -->
-      <aside class="order-summary">
-        <h2 class="order-summary__title">Ваш заказ</h2>
-
-        <ul class="order-summary__list">
-          <li v-for="item in cartItems" :key="item.id" class="order-summary__item">
-            <span class="order-summary__name">{{ item.name }} × {{ item.quantity }}</span>
-            <span class="order-summary__price">{{ formatPrice(item.price * item.quantity) }}</span>
-          </li>
-        </ul>
-        <div class="order-summary__divider" />
-        <div class="order-summary__total-row">
-          <span class="order-summary__total-label">Итого</span>
-          <span class="order-summary__total-price">{{ formatPrice(totalPrice) }}</span>
-        </div>
-        <button
-          class="submit-btn submit-btn--desktop"
-          :disabled="submitting"
-          @click="handleSubmit"
-        >
-          {{ submitting ? 'Оформление…' : 'Подтвердить заказ' }}
-        </button>
-      </aside>
+      <OrderSummary
+        title="Ваш заказ"
+        :items="cartItems"
+        :total="totalPrice"
+        :button-text="submitting ? 'Оформление…' : 'Подтвердить заказ'"
+        :disabled="submitting"
+        :loading="!orderLoaded || authLoading"
+        class="checkout-summary"
+        @click="handleSubmit"
+      />
     </div>
+
+    <EmptyState
+      v-if="orderLoaded && !cartItems.length"
+      title="Нет данных для оформления"
+      subtitle="Выберите нужные товары"
+      button-text="В корзину"
+      :on-click="goToCart"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, watch } from 'vue';
-import { formatPrice } from '~/utils/format';
 import { useCheckoutOrder, type CheckoutOrderItem } from '~/utils/useCheckoutOrder';
 
 useHead({ title: 'Оформление заказа — Мастер 12 Вольт' });
-const { user } = useAuth();
-
 const breadcrumbsItems = [
   { to: '/', text: 'Главная' },
   { to: '/cart', text: 'Корзина' },
   { to: '/checkout', text: 'Оплата' },
 ];
 
+const { user, loading: authLoading } = useAuth();
+
 const cartItems = ref<CheckoutOrderItem[]>([]);
+const orderLoaded = ref(false);
+
 const totalPrice = computed(() =>
   cartItems.value.reduce((sum, i) => sum + i.price * i.quantity, 0)
 );
@@ -155,6 +167,30 @@ const form = reactive({
 const submitting = ref(false);
 const submitError = ref('');
 const submitSuccess = ref(false);
+const router = useRouter();
+type FormKey = keyof typeof form;
+const errors = reactive<Partial<Record<FormKey, string>>>({});
+
+function clearError(field: FormKey) {
+  delete errors[field];
+}
+
+function validate(): boolean {
+  const e: Partial<Record<FormKey, string>> = {};
+  if (!form.firstName.trim()) e.firstName = 'Введите имя';
+  if (!form.lastName.trim()) e.lastName = 'Введите фамилию';
+  if (!form.city.trim()) e.city = 'Введите населённый пункт';
+  if (!form.region.trim()) e.region = 'Введите область или район';
+  if (!form.postalCode.trim()) e.postalCode = 'Введите почтовый индекс';
+  if (!form.phone.trim()) e.phone = 'Введите номер телефона';
+  if (!form.email.trim()) {
+    e.email = 'Введите email';
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+    e.email = 'Некорректный email';
+  }
+  Object.assign(errors, e);
+  return Object.keys(e).length === 0;
+}
 
 function fillFormFromUser() {
   if (user.value?.name) form.firstName = user.value.name;
@@ -162,15 +198,10 @@ function fillFormFromUser() {
   if (user.value?.email) form.email = user.value.email;
 }
 
-onMounted(() => {
-  const { orderItems } = useCheckoutOrder();
-  cartItems.value = orderItems.value;
-  fillFormFromUser();
-});
-
 watch(user, fillFormFromUser);
 
 async function handleSubmit() {
+  if (!validate()) return;
   if (submitting.value) return;
   submitting.value = true;
   submitError.value = '';
@@ -184,6 +215,17 @@ async function handleSubmit() {
     submitting.value = false;
   }
 }
+
+function goToCart() {
+  router.push('/cart');
+}
+
+onMounted(() => {
+  const { orderItems } = useCheckoutOrder();
+  cartItems.value = orderItems.value;
+  orderLoaded.value = true;
+  fillFormFromUser();
+});
 </script>
 
 <style scoped>
@@ -265,6 +307,18 @@ async function handleSubmit() {
   border-color: var(--red);
 }
 
+.form-input--error {
+  border-color: #e53935;
+}
+
+.field-error {
+  font-family: 'NT Somic', sans-serif;
+  font-size: 12px;
+  line-height: 1;
+  color: #e53935;
+  margin-top: -4px;
+}
+
 .form-input::placeholder {
   color: #afafaf;
 }
@@ -321,92 +375,9 @@ async function handleSubmit() {
   display: none;
 }
 
-/* Order summary */
-.order-summary {
-  flex: 0 0 373px;
-  border: 1px solid rgba(185, 185, 185, 0.38);
-  border-radius: 8px;
-  padding: 22px 26px 26px;
-  background: #fff;
-  box-sizing: border-box;
-  position: sticky;
-  top: 20px;
-  align-self: flex-start;
-}
 
-.order-summary__title {
-  font-family: 'NT Somic', sans-serif;
-  font-weight: bold;
-  font-size: 20px;
-  color: var(--black);
-  margin-bottom: 16px;
-}
-
-
-.order-summary__list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.order-summary__item {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 8px;
-}
-
-.order-summary__name {
-  font-family: 'NT Somic', sans-serif;
-  font-weight: 500;
-  font-size: 14px;
-  color: var(--black);
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.order-summary__price {
-  font-family: 'NT Somic', sans-serif;
-  font-weight: 500;
-  font-size: 14px;
-  color: var(--black);
-  flex-shrink: 0;
-}
-
-.order-summary__divider {
-  height: 1px;
-  background: rgba(185, 185, 185, 0.38);
-  margin: 16px 0;
-}
-
-.order-summary__total-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.order-summary__total-label {
-  font-family: 'NT Somic', sans-serif;
-  font-weight: bold;
-  font-size: 20px;
-  color: var(--black);
-}
-
-.order-summary__total-price {
-  font-family: 'NT Somic', sans-serif;
-  font-weight: bold;
-  font-size: 24px;
-  color: var(--red);
-}
-
-.submit-btn--desktop {
-  margin-top: 20px;
+.input-home{
+  margin-top: 29px;
 }
 
 /* Responsive */
@@ -422,7 +393,7 @@ async function handleSubmit() {
   .checkout-layout {
     flex-direction: column;
   }
-  .order-summary{
+  .checkout-summary {
     width: 100%;
   }
 }
@@ -431,7 +402,9 @@ async function handleSubmit() {
   .checkout-page {
     padding: 0 20px 80px;
   }
-
+  .input-home{
+    margin-top: 0;
+  }
   .form-row {
     grid-template-columns: 1fr;
   }
@@ -439,5 +412,24 @@ async function handleSubmit() {
   .form-row--half {
     grid-template-columns: 1fr;
   }
+}
+
+/* Skeleton */
+.sk-input-field {
+  height: 51px;
+  border-radius: 8px;
+  background: linear-gradient(
+    90deg,
+    var(--gray-shimmer) 25%,
+    var(--gray-shimmer-light) 50%,
+    var(--gray-shimmer) 75%
+  );
+  background-size: 200% 100%;
+  animation: sk-shimmer 1.5s infinite;
+}
+
+@keyframes sk-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
 }
 </style>

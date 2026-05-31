@@ -70,8 +70,8 @@
           </button>
         </div>
       </div>
-      <div @click.stop>
-        <UiButton class="btn-card" fullWidth vertical-spacing="compact" variant="red" @click="onAddToCart">
+      <div class="wrapper-btn-card" @click.stop>
+        <UiButton fullWidth vertical-spacing="compact" variant="red" @click="onAddToCart">
           В корзину
         </UiButton>
       </div>
@@ -206,10 +206,10 @@ function onCompareClick() {
 </script>
 
 <style scoped>
-.btn-card {
+.wrapper-btn-card{
+  width: 100%;
   max-width: 137px;
 }
-
 .actions {
   display: flex;
   flex-direction: column;

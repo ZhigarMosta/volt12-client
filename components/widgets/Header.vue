@@ -22,7 +22,6 @@
             <NuxtLink to="/" class="header__nav-link header__text">Услуги</NuxtLink>
             <img src="../../public/icons/linkArrow.svg" alt="arrow">
           </div>
-          <NuxtLink to="/" class="header__nav-link header__text">Спецпредложения</NuxtLink>
           <NuxtLink to="/contacts" class="header__nav-link header__text">Контакты</NuxtLink>
         </nav>
       </div>
@@ -66,6 +65,7 @@
           <Transition name="fade">
             <div v-if="showProfileMenu && isAuthenticated" class="header__profile-dropdown">
               <button @click="handleLogout" class="header__dropdown-item">Выйти</button>
+              <NuxtLink to="/favorites" class="header__dropdown-item">Избранное</NuxtLink>
             </div>
           </Transition>
         </div>
@@ -118,7 +118,7 @@
 }
 
 .header__nav {
-  @apply flex justify-between items-center w-[419px] gap-[25px];
+  @apply flex justify-between items-center w-[260px] gap-[25px];
 }
 
 .header__nav-services {
@@ -187,6 +187,7 @@
 }
 
 .header__dropdown-item {
+  font-family: 'NT Somic', sans-serif;
   display: block;
   width: 100%;
   padding: 10px 16px;
