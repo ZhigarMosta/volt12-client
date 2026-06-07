@@ -74,25 +74,23 @@
           <p class="product-price">{{ formatPrice(item.price) }}</p>
 
           <div class="product-actions">
-            <UiButton class="buy-btn" variant="red" size="sm" full-width>
+            <div v-if="inCart" class="qty-control">
+              <button class="qty-btn" @click="onDecrement">−</button>
+              <span class="qty-value">{{ cartQty }}</span>
+              <button class="qty-btn" @click="onIncrement">+</button>
+            </div>
+            <UiButton v-else class="buy-btn" variant="red" size="sm" full-width @click="onCartClick">
               Купить сейчас
             </UiButton>
             <div class="icon-actions">
-              <button type="button" class="icon-btn" aria-label="В корзину">
-                <svg width="25" height="23" viewBox="0 0 25 23" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M8.98741 10.1455H19.1458L23.2022 0.494744C23.4526 0.0373688 24.0321 -0.133644 24.497 0.112634C24.962 0.358913 25.1359 0.928957 24.8855 1.38633L20.5577 11.5318L20.2875 12.0266H8.93138L7.79589 15.3762C7.72709 15.5792 7.88089 15.7889 8.09844 15.7889H23.5408C24.0689 15.7889 24.497 16.21 24.497 16.7295C24.497 17.249 24.0689 17.6701 23.5408 17.6701H8.09844C6.57556 17.6701 5.50027 16.2021 5.98185 14.781L7.24558 11.0468L4.94596 1.99379L0.956201 1.99378C0.428106 1.99378 0 1.57267 0 1.0532C0 0.533736 0.428106 0.112625 0.956201 0.112625L6.43878 0.112637L8.98741 10.1455Z" fill="var(--black)" />
-                  <path d="M10.7915 21.1188C10.7915 22.1578 9.93528 23 8.87909 23C7.8229 23 6.96669 22.1578 6.96669 21.1188C6.96669 20.0799 7.8229 19.2377 8.87909 19.2377C9.93528 19.2377 10.7915 20.0799 10.7915 21.1188Z" fill="var(--black)" />
-                  <path d="M22.2659 21.1188C22.2659 22.1578 21.4097 23 20.3535 23C19.2973 23 18.4411 22.1578 18.4411 21.1188C18.4411 20.0799 19.2973 19.2377 20.3535 19.2377C21.4097 19.2377 22.2659 20.0799 22.2659 21.1188Z" fill="var(--black)" />
-                </svg>
-              </button>
-              <button type="button" class="icon-btn" aria-label="В избранное">
+              <button type="button" class="icon-btn" :class="{ 'icon-btn--active': inFavorite }" aria-label="В избранное" @click="onFavoriteClick">
                 <svg width="25" height="21" viewBox="0 0 25 21" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M6.5332 1C8.00107 1.00003 9.40835 1.58057 10.4453 2.61328L12.0762 4.16504L12.7607 3.52051C14.7358 1.59131 16.1332 1.01366 17.5918 1.00977C19.0504 1.00588 20.4511 1.57632 21.4893 2.59473C22.527 3.61289 23.1191 4.99705 23.1377 6.44629C23.1562 7.89571 22.5993 9.29465 21.5879 10.3389L12.292 19.5996C12.2349 19.6565 12.1567 19.6895 12.0742 19.6895C11.9918 19.6894 11.9126 19.6565 11.8555 19.5996L2.55762 10.3379C1.54776 9.29964 0.988638 7.90802 1 6.46387C1.01069 5.10996 1.52319 3.80961 2.43359 2.80957L2.62109 2.61328C3.65807 1.58061 5.06535 1 6.5332 1Z" stroke="var(--black)" stroke-width="2"/>
+                  <path d="M6.5332 1C8.00107 1.00003 9.40835 1.58057 10.4453 2.61328L12.0762 4.16504L12.7607 3.52051C14.7358 1.59131 16.1332 1.01366 17.5918 1.00977C19.0504 1.00588 20.4511 1.57632 21.4893 2.59473C22.527 3.61289 23.1191 4.99705 23.1377 6.44629C23.1562 7.89571 22.5993 9.29465 21.5879 10.3389L12.292 19.5996C12.2349 19.6565 12.1567 19.6895 12.0742 19.6895C11.9918 19.6894 11.9126 19.6565 11.8555 19.5996L2.55762 10.3379C1.54776 9.29964 0.988638 7.90802 1 6.46387C1.01069 5.10996 1.52319 3.80961 2.43359 2.80957L2.62109 2.61328C3.65807 1.58061 5.06535 1 6.5332 1Z" :stroke="inFavorite ? 'var(--red)' : 'var(--black)'" :fill="inFavorite ? 'var(--red)' : 'none'" stroke-width="2"/>
                 </svg>
               </button>
-              <button type="button" class="icon-btn" aria-label="Сравнить" @click="onCompareClick">
+              <button type="button" class="icon-btn" :class="{ 'icon-btn--active': inCompare }" aria-label="Сравнить" @click="onCompareClick">
                 <svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path fill-rule="evenodd" clip-rule="evenodd" d="M17.68 0.00455729C19.5294 0.0982503 21 1.62738 21 3.5V17.5L20.9954 17.68C20.9048 19.4697 19.4697 20.9048 17.68 20.9954L17.5 21H3.5C1.62738 21 0.0982502 19.5294 0.00455729 17.68L0 17.5V3.5C0 1.567 1.567 0 3.5 0H17.5L17.68 0.00455729ZM3.5 1.75C2.5335 1.75 1.75 2.5335 1.75 3.5V17.5C1.75 18.4665 2.5335 19.25 3.5 19.25H4.95833V5.83333C4.95833 5.35008 5.35008 4.95833 5.83333 4.95833C6.31658 4.95833 6.70833 5.35008 6.70833 5.83333V19.25H9.625V11.6667C9.625 11.1834 10.0168 10.7917 10.5 10.7917C10.9832 10.7917 11.375 11.1834 11.375 11.6667V19.25H14.2917V9.33333C14.2917 8.85008 14.6834 8.45833 15.1667 8.45833C15.6499 8.45833 16.0417 8.85008 16.0417 9.33333V19.25H17.5C18.4665 19.25 19.25 18.4665 19.25 17.5V3.5C19.25 2.5335 18.4665 1.75 17.5 1.75H3.5Z" fill="var(--black)"/>
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M17.68 0.00455729C19.5294 0.0982503 21 1.62738 21 3.5V17.5L20.9954 17.68C20.9048 19.4697 19.4697 20.9048 17.68 20.9954L17.5 21H3.5C1.62738 21 0.0982502 19.5294 0.00455729 17.68L0 17.5V3.5C0 1.567 1.567 0 3.5 0H17.5L17.68 0.00455729ZM3.5 1.75C2.5335 1.75 1.75 2.5335 1.75 3.5V17.5C1.75 18.4665 2.5335 19.25 3.5 19.25H4.95833V5.83333C4.95833 5.35008 5.35008 4.95833 5.83333 4.95833C6.31658 4.95833 6.70833 5.35008 6.70833 5.83333V19.25H9.625V11.6667C9.625 11.1834 10.0168 10.7917 10.5 10.7917C10.9832 10.7917 11.375 11.1834 11.375 11.6667V19.25H14.2917V9.33333C14.2917 8.85008 14.6834 8.45833 15.1667 8.45833C15.6499 8.45833 16.0417 8.85008 16.0417 9.33333V19.25H17.5C18.4665 19.25 19.25 18.4665 19.25 17.5V3.5C19.25 2.5335 18.4665 1.75 17.5 1.75H3.5Z" :fill="inCompare ? 'var(--red)' : 'var(--black)'"/>
                 </svg>
               </button>
             </div>
@@ -147,7 +145,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import type { CatalogItemDetail, RelatedCatalogItem } from '~/types/product';
-import { addToCompare, getCatalogItemDetail } from '~/services/productApi';
+import { addToCompare, removeFromCompare, getCatalogItemDetail } from '~/services/productApi';
+import { addToCart, updateCartItem } from '~/services/cartApi';
+import { addToFavorites } from '~/services/favoritesApi';
 import { formatPrice } from '~/utils/format';
 import { pushRecentlyViewedId, useRecentlyViewedIds } from '~/utils/recentlyViewed';
 import ProductGalleryThumb from '~/components/shared/ProductGalleryThumb.vue';
@@ -171,6 +171,88 @@ const related = ref<RelatedCatalogItem[]>([]);
 const recentlyViewed = ref<RelatedCatalogItem[]>([]);
 const pending = ref(true);
 const error = ref<Error | null>(null);
+
+const inCart = ref(false);
+const cartQty = ref(0);
+const inCompare = ref(false);
+const inFavorite = ref(false);
+
+function readLocalStorage<T>(key: string, fallback: T): T {
+  try {
+    const s = localStorage.getItem(key);
+    return s ? JSON.parse(s) : fallback;
+  } catch { return fallback; }
+}
+
+function writeLocalStorage(key: string, value: any) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+function initLocalState() {
+  if (!item.value) return;
+  const id = item.value.id;
+  const cart: Record<number, number> = readLocalStorage('cart', {});
+  const compare: Record<number, boolean> = readLocalStorage('compare', {});
+  cartQty.value = cart[id] ?? 0;
+  inCart.value = cartQty.value > 0;
+  inCompare.value = !!compare[id];
+}
+
+async function onCartClick() {
+  if (!item.value) return;
+  cartQty.value = 1;
+  inCart.value = true;
+  if (!isAuthenticated.value) {
+    const cart: Record<number, number> = readLocalStorage('cart', {});
+    cart[item.value.id] = 1;
+    writeLocalStorage('cart', cart);
+    return;
+  }
+  await addToCart(item.value.id, 1);
+}
+
+async function onIncrement() {
+  if (!item.value) return;
+  cartQty.value += 1;
+  if (!isAuthenticated.value) {
+    const cart: Record<number, number> = readLocalStorage('cart', {});
+    cart[item.value.id] = cartQty.value;
+    writeLocalStorage('cart', cart);
+    return;
+  }
+  await updateCartItem(item.value.id, cartQty.value);
+}
+
+async function onDecrement() {
+  if (!item.value) return;
+  if (cartQty.value <= 1) {
+    cartQty.value = 0;
+    inCart.value = false;
+    if (!isAuthenticated.value) {
+      const cart: Record<number, number> = readLocalStorage('cart', {});
+      delete cart[item.value.id];
+      writeLocalStorage('cart', cart);
+      return;
+    }
+    await updateCartItem(item.value.id, 0);
+    return;
+  }
+  cartQty.value -= 1;
+  if (!isAuthenticated.value) {
+    const cart: Record<number, number> = readLocalStorage('cart', {});
+    cart[item.value.id] = cartQty.value;
+    writeLocalStorage('cart', cart);
+    return;
+  }
+  await updateCartItem(item.value.id, cartQty.value);
+}
+
+function onFavoriteClick() {
+  if (!item.value) return;
+  if (!isAuthenticated.value) return;
+  addToFavorites(item.value.id);
+  inFavorite.value = true;
+}
 const selectedImageIndex = ref(0);
 const hoverImageIndex = ref<number | null>(null);
 const gallerySliderRef = ref<{ slideTo: (index: number) => void } | null>(null);
@@ -239,8 +321,25 @@ function catalogItemSlideProps(relatedItem: RelatedCatalogItem) {
 }
 
 function onCompareClick() {
-  if (!isAuthenticated.value || !item.value) return;
-  addToCompare(item.value.id);
+  if (!item.value) return;
+  if (!isAuthenticated.value) {
+    const compare: Record<number, boolean> = readLocalStorage('compare', {});
+    inCompare.value = !inCompare.value;
+    if (inCompare.value) {
+      compare[item.value.id] = true;
+    } else {
+      delete compare[item.value.id];
+    }
+    writeLocalStorage('compare', compare);
+    return;
+  }
+  if (inCompare.value) {
+    removeFromCompare(item.value.id);
+    inCompare.value = false;
+  } else {
+    addToCompare(item.value.id);
+    inCompare.value = true;
+  }
 }
 
 const MOBILE_WIDTH = 744;
@@ -268,6 +367,15 @@ onMounted(async () => {
           (viewed) => viewed.id !== result.item.id,
       );
       pushRecentlyViewedId(recentlyViewedIds, result.item.id);
+
+      if (result.item.user_state) {
+        cartQty.value = result.item.user_state.cart_count ?? 0;
+        inCart.value = cartQty.value > 0;
+        inCompare.value = result.item.user_state.in_compare;
+        inFavorite.value = result.item.user_state.in_favorite;
+      } else {
+        initLocalState();
+      }
     }
   } catch (e: unknown) {
     error.value = e instanceof Error ? e : new Error('Не удалось загрузить товар');
@@ -505,6 +613,38 @@ const isTabletWidth = computed(() => windowWidth.value > TABLET_WIDTH);
   border-radius: 8px;
   background: var(--white, #fff);
   cursor: pointer;
+}
+
+.icon-btn--active {
+  border-color: var(--red);
+}
+
+.qty-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--red);
+  border-radius: 8px;
+  padding: 6px 16px;
+  height: 47px;
+  flex: 1;
+}
+
+.qty-btn {
+  color: white;
+  font-size: 22px;
+  line-height: 1;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.qty-value {
+  color: white;
+  font-family: 'NT Somic', sans-serif;
+  font-weight: 500;
+  font-size: 18px;
 }
 
 .section-title {

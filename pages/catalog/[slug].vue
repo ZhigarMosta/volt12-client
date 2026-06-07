@@ -101,10 +101,11 @@
                   :key="item.id"
                   :productId="item.id"
                   :slug="item.slug"
-                  :images="item.catalogItemImages"
+                  :images="item.images ?? item.catalogItemImages"
                   :title="item.name"
                   :subtitle="item.product_code"
                   :price="item.price"
+                  :userState="item.user_state"
               />
             </template>
           </div>
@@ -771,6 +772,8 @@ watch(searchQuery, () => {
   // Запускаем debounced функцию обновления URL и загрузки
   debouncedUpdateSearchUrlAndFetch();
 });
+
+
 </script>
 
 <style scoped>

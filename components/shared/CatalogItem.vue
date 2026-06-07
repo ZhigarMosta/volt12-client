@@ -38,11 +38,11 @@
                 stroke="var(--black)" stroke-width="2"/>
           </svg>
         </button>
-        <button class="action" @click.stop="onCompareClick">
+        <button class="action" :class="{ 'action--active': inCompare }" @click.stop="onCompareClick">
           <svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path fill-rule="evenodd" clip-rule="evenodd"
                   d="M17.68 0.00455729C19.5294 0.0982503 21 1.62738 21 3.5V17.5L20.9954 17.68C20.9048 19.4697 19.4697 20.9048 17.68 20.9954L17.5 21H3.5C1.62738 21 0.0982502 19.5294 0.00455729 17.68L0 17.5V3.5C2.25493e-07 1.567 1.567 5.63724e-08 3.5 0H17.5L17.68 0.00455729ZM3.5 1.75C2.5335 1.75 1.75 2.5335 1.75 3.5V17.5C1.75 18.4665 2.5335 19.25 3.5 19.25H4.95833V5.83333C4.95833 5.35008 5.35008 4.95833 5.83333 4.95833C6.31658 4.95833 6.70833 5.35008 6.70833 5.83333V19.25H9.625V11.6667C9.625 11.1834 10.0168 10.7917 10.5 10.7917C10.9832 10.7917 11.375 11.1834 11.375 11.6667V19.25H14.2917V9.33333C14.2917 8.85008 14.6834 8.45833 15.1667 8.45833C15.6499 8.45833 16.0417 8.85008 16.0417 9.33333V19.25H17.5C18.4665 19.25 19.25 18.4665 19.25 17.5V3.5C19.25 2.5335 18.4665 1.75 17.5 1.75H3.5Z"
-                  fill="var(--black)"/>
+                  :fill="inCompare ? 'var(--red)' : 'var(--black)'"/>
           </svg>
         </button>
       </div>
@@ -61,28 +61,37 @@
                   stroke="var(--black)" stroke-width="2"/>
             </svg>
           </button>
-          <button class="action" @click.stop="onCompareClick">
+          <button class="action" :class="{ 'action--active': inCompare }" @click.stop="onCompareClick">
             <svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path fill-rule="evenodd" clip-rule="evenodd"
                     d="M17.68 0.00455729C19.5294 0.0982503 21 1.62738 21 3.5V17.5L20.9954 17.68C20.9048 19.4697 19.4697 20.9048 17.68 20.9954L17.5 21H3.5C1.62738 21 0.0982502 19.5294 0.00455729 17.68L0 17.5V3.5C2.25493e-07 1.567 1.567 5.63724e-08 3.5 0H17.5L17.68 0.00455729ZM3.5 1.75C2.5335 1.75 1.75 2.5335 1.75 3.5V17.5C1.75 18.4665 2.5335 19.25 3.5 19.25H4.95833V5.83333C4.95833 5.35008 5.35008 4.95833 5.83333 4.95833C6.31658 4.95833 6.70833 5.35008 6.70833 5.83333V19.25H9.625V11.6667C9.625 11.1834 10.0168 10.7917 10.5 10.7917C10.9832 10.7917 11.375 11.1834 11.375 11.6667V19.25H14.2917V9.33333C14.2917 8.85008 14.6834 8.45833 15.1667 8.45833C15.6499 8.45833 16.0417 8.85008 16.0417 9.33333V19.25H17.5C18.4665 19.25 19.25 18.4665 19.25 17.5V3.5C19.25 2.5335 18.4665 1.75 17.5 1.75H3.5Z"
-                    fill="var(--black)"/>
+                    :fill="inCompare ? 'var(--red)' : 'var(--black)'"/>
             </svg>
           </button>
         </div>
       </div>
       <div class="wrapper-btn-card" @click.stop>
-        <UiButton fullWidth vertical-spacing="compact" variant="red" @click="onAddToCart">
-          В корзину
-        </UiButton>
+        <template v-if="cartQty > 0">
+          <div class="qty-control">
+            <button class="qty-btn" @click="onDecrement">−</button>
+            <span class="qty-value">{{ cartQty }}</span>
+            <button class="qty-btn" @click="onIncrement">+</button>
+          </div>
+        </template>
+        <template v-else>
+          <UiButton fullWidth vertical-spacing="compact" variant="red" @click="onAddToCart">
+            В корзину
+          </UiButton>
+        </template>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import {computed, ref} from 'vue';
-import { addToCompare } from '~/services/productApi';
-import { addToCart } from '~/services/cartApi';
+import { computed, ref, onMounted } from 'vue';
+import { addToCompare, removeFromCompare } from '~/services/productApi';
+import { addToCart, updateCartItem } from '~/services/cartApi';
 import { addToFavorites } from '~/services/favoritesApi';
 
 type ImgItem = {
@@ -93,6 +102,12 @@ type ImgItem = {
   product_code?: string;
 };
 
+type UserState = {
+  cart_count: number | null;
+  in_compare: boolean;
+  in_favorite: boolean;
+} | null;
+
 const props = defineProps<{
   images?: ImgItem[];
   title: string;
@@ -100,19 +115,107 @@ const props = defineProps<{
   price: string | number;
   productId?: number;
   slug?: string;
-  onAdd?: () => void;
+  userState?: UserState;
 }>();
 
+const { isAuthenticated } = useAuth();
+
+// --- реактивное состояние ---
+const cartQty = ref(0);
+const inCompare = ref(false);
+
+function readLocal<T>(key: string, fallback: T): T {
+  try { const s = localStorage.getItem(key); return s ? JSON.parse(s) : fallback; } catch { return fallback; }
+}
+function writeLocal(key: string, val: any) {
+  localStorage.setItem(key, JSON.stringify(val));
+}
+
+onMounted(() => {
+  if (!props.productId) return;
+  if (isAuthenticated.value && props.userState !== undefined) {
+    // авторизован — приоритет данным с сервера
+    cartQty.value = props.userState?.cart_count ?? 0;
+    inCompare.value = props.userState?.in_compare ?? false;
+  } else {
+    // не авторизован — смотрим localStorage
+    const cart: Record<number, number> = readLocal('cart', {});
+    const compare: Record<number, boolean> = readLocal('compare', {});
+    cartQty.value = cart[props.productId] ?? 0;
+    inCompare.value = !!compare[props.productId];
+  }
+});
+
+// --- корзина ---
+async function onAddToCart() {
+  if (!props.productId) return;
+  cartQty.value = 1;
+  if (!isAuthenticated.value) {
+    const cart: Record<number, number> = readLocal('cart', {});
+    cart[props.productId] = 1;
+    writeLocal('cart', cart);
+    return;
+  }
+  await addToCart(props.productId, 1);
+}
+
+async function onIncrement() {
+  if (!props.productId) return;
+  cartQty.value += 1;
+  if (!isAuthenticated.value) {
+    const cart: Record<number, number> = readLocal('cart', {});
+    cart[props.productId] = cartQty.value;
+    writeLocal('cart', cart);
+    return;
+  }
+  await updateCartItem(props.productId, cartQty.value);
+}
+
+async function onDecrement() {
+  if (!props.productId) return;
+  cartQty.value -= 1;
+  if (!isAuthenticated.value) {
+    const cart: Record<number, number> = readLocal('cart', {});
+    if (cartQty.value <= 0) { delete cart[props.productId]; } else { cart[props.productId] = cartQty.value; }
+    writeLocal('cart', cart);
+    return;
+  }
+  await updateCartItem(props.productId, cartQty.value);
+}
+
+// --- сравнение ---
+function onCompareClick() {
+  if (!props.productId) return;
+  if (!isAuthenticated.value) {
+    inCompare.value = !inCompare.value;
+    const compare: Record<number, boolean> = readLocal('compare', {});
+    if (inCompare.value) { compare[props.productId] = true; } else { delete compare[props.productId]; }
+    writeLocal('compare', compare);
+    return;
+  }
+  if (inCompare.value) {
+    removeFromCompare(props.productId);
+    inCompare.value = false;
+  } else {
+    addToCompare(props.productId);
+    inCompare.value = true;
+  }
+}
+
+// --- избранное ---
+function onFavoriteClick() {
+  if (!isAuthenticated.value || !props.productId) return;
+  addToFavorites(props.productId);
+}
+
+// --- навигация и галерея ---
 function onCardClick() {
   if (!props.slug) return;
   navigateTo(`/product/${props.slug}`);
 }
 
-const { isAuthenticated } = useAuth();
-
 const config = useRuntimeConfig();
 const baseURL = computed(() => config.public.apiBase as string);
-
 const rawImages = computed<ImgItem[]>(() => props.images ?? []);
 
 type NormItem = { url: string; alt?: string; position: number; code?: string };
@@ -121,29 +224,20 @@ const normalizedImages = computed<NormItem[]>(() => {
   const arr = rawImages.value;
   const seen = new Set<string>();
   const out: NormItem[] = [];
-
   for (let i = 0; i < arr.length; i++) {
     const it = arr[i] ?? {};
     const path = it.img_link ?? '';
     if (!path) continue;
-
     let url = path;
     if (!/^https?:\/\//i.test(path)) {
       const base = baseURL.value.replace(/\/+$/, '');
       url = base + '/' + path.replace(/^\/+/, '');
     }
-
     if (!seen.has(url)) {
       seen.add(url);
-      out.push({
-        url,
-        alt: it.alt ?? '',
-        position: typeof it.position === 'number' ? it.position : out.length,
-        code: it.product_code ?? '',
-      });
+      out.push({ url, alt: it.alt ?? '', position: typeof it.position === 'number' ? it.position : out.length, code: it.product_code ?? '' });
     }
   }
-
   out.sort((a, b) => a.position - b.position);
   return out;
 });
@@ -156,59 +250,47 @@ function updateIndexFromX(clientX: number) {
   if (!imgs.length) return;
   const rect = card.value?.getBoundingClientRect();
   if (!rect) return;
-  let x = clientX - rect.left;
-  const w = rect.width;
-  let idx = Math.floor((x / w) * imgs.length);
-  idx = Math.max(0, Math.min(imgs.length - 1, idx));
+  const idx = Math.max(0, Math.min(imgs.length - 1, Math.floor(((clientX - rect.left) / rect.width) * imgs.length)));
   activeIndex.value = idx;
 }
 
-function handleMove(e: MouseEvent) {
-  updateIndexFromX(e.clientX);
-}
-
-function handleTouchMove(e: TouchEvent) {
-  if (e.touches.length > 0) updateIndexFromX(e.touches[0].clientX);
-}
-
-function handleLeave() {
-  activeIndex.value = 0;
-}
-
-function onAddToCart() {
-  if (!isAuthenticated.value) {
-    console.log('не авторизован');
-    return;
-  }
-  if (props.productId) {
-    addToCart(props.productId);
-  }
-  props.onAdd?.();
-}
-
-function onFavoriteClick() {
-  if (!isAuthenticated.value) {
-    console.log('не авторизован');
-    return;
-  }
-  if (props.productId) {
-    addToFavorites(props.productId);
-  }
-}
-
-function onCompareClick() {
-  if (!isAuthenticated.value) {
-    console.log('не авторизован');
-    return;
-  }
-  addToCompare(props.productId);
-}
+function handleMove(e: MouseEvent) { updateIndexFromX(e.clientX); }
+function handleTouchMove(e: TouchEvent) { if (e.touches.length > 0) updateIndexFromX(e.touches[0].clientX); }
+function handleLeave() { activeIndex.value = 0; }
 </script>
 
 <style scoped>
 .wrapper-btn-card{
   width: 100%;
   max-width: 137px;
+}
+
+.qty-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 100%;
+  background: var(--red);
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+
+.qty-btn {
+  color: white;
+  font-size: 18px;
+  line-height: 1;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.qty-value {
+  color: white;
+  font-family: 'NT Somic', sans-serif;
+  font-weight: 500;
+  font-size: 16px;
 }
 .actions {
   display: flex;

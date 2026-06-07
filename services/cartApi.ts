@@ -27,7 +27,7 @@ function mapApiItem(raw: any, apiBase: string): CartItem {
     .sort((a: any, b: any) => a.position - b.position) as CartItem['images'];
 
   return {
-    id: raw.id,
+    id: raw.id ?? ci.id,
     catalogItemId: ci.id,
     name: ci.name ?? '',
     price: ci.price ?? 0,
@@ -40,11 +40,27 @@ function mapApiItem(raw: any, apiBase: string): CartItem {
 export async function getCartList(): Promise<CartItem[]> {
   const apiBase = getApiBase();
   try {
+    let localItems: { id: number; count: number }[] = [];
+    if (process.client) {
+      try {
+        const stored = localStorage.getItem('cart');
+        if (stored) {
+          const parsed: Record<number, number> = JSON.parse(stored);
+          localItems = Object.entries(parsed)
+            .map(([id, count]) => ({ id: Number(id), count }))
+            .filter(({ id, count }) => !isNaN(id) && count > 0);
+        }
+      } catch {}
+    }
+
     const res = await $fetch<{ success: boolean; items: any[] }>(
       `${apiBase}/volt12/cart/list`,
-      { credentials: 'include' }
+      {
+        method: 'POST',
+        credentials: 'include',
+        body: { items: localItems },
+      }
     );
-    console.log('[cart] raw response:', JSON.stringify(res));
     return (res.items ?? []).map((i) => mapApiItem(i, apiBase));
   } catch (e) {
     console.error('[cart] getCartList error:', e);
@@ -52,21 +68,22 @@ export async function getCartList(): Promise<CartItem[]> {
   }
 }
 
-export async function addToCart(catalogItemId: number, count = 1): Promise<void> {
+export async function addToCart(catalogItemId: number, count = 1): Promise<number | null> {
   const apiBase = getApiBase();
-  await $fetch(`${apiBase}/volt12/cart/add`, {
+  const res = await $fetch<{ success: boolean; item?: { id: number } }>(`${apiBase}/volt12/cart/add`, {
     method: 'POST',
     credentials: 'include',
     body: { catalog_item_id: catalogItemId, count },
   });
+  return res.item?.id ?? null;
 }
 
-export async function updateCartItem(id: number, count: number): Promise<void> {
+export async function updateCartItem(catalogItemId: number, count: number): Promise<void> {
   const apiBase = getApiBase();
-  await $fetch(`${apiBase}/volt12/cart/${id}`, {
-    method: 'PUT',
+  await $fetch(`${apiBase}/volt12/cart/update`, {
+    method: 'POST',
     credentials: 'include',
-    body: { count },
+    body: { catalog_item_id: catalogItemId, count },
   });
 }
 

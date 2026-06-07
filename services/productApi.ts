@@ -52,6 +52,7 @@ export async function getCatalogCharacteristics(catalogId: number): Promise<Cata
   const apiBase = getApiBase();
   return await $fetch<CatalogCharacteristics>(`${apiBase}/volt12/catalog_characteristics`, {
     method: 'POST',
+    credentials: 'include',
     body: { catalogId }
   });
 }
@@ -63,6 +64,7 @@ export async function getCatalogItems(params: CatalogItemsFilters): Promise<Cata
   const apiBase = getApiBase();
   return await $fetch<CatalogItemsResponse>(`${apiBase}/volt12/catalog_items`, {
     method: 'POST',
+    credentials: 'include',
     body: params
   });
 }
@@ -75,6 +77,7 @@ export async function getCatalogItemDetail(
   try {
     const res = await $fetch<CatalogItemDetailResponse>(`${apiBase}/volt12/catalog_items/detail`, {
       method: 'POST',
+      credentials: 'include',
       body: {
         slug,
         recently_viewed_ids: recentlyViewedIds,
@@ -124,16 +127,27 @@ export async function addToCompare(catalogItemId: number): Promise<void> {
   });
 }
 
-export async function getCompareList(): Promise<any[]> {
+export async function getCompareList(localIds: number[] = []): Promise<any[]> {
   const apiBase = getApiBase();
   try {
     const res = await $fetch<{ success: boolean; data: any[] }>(`${apiBase}/volt12/compare/list`, {
-      credentials: 'include'
+      credentials: 'include',
+      method: 'POST',
+      body: localIds.length ? { ids: localIds } : {},
     });
     return res.data ?? [];
   } catch {
     return [];
   }
+}
+
+export async function removeFromCompare(catalogItemId: number): Promise<void> {
+  const apiBase = getApiBase();
+  await $fetch(`${apiBase}/volt12/compare/remove`, {
+    method: 'POST',
+    credentials: 'include',
+    body: { catalog_item_id: catalogItemId },
+  });
 }
 
 export async function getServiceBySlug(slug: string): Promise<{ service: Service; related: RelatedService[] } | null> {

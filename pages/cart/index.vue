@@ -83,7 +83,8 @@ const breadcrumbsItems = [
   { to: '/cart', text: 'Корзина' },
 ];
 
-const { items, loading, load, removeItem, removeItems, increaseQty, decreaseQty } = useCart();
+const { isAuthenticated } = useAuth();
+const { items, loading, load, removeItem, removeItems, increaseQty, decreaseQty } = useCart(isAuthenticated);
 
 const orderSummaryRef = ref<InstanceType<typeof OrderSummary> | null>(null);
 

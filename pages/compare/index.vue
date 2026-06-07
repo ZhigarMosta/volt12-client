@@ -81,12 +81,16 @@ import { useRouter } from 'vue-router';
 import CompareItem from '~/components/shared/CompareItem.vue';
 import TabSlide from '~/components/shared/TabSlide.vue';
 import FilterRadio from '~/components/shared/FilterRadio.vue';
-import { getCompareList } from '~/services/productApi';
+import { getCompareList, removeFromCompare } from '~/services/productApi';
+import { useLocalStorageRef } from '~/utils/useLocalStorageRef';
 
+const { isAuthenticated } = useAuth();
 const loading = ref(true);
 const catalogs = ref<any[]>([]);
 const activeCatalogIndex = ref(0);
 const filterMode = ref('all');
+
+let _compareStorageRef: { value: Record<number, boolean> } | null = null;
 
 const tabSlideProps = (item: any, index: number) => ({
   name: item.catalog?.name,
@@ -133,6 +137,7 @@ const hasPagination = ref(false);
 const compareSlideProps = computed(() => (item: any) => ({
   product: item,
   hasPagination: hasPagination.value,
+  onRemove: (catalogItemId: number) => removeItem(catalogItemId),
 }));
 
 const sliderHeightStyle = computed(() => {
@@ -158,9 +163,37 @@ function goToCatalog() {
   router.push('/catalog');
 }
 
-onMounted(async () => {
+async function removeItem(catalogItemId: number) {
+  if (!isAuthenticated.value) {
+    if (_compareStorageRef) {
+      const updated = { ..._compareStorageRef.value };
+      delete updated[catalogItemId];
+      _compareStorageRef.value = updated;
+    }
+    catalogs.value = catalogs.value
+      .map(cat => ({
+        ...cat,
+        items: cat.items.filter((i: any) => i.id !== catalogItemId),
+      }))
+      .filter(cat => cat.items.length > 0);
+    return;
+  }
   try {
-    catalogs.value = await getCompareList();
+    await removeFromCompare(catalogItemId);
+    catalogs.value = catalogs.value
+      .map(cat => ({
+        ...cat,
+        items: cat.items.filter((i: any) => i.id !== catalogItemId),
+      }))
+      .filter(cat => cat.items.length > 0);
+  } catch {}
+}
+
+onMounted(async () => {
+  _compareStorageRef = useLocalStorageRef('compare', {}) as { value: Record<number, boolean> };
+  const localIds = Object.keys(_compareStorageRef.value).map(Number).filter(n => !isNaN(n));
+  try {
+    catalogs.value = await getCompareList(isAuthenticated.value ? [] : localIds);
   } catch {
     catalogs.value = [];
   } finally {

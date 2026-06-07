@@ -1,3 +1,4 @@
+import type { Ref } from 'vue';
 import type { CartItem } from '~/types/cart';
 import {
   getCartList,
@@ -7,7 +8,20 @@ import {
   removeManyCartItems,
 } from '~/services/cartApi';
 
-export function useCart() {
+function readLocalCart(): Record<number, number> {
+  try {
+    const stored = localStorage.getItem('cart');
+    return stored ? JSON.parse(stored) : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeLocalCart(data: Record<number, number>) {
+  localStorage.setItem('cart', JSON.stringify(data));
+}
+
+export function useCart(isAuthenticated: Ref<boolean> = ref(false)) {
   const items = ref<CartItem[]>([]);
   const loading = ref(true);
 
@@ -26,9 +40,19 @@ export function useCart() {
   }
 
   async function removeItem(id: number) {
-    // оптимистичное удаление
     const prev = [...items.value];
     items.value = items.value.filter((i) => i.id !== id);
+
+    if (!isAuthenticated.value) {
+      const item = prev.find((i) => i.id === id);
+      if (item) {
+        const cart = readLocalCart();
+        delete cart[item.catalogItemId];
+        writeLocalCart(cart);
+      }
+      return;
+    }
+
     try {
       await removeCartItem(id);
     } catch {
@@ -40,8 +64,18 @@ export function useCart() {
     if (!ids.length) return;
     const set = new Set(ids);
     const prev = [...items.value];
-    // оптимистичное удаление
-    items.value = items.value.filter((i) => !set.has(i.id));
+    const toRemove = prev.filter((i) => set.has(i.id));
+    items.value = prev.filter((i) => !set.has(i.id));
+
+    if (!isAuthenticated.value) {
+      const cart = readLocalCart();
+      for (const item of toRemove) {
+        delete cart[item.catalogItemId];
+      }
+      writeLocalCart(cart);
+      return;
+    }
+
     try {
       await removeManyCartItems(ids);
     } catch {
@@ -53,10 +87,17 @@ export function useCart() {
     const item = items.value.find((i) => i.id === id);
     if (!item) return;
     const prevQty = item.quantity;
-    // оптимистичный апдейт
     item.quantity += 1;
+
+    if (!isAuthenticated.value) {
+      const cart = readLocalCart();
+      cart[item.catalogItemId] = item.quantity;
+      writeLocalCart(cart);
+      return;
+    }
+
     try {
-      await updateCartItem(id, item.quantity);
+      await updateCartItem(item.catalogItemId, item.quantity);
     } catch {
       item.quantity = prevQty;
     }
@@ -68,8 +109,16 @@ export function useCart() {
     if (item.quantity > 1) {
       const prevQty = item.quantity;
       item.quantity -= 1;
+
+      if (!isAuthenticated.value) {
+        const cart = readLocalCart();
+        cart[item.catalogItemId] = item.quantity;
+        writeLocalCart(cart);
+        return;
+      }
+
       try {
-        await updateCartItem(id, item.quantity);
+        await updateCartItem(item.catalogItemId, item.quantity);
       } catch {
         item.quantity = prevQty;
       }

@@ -3,7 +3,7 @@
     <div class="catalog-item">
       <div class="top">
         <p class="catalog-item--name">{{ product?.name }}</p>
-        <button class="remove">
+        <button class="remove" @click="$emit('remove', product?.id)">
           <svg width="14" height="13" viewBox="0 0 14 13" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M0.537428 0H3.89635L7.01344 4.02444L10.1574 0H13.4626L8.67946 6.14257L14 13H10.6411L6.95969 8.26069L3.27831 13H0L5.32054 6.19552L0.537428 0Z" fill="#2D2D2D" />
           </svg>
@@ -44,6 +44,10 @@ const props = defineProps<{
   product?: any;
   feedback?: any;
   hasPagination?: boolean;
+}>();
+
+defineEmits<{
+  remove: [catalogItemId: number];
 }>();
 
 const config = useRuntimeConfig();

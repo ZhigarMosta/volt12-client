@@ -17,7 +17,13 @@ export interface Product {
   is_new: boolean;
   is_popular: boolean;
   is_published: boolean;
-  catalogItemImages: CatalogItemImage[];
+  catalogItemImages?: CatalogItemImage[];
+  images?: CatalogItemImage[];
+  user_state: {
+    cart_count: number | null;
+    in_compare: boolean;
+    in_favorite: boolean;
+  } | null;
 }
 
 export interface PopularCatalog {
@@ -156,6 +162,12 @@ export interface CatalogItemDetail {
   catalog_id: number | null;
   images: CatalogItemDetailImage[];
   characteristics: ProductCharacteristic[];
+  user_state: {
+    cart_item_id: number | null;
+    cart_count: number | null;
+    in_compare: boolean;
+    in_favorite: boolean;
+  } | null;
 }
 
 export interface RelatedCatalogItem {
