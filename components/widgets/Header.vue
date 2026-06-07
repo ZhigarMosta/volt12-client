@@ -58,17 +58,25 @@
             @mouseenter="showProfileMenu = true"
             @mouseleave="showProfileMenu = false"
         >
-          <NuxtLink to="/profile" class="header__action header__action--profile">
+          <button v-if="!isAuthenticated" class="header__action header__action--profile header__action--btn" @click="showAuthModal = true">
             <img class="header__action-icon" src="../../public/icons/profile.svg" alt="profile">
-            <p class="header__text">{{ isAuthenticated ? user?.name : 'Войти' }}</p>
-          </NuxtLink>
-          <Transition name="fade">
-            <div v-if="showProfileMenu && isAuthenticated" class="header__profile-dropdown">
-              <button @click="handleLogout" class="header__dropdown-item">Выйти</button>
-              <NuxtLink to="/favorites" class="header__dropdown-item">Избранное</NuxtLink>
-            </div>
-          </Transition>
+            <p class="header__text">Войти</p>
+          </button>
+          <template v-else>
+            <NuxtLink to="/profile" class="header__action header__action--profile">
+              <img class="header__action-icon" src="../../public/icons/profile.svg" alt="profile">
+              <p class="header__text">{{ user?.name }}</p>
+            </NuxtLink>
+            <Transition name="fade">
+              <div v-if="showProfileMenu" class="header__profile-dropdown">
+                <button @click="handleLogout" class="header__dropdown-item">Выйти</button>
+                <NuxtLink to="/favorites" class="header__dropdown-item">Избранное</NuxtLink>
+              </div>
+            </Transition>
+          </template>
         </div>
+
+        <AuthModal v-model="showAuthModal" />
       </div>
     </div>
   </header>
@@ -168,6 +176,14 @@
 
 .header__action--profile {
   @apply ml-[10px];
+}
+
+.header__action--btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  align-items: center;
 }
 
 .header__profile-wrapper {
@@ -304,6 +320,7 @@
 import { ref } from 'vue';
 
 const { isAuthenticated, user, logoutUser } = useAuth();
+const { showAuthModal } = useAuthModal();
 
 const isMenuOpen = ref(false);
 const showProfileMenu = ref(false);

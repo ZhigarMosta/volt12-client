@@ -67,6 +67,15 @@ export async function removeFavoriteItem(id: number): Promise<void> {
   });
 }
 
+export async function removeFromFavorites(catalogItemId: number): Promise<void> {
+  const apiBase = getApiBase();
+  await $fetch(`${apiBase}/volt12/favorites/remove`, {
+    method: 'POST',
+    credentials: 'include',
+    body: { catalog_item_id: catalogItemId },
+  });
+}
+
 export async function removeManyFavoriteItems(ids: number[]): Promise<void> {
   const apiBase = getApiBase();
   await $fetch(`${apiBase}/volt12/favorites/remove-many`, {

@@ -35,7 +35,7 @@
                xmlns="http://www.w3.org/2000/svg">
             <path
                 d="M6.5332 1C8.00107 1.00003 9.40835 1.58057 10.4453 2.61328L10.4463 2.61523C10.6948 2.86192 11.011 3.16422 11.3916 3.52148L12.0762 4.16504L12.7607 3.52051C13.1401 3.16354 13.455 2.86147 13.7031 2.61523C14.7358 1.59131 16.1332 1.01366 17.5918 1.00977C19.0504 1.00588 20.4511 1.57632 21.4893 2.59473C22.527 3.61289 23.1191 4.99705 23.1377 6.44629C23.1562 7.89571 22.5993 9.29465 21.5879 10.3389L12.292 19.5996C12.2349 19.6565 12.1567 19.6895 12.0742 19.6895C11.9918 19.6894 11.9126 19.6565 11.8555 19.5996L2.55762 10.3379C1.54776 9.29964 0.988638 7.90802 1 6.46387C1.01069 5.10996 1.52319 3.80961 2.43359 2.80957L2.62109 2.61328C3.65807 1.58061 5.06535 1 6.5332 1Z"
-                stroke="var(--black)" stroke-width="2"/>
+                :stroke="inFavorite ? 'var(--red)' : 'var(--black)'" :fill="inFavorite ? 'var(--red)' : 'none'" stroke-width="2"/>
           </svg>
         </button>
         <button class="action" :class="{ 'action--active': inCompare }" @click.stop="onCompareClick">
@@ -58,7 +58,7 @@
                  xmlns="http://www.w3.org/2000/svg">
               <path
                   d="M6.5332 1C8.00107 1.00003 9.40835 1.58057 10.4453 2.61328L10.4463 2.61523C10.6948 2.86192 11.011 3.16422 11.3916 3.52148L12.0762 4.16504L12.7607 3.52051C13.1401 3.16354 13.455 2.86147 13.7031 2.61523C14.7358 1.59131 16.1332 1.01366 17.5918 1.00977C19.0504 1.00588 20.4511 1.57632 21.4893 2.59473C22.527 3.61289 23.1191 4.99705 23.1377 6.44629C23.1562 7.89571 22.5993 9.29465 21.5879 10.3389L12.292 19.5996C12.2349 19.6565 12.1567 19.6895 12.0742 19.6895C11.9918 19.6894 11.9126 19.6565 11.8555 19.5996L2.55762 10.3379C1.54776 9.29964 0.988638 7.90802 1 6.46387C1.01069 5.10996 1.52319 3.80961 2.43359 2.80957L2.62109 2.61328C3.65807 1.58061 5.06535 1 6.5332 1Z"
-                  stroke="var(--black)" stroke-width="2"/>
+                  :stroke="inFavorite ? 'var(--red)' : 'var(--black)'" :fill="inFavorite ? 'var(--red)' : 'none'" stroke-width="2"/>
             </svg>
           </button>
           <button class="action" :class="{ 'action--active': inCompare }" @click.stop="onCompareClick">
@@ -92,7 +92,7 @@
 import { computed, ref, onMounted } from 'vue';
 import { addToCompare, removeFromCompare } from '~/services/productApi';
 import { addToCart, updateCartItem } from '~/services/cartApi';
-import { addToFavorites } from '~/services/favoritesApi';
+import { addToFavorites, removeFromFavorites } from '~/services/favoritesApi';
 
 type ImgItem = {
   img_link?: string;
@@ -119,10 +119,12 @@ const props = defineProps<{
 }>();
 
 const { isAuthenticated } = useAuth();
+const { openAuthModal } = useAuthModal();
 
 // --- реактивное состояние ---
 const cartQty = ref(0);
 const inCompare = ref(false);
+const inFavorite = ref(false);
 
 function readLocal<T>(key: string, fallback: T): T {
   try { const s = localStorage.getItem(key); return s ? JSON.parse(s) : fallback; } catch { return fallback; }
@@ -134,11 +136,10 @@ function writeLocal(key: string, val: any) {
 onMounted(() => {
   if (!props.productId) return;
   if (isAuthenticated.value && props.userState !== undefined) {
-    // авторизован — приоритет данным с сервера
     cartQty.value = props.userState?.cart_count ?? 0;
     inCompare.value = props.userState?.in_compare ?? false;
+    inFavorite.value = props.userState?.in_favorite ?? false;
   } else {
-    // не авторизован — смотрим localStorage
     const cart: Record<number, number> = readLocal('cart', {});
     const compare: Record<number, boolean> = readLocal('compare', {});
     cartQty.value = cart[props.productId] ?? 0;
@@ -204,8 +205,18 @@ function onCompareClick() {
 
 // --- избранное ---
 function onFavoriteClick() {
-  if (!isAuthenticated.value || !props.productId) return;
-  addToFavorites(props.productId);
+  if (!props.productId) return;
+  if (!isAuthenticated.value) {
+    openAuthModal();
+    return;
+  }
+  if (inFavorite.value) {
+    removeFromFavorites(props.productId);
+    inFavorite.value = false;
+  } else {
+    addToFavorites(props.productId);
+    inFavorite.value = true;
+  }
 }
 
 // --- навигация и галерея ---

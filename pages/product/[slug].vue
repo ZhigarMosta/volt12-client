@@ -147,7 +147,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import type { CatalogItemDetail, RelatedCatalogItem } from '~/types/product';
 import { addToCompare, removeFromCompare, getCatalogItemDetail } from '~/services/productApi';
 import { addToCart, updateCartItem } from '~/services/cartApi';
-import { addToFavorites } from '~/services/favoritesApi';
+import { addToFavorites, removeFromFavorites } from '~/services/favoritesApi';
 import { formatPrice } from '~/utils/format';
 import { pushRecentlyViewedId, useRecentlyViewedIds } from '~/utils/recentlyViewed';
 import ProductGalleryThumb from '~/components/shared/ProductGalleryThumb.vue';
@@ -162,6 +162,7 @@ type GallerySlide = {
 const route = useRoute();
 const slug = computed(() => route.params.slug as string);
 const { isAuthenticated } = useAuth();
+const { openAuthModal } = useAuthModal();
 
 const config = useRuntimeConfig();
 const apiBase = computed(() => (config.public.apiBase as string).replace(/\/+$/, ''));
@@ -249,9 +250,17 @@ async function onDecrement() {
 
 function onFavoriteClick() {
   if (!item.value) return;
-  if (!isAuthenticated.value) return;
-  addToFavorites(item.value.id);
-  inFavorite.value = true;
+  if (!isAuthenticated.value) {
+    openAuthModal();
+    return;
+  }
+  if (inFavorite.value) {
+    removeFromFavorites(item.value.id);
+    inFavorite.value = false;
+  } else {
+    addToFavorites(item.value.id);
+    inFavorite.value = true;
+  }
 }
 const selectedImageIndex = ref(0);
 const hoverImageIndex = ref<number | null>(null);
