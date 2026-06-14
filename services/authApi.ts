@@ -9,11 +9,22 @@ function authFetch<T>(url: string, opts?: any): Promise<T> {
   return $fetch<T>(url, { credentials: 'include', ...opts });
 }
 
-export async function register(name: string, email: string, password: string, phone?: string): Promise<User> {
+export async function register(
+  name: string,
+  email: string,
+  password: string,
+  phone?: string,
+  cart?: Record<number, number>,
+  compare?: number[],
+): Promise<User> {
   const apiBase = getApiBase();
+  const body: Record<string, any> = { name, email, password };
+  if (phone) body.phone = phone;
+  if (cart && Object.keys(cart).length > 0) body.cart = cart;
+  if (compare && compare.length > 0) body.compare = compare;
   const res = await authFetch<{ success: boolean; user: User; error?: string }>(`${apiBase}/volt12/auth/register`, {
     method: 'POST',
-    body: { name, email, password, phone }
+    body,
   });
   return res.user!;
 }
@@ -30,6 +41,20 @@ export async function login(email: string, password: string): Promise<User> {
 export async function logout(): Promise<void> {
   const apiBase = getApiBase();
   await authFetch(`${apiBase}/volt12/auth/logout`, { method: 'POST' });
+}
+
+export async function sendVerificationEmail(): Promise<void> {
+  const apiBase = getApiBase();
+  await authFetch(`${apiBase}/volt12/auth/send-verification`, { method: 'POST' });
+}
+
+export async function updateProfile(data: { name?: string; phone?: string }): Promise<User> {
+  const apiBase = getApiBase();
+  const res = await authFetch<{ success: boolean; user: User; error?: string }>(`${apiBase}/volt12/auth/update-profile`, {
+    method: 'POST',
+    body: data,
+  });
+  return res.user!;
 }
 
 export async function getMe(): Promise<User | null> {

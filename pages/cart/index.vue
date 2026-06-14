@@ -39,10 +39,14 @@
             :key="item.id"
             :item="item"
             :checked="selectedIds.includes(item.id)"
+            :in-favorite="isFavorite(item.catalogItemId)"
+            :in-compare="isInCompare(item.catalogItemId)"
             @toggle="toggleSelect(item.id)"
             @increase="increaseQty(item.id)"
             @decrease="decreaseQty(item.id)"
             @remove="removeItem(item.id)"
+            @toggle-favorite="toggleFavorite(item.catalogItemId)"
+            @toggle-compare="toggleCompare(item.catalogItemId)"
           />
         </div>
 
@@ -71,6 +75,9 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useCart } from '~/utils/cart';
+import { useFavorites } from '~/utils/favorites';
+import { addToFavorites, removeFromFavorites } from '~/services/favoritesApi';
+import { addToCompare, removeFromCompare } from '~/services/productApi';
 import { useCheckoutOrder } from '~/utils/useCheckoutOrder';
 import type OrderSummary from '~/components/features/OrderSummary.vue';
 
@@ -85,12 +92,69 @@ const breadcrumbsItems = [
 
 const { isAuthenticated } = useAuth();
 const { items, loading, load, removeItem, removeItems, increaseQty, decreaseQty } = useCart(isAuthenticated);
+const { items: favoriteItems, load: loadFavorites } = useFavorites();
 
 const orderSummaryRef = ref<InstanceType<typeof OrderSummary> | null>(null);
 
+const favoriteIds = computed(() => new Set(favoriteItems.value.map((f) => f.catalogItemId)));
+
+function isFavorite(catalogItemId: number): boolean {
+  return favoriteIds.value.has(catalogItemId);
+}
+
+async function toggleFavorite(catalogItemId: number) {
+  if (favoriteIds.value.has(catalogItemId)) {
+    try { await removeFromFavorites(catalogItemId); await loadFavorites(); } catch {}
+  } else {
+    try { await addToFavorites(catalogItemId); await loadFavorites(); } catch {}
+  }
+}
+
+const compareIds = ref<Set<number>>(new Set());
+
+function isInCompare(catalogItemId: number): boolean {
+  return compareIds.value.has(catalogItemId);
+}
+
+async function toggleCompare(catalogItemId: number) {
+  if (compareIds.value.has(catalogItemId)) {
+    compareIds.value.delete(catalogItemId);
+    compareIds.value = new Set(compareIds.value);
+    if (!isAuthenticated.value) {
+      try {
+        const stored = localStorage.getItem('compare');
+        const ids: number[] = stored ? JSON.parse(stored) : [];
+        localStorage.setItem('compare', JSON.stringify(ids.filter((id) => id !== catalogItemId)));
+      } catch {}
+      return;
+    }
+    try { await removeFromCompare(catalogItemId); } catch {}
+  } else {
+    compareIds.value.add(catalogItemId);
+    compareIds.value = new Set(compareIds.value);
+    if (!isAuthenticated.value) {
+      try {
+        const stored = localStorage.getItem('compare');
+        const ids: number[] = stored ? JSON.parse(stored) : [];
+        if (!ids.includes(catalogItemId)) localStorage.setItem('compare', JSON.stringify([...ids, catalogItemId]));
+      } catch {}
+      return;
+    }
+    try { await addToCompare(catalogItemId); } catch {}
+  }
+}
+
 onMounted(async () => {
-  await load();
+  await Promise.all([load(), loadFavorites()]);
   selectedIds.value = items.value.map((i) => i.id);
+
+  if (!isAuthenticated.value) {
+    try {
+      const stored = localStorage.getItem('compare');
+      const ids: number[] = stored ? JSON.parse(stored) : [];
+      compareIds.value = new Set(ids);
+    } catch {}
+  }
 });
 
 watch(items, (newItems) => {

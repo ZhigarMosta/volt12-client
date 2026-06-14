@@ -132,6 +132,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { useCheckoutOrder, type CheckoutOrderItem } from '~/utils/useCheckoutOrder';
+import { createOrder } from '~/services/orderApi';
 
 useHead({ title: 'Оформление заказа — Мастер 12 Вольт' });
 const breadcrumbsItems = [
@@ -206,11 +207,30 @@ async function handleSubmit() {
   submitting.value = true;
   submitError.value = '';
   try {
-    // TODO: подключить API оформления заказа
-    await new Promise((r) => setTimeout(r, 500));
-    submitSuccess.value = true;
+    const orderId = await createOrder({
+      first_name: form.firstName,
+      last_name: form.lastName,
+      phone: form.phone,
+      email: form.email,
+      city: form.city,
+      region: form.region,
+      postal_code: form.postalCode,
+      street: form.street,
+      house: form.house,
+      entrance: form.entrance || undefined,
+      apartment: form.apartment || undefined,
+      comment: form.comment || undefined,
+      items: cartItems.value.map((i) => ({
+        catalog_item_id: i.catalogItemId,
+        quantity: i.quantity,
+      })),
+    });
+    router.push(`/orders/${orderId}`);
   } catch (e: any) {
-    submitError.value = e?.message ?? 'Не удалось оформить заказ';
+    const serverErrors: string[] = e?.data?.errors ?? [];
+    submitError.value = serverErrors.length
+      ? serverErrors.join(', ')
+      : (e?.data?.message ?? 'Не удалось оформить заказ');
   } finally {
     submitting.value = false;
   }

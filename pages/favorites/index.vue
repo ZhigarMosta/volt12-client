@@ -38,9 +38,14 @@
           :key="item.id"
           :item="item"
           :checked="selectedIds.includes(item.id)"
+          :cart-qty="getCartQty(item.catalogItemId)"
+          :in-compare="compareIds.has(item.catalogItemId)"
           @toggle="toggleSelect(item.id)"
           @remove="removeItem(item.id)"
           @add-to-cart="addItemToCart(item.catalogItemId)"
+          @increase="increaseCartItem(item.catalogItemId)"
+          @decrease="decreaseCartItem(item.catalogItemId)"
+          @toggle-compare="toggleCompare(item.catalogItemId)"
         />
       </div>
     </template>
@@ -59,7 +64,9 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useFavorites } from '~/utils/favorites';
-import { addToCart } from '~/services/cartApi';
+import { useCart } from '~/utils/cart';
+import { addToCart, updateCartItem } from '~/services/cartApi';
+import { addToCompare, removeFromCompare } from '~/services/productApi';
 
 useHead({ title: 'Избранное — Мастер 12 Вольт' });
 
@@ -70,11 +77,23 @@ const breadcrumbsItems = [
   { to: '/favorites', text: 'Избранное' },
 ];
 
+const { isAuthenticated } = useAuth();
 const { items, loading, load, removeItem, removeItems } = useFavorites();
+const { items: cartItems, load: loadCart } = useCart(isAuthenticated);
+
+const compareIds = ref<Set<number>>(new Set());
 
 onMounted(async () => {
-  await load();
+  await Promise.all([load(), loadCart()]);
   selectedIds.value = items.value.map((i) => i.id);
+
+  if (!isAuthenticated.value) {
+    try {
+      const stored = localStorage.getItem('compare');
+      const ids: number[] = stored ? JSON.parse(stored) : [];
+      compareIds.value = new Set(ids);
+    } catch {}
+  }
 });
 
 watch(items, (newItems) => {
@@ -89,10 +108,6 @@ const allSelected = computed(
   () => items.value.length > 0 && selectedIds.value.length === items.value.length
 );
 
-const selectedItems = computed(() =>
-  items.value.filter((i) => selectedIds.value.includes(i.id))
-);
-
 const countLabel = computed(() => {
   const n = items.value.length;
   const mod10 = n % 10;
@@ -104,6 +119,11 @@ const countLabel = computed(() => {
   else form = 'товаров';
   return `${n} ${form}`;
 });
+
+function getCartQty(catalogItemId: number): number {
+  const found = cartItems.value.find((i) => i.catalogItemId === catalogItemId);
+  return found ? found.quantity : 0;
+}
 
 function toggleSelect(id: number) {
   if (selectedIds.value.includes(id)) {
@@ -130,7 +150,93 @@ function deleteSelected() {
 async function addItemToCart(catalogItemId: number) {
   try {
     await addToCart(catalogItemId);
+    await loadCart();
   } catch {}
+}
+
+async function increaseCartItem(catalogItemId: number) {
+  const cartItem = cartItems.value.find((i) => i.catalogItemId === catalogItemId);
+  if (!cartItem) return;
+  const newQty = cartItem.quantity + 1;
+  cartItem.quantity = newQty;
+  if (!isAuthenticated.value) {
+    try {
+      const stored = localStorage.getItem('cart');
+      const cart: Record<number, number> = stored ? JSON.parse(stored) : {};
+      cart[catalogItemId] = newQty;
+      localStorage.setItem('cart', JSON.stringify(cart));
+    } catch {}
+    return;
+  }
+  try {
+    await updateCartItem(catalogItemId, newQty);
+  } catch {
+    cartItem.quantity = newQty - 1;
+  }
+}
+
+async function decreaseCartItem(catalogItemId: number) {
+  const cartItem = cartItems.value.find((i) => i.catalogItemId === catalogItemId);
+  if (!cartItem) return;
+  if (cartItem.quantity > 1) {
+    const newQty = cartItem.quantity - 1;
+    cartItem.quantity = newQty;
+    if (!isAuthenticated.value) {
+      try {
+        const stored = localStorage.getItem('cart');
+        const cart: Record<number, number> = stored ? JSON.parse(stored) : {};
+        cart[catalogItemId] = newQty;
+        localStorage.setItem('cart', JSON.stringify(cart));
+      } catch {}
+      return;
+    }
+    try {
+      await updateCartItem(catalogItemId, newQty);
+    } catch {
+      cartItem.quantity = newQty + 1;
+    }
+  } else {
+    cartItems.value = cartItems.value.filter((i) => i.catalogItemId !== catalogItemId);
+    if (!isAuthenticated.value) {
+      try {
+        const stored = localStorage.getItem('cart');
+        const cart: Record<number, number> = stored ? JSON.parse(stored) : {};
+        delete cart[catalogItemId];
+        localStorage.setItem('cart', JSON.stringify(cart));
+      } catch {}
+    }
+  }
+}
+
+async function toggleCompare(catalogItemId: number) {
+  const isIn = compareIds.value.has(catalogItemId);
+  if (isIn) {
+    compareIds.value.delete(catalogItemId);
+    compareIds.value = new Set(compareIds.value);
+    if (!isAuthenticated.value) {
+      try {
+        const stored = localStorage.getItem('compare');
+        const ids: number[] = stored ? JSON.parse(stored) : [];
+        localStorage.setItem('compare', JSON.stringify(ids.filter((id) => id !== catalogItemId)));
+      } catch {}
+      return;
+    }
+    try { await removeFromCompare(catalogItemId); } catch {}
+  } else {
+    compareIds.value.add(catalogItemId);
+    compareIds.value = new Set(compareIds.value);
+    if (!isAuthenticated.value) {
+      try {
+        const stored = localStorage.getItem('compare');
+        const ids: number[] = stored ? JSON.parse(stored) : [];
+        if (!ids.includes(catalogItemId)) {
+          localStorage.setItem('compare', JSON.stringify([...ids, catalogItemId]));
+        }
+      } catch {}
+      return;
+    }
+    try { await addToCompare(catalogItemId); } catch {}
+  }
 }
 
 function goToCatalog() {

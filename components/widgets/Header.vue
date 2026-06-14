@@ -58,14 +58,20 @@
             @mouseenter="showProfileMenu = true"
             @mouseleave="showProfileMenu = false"
         >
-          <button v-if="!isAuthenticated" class="header__action header__action--profile header__action--btn" @click="showAuthModal = true">
+          <template v-if="loading">
+            <div class="header__action header__action--profile header__action--skeleton">
+              <img class="header__action-icon" src="../../public/icons/profile.svg" alt="profile">
+              <div class="sk-name" />
+            </div>
+          </template>
+          <button v-else-if="!isAuthenticated" class="header__action header__action--profile header__action--btn" @click="showAuthModal = true">
             <img class="header__action-icon" src="../../public/icons/profile.svg" alt="profile">
             <p class="header__text">Войти</p>
           </button>
           <template v-else>
             <NuxtLink to="/profile" class="header__action header__action--profile">
               <img class="header__action-icon" src="../../public/icons/profile.svg" alt="profile">
-              <p class="header__text">{{ user?.name }}</p>
+              <p class="header__text">Кабинет</p>
             </NuxtLink>
             <Transition name="fade">
               <div v-if="showProfileMenu" class="header__profile-dropdown">
@@ -175,7 +181,8 @@
 }
 
 .header__action--profile {
-  @apply ml-[10px];
+  width: 60px;
+  align-items: center;
 }
 
 .header__action--btn {
@@ -184,6 +191,26 @@
   cursor: pointer;
   padding: 0;
   align-items: center;
+}
+
+.header__action--skeleton {
+  pointer-events: none;
+  align-items: center;
+  gap: 10px;
+}
+
+.sk-name {
+  width: 52px;
+  height: 12px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #e8e8e8 25%, #f4f4f4 50%, #e8e8e8 75%);
+  background-size: 200% 100%;
+  animation: sk-shimmer 1.5s infinite;
+}
+
+@keyframes sk-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
 .header__profile-wrapper {
@@ -319,7 +346,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
-const { isAuthenticated, user, logoutUser } = useAuth();
+const { isAuthenticated, user, loading, logoutUser } = useAuth();
 const { showAuthModal } = useAuthModal();
 
 const isMenuOpen = ref(false);

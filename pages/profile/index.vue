@@ -11,7 +11,8 @@
 
     <template v-else-if="isAuthenticated">
       <h1 class="profile-title">Личный кабинет</h1>
-      <nav class="profile-menu">
+      <div class="profile-layout">
+        <nav class="profile-menu">
         <NuxtLink to="/favorites" class="profile-menu__item">
           <svg width="25" height="21" viewBox="0 0 25 21" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M6.5332 1C8.00107 1.00003 9.40835 1.58057 10.4453 2.61328L10.4463 2.61523C10.6948 2.86192 11.011 3.16422 11.3916 3.52148L12.0762 4.16504L12.7607 3.52051C13.1401 3.16354 13.455 2.86147 13.7031 2.61523C14.7358 1.59131 16.1332 1.01366 17.5918 1.00977C19.0504 1.00588 20.4511 1.57632 21.4893 2.59473C22.527 3.61289 23.1191 4.99705 23.1377 6.44629C23.1562 7.89571 22.5993 9.29465 21.5879 10.3389L12.292 19.5996C12.2349 19.6565 12.1567 19.6895 12.0742 19.6895C11.9918 19.6894 11.9126 19.6565 11.8555 19.5996L2.55762 10.3379C1.54776 9.29964 0.988638 7.90802 1 6.46387C1.01069 5.10996 1.52319 3.80961 2.43359 2.80957L2.62109 2.61328C3.65807 1.58061 5.06535 1 6.5332 1Z" stroke="#2D2D2D" stroke-width="2"/>
@@ -31,20 +32,61 @@
           </svg>
           <span>История заказов</span>
         </NuxtLink>
-
-        <Divider
-            width="100%"
-            height="2"
-            color="var(--gray-light)"
-        />
-
-        <NuxtLink to="/profile/settings" class="profile-menu__item">
-          <svg width="26" height="25" viewBox="0 0 26 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M9.125 25L8.625 21C8.35417 20.8958 8.09917 20.7708 7.86 20.625C7.62083 20.4792 7.38625 20.3229 7.15625 20.1562L3.4375 21.7188L0 15.7812L3.21875 13.3438C3.19792 13.1979 3.1875 13.0575 3.1875 12.9225V12.0788C3.1875 11.9429 3.19792 11.8021 3.21875 11.6562L0 9.21875L3.4375 3.28125L7.15625 4.84375C7.38542 4.67708 7.625 4.52083 7.875 4.375C8.125 4.22917 8.375 4.10417 8.625 4L9.125 0H16L16.5 4C16.7708 4.10417 17.0262 4.22917 17.2663 4.375C17.5063 4.52083 17.7404 4.67708 17.9688 4.84375L21.6875 3.28125L25.125 9.21875L21.9062 11.6562C21.9271 11.8021 21.9375 11.9429 21.9375 12.0788V12.9212C21.9375 13.0571 21.9167 13.1979 21.875 13.3438L25.0937 15.7812L21.6562 21.7188L17.9688 20.1562C17.7396 20.3229 17.5 20.4792 17.25 20.625C17 20.7708 16.75 20.8958 16.5 21L16 25H9.125ZM12.625 16.875C13.8333 16.875 14.8646 16.4479 15.7188 15.5938C16.5729 14.7396 17 13.7083 17 12.5C17 11.2917 16.5729 10.2604 15.7188 9.40625C14.8646 8.55208 13.8333 8.125 12.625 8.125C11.3958 8.125 10.3592 8.55208 9.515 9.40625C8.67083 10.2604 8.24917 11.2917 8.25 12.5C8.25083 13.7083 8.67292 14.7396 9.51625 15.5938C10.3596 16.4479 11.3958 16.875 12.625 16.875Z" fill="#2D2D2D"/>
-          </svg>
-          <span>Настройки</span>
-        </NuxtLink>
       </nav>
+
+        <div class="profile-info">
+          <div class="profile-info__fields">
+            <div class="profile-info__field">
+              <span class="profile-info__label">Имя</span>
+              <input
+                class="profile-info__input"
+                v-model="editName"
+                type="text"
+                placeholder="Ваше имя"
+                @blur="saveField('name', editName)"
+                @keydown.enter.prevent="saveField('name', editName)"
+              />
+            </div>
+            <div class="profile-info__field">
+              <span class="profile-info__label">Электронная почта</span>
+              <span class="profile-info__value">{{ user?.email }}</span>
+              <template v-if="user?.email_verified === false">
+                <button
+                  v-if="verifyState !== 'sent'"
+                  class="profile-info__verify"
+                  :disabled="verifyState === 'loading'"
+                  @click="onVerifyEmail"
+                >
+                  {{ verifyState === 'loading' ? 'Отправка...' : 'Подтвердите почту' }}
+                </button>
+                <span v-else class="profile-info__verify-sent">Письмо отправлено</span>
+                <span v-if="verifyState === 'error'" class="profile-info__verify-error">{{ verifyError }}</span>
+              </template>
+            </div>
+            <div class="profile-info__field">
+              <span class="profile-info__label">Телефон</span>
+              <input
+                class="profile-info__input"
+                v-model="editPhone"
+                type="tel"
+                placeholder="+7 (999) 999-99-99"
+                @blur="saveField('phone', editPhone)"
+                @keydown.enter.prevent="saveField('phone', editPhone)"
+              />
+            </div>
+          </div>
+          <div class="profile-info__actions">
+            <button class="profile-info__logout" @click="handleLogout">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9" stroke="#2D2D2D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M16 17L21 12L16 7" stroke="#2D2D2D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M21 12H9" stroke="#2D2D2D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Выйти
+            </button>
+          </div>
+        </div>
+      </div>
     </template>
 
     <template v-else>
@@ -61,15 +103,57 @@
 </template>
 
 <script setup lang="ts">
+import { ref, watch } from 'vue';
+import { updateProfile, sendVerificationEmail } from '~/services/authApi';
+
 useHead({ title: 'Личный кабинет — Мастер 12 Вольт' });
 
-const { user, loading, isAuthenticated } = useAuth();
+const { user, loading, isAuthenticated, logoutUser } = useAuth();
 const { showAuthModal, openAuthModal } = useAuthModal();
 
 const breadcrumbsItems = [
   { to: '/', text: 'Главная' },
   { to: '/profile', text: 'Личный кабинет' },
 ];
+
+const editName = ref('');
+const editPhone = ref('');
+
+watch(user, (u) => {
+  if (u) {
+    editName.value = u.name ?? '';
+    editPhone.value = u.phone ?? '';
+  }
+}, { immediate: true });
+
+async function saveField(field: 'name' | 'phone', value: string) {
+  if (!user.value) return;
+  if (field === 'name' && value === user.value.name) return;
+  if (field === 'phone' && value === (user.value.phone ?? '')) return;
+  try {
+    const updated = await updateProfile({ [field]: value });
+    user.value = updated;
+  } catch {}
+}
+
+async function handleLogout() {
+  await logoutUser();
+}
+
+const verifyState = ref<'idle' | 'loading' | 'sent' | 'error'>('idle');
+const verifyError = ref('');
+
+async function onVerifyEmail() {
+  verifyState.value = 'loading';
+  verifyError.value = '';
+  try {
+    await sendVerificationEmail();
+    verifyState.value = 'sent';
+  } catch (e: any) {
+    verifyError.value = e?.data?.error ?? 'Ошибка отправки';
+    verifyState.value = 'error';
+  }
+}
 </script>
 
 <style scoped>
@@ -159,9 +243,132 @@ const breadcrumbsItems = [
   100% { background-position: 200% 0; }
 }
 
+.profile-layout {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.profile-info {
+  flex: 1;
+  background: var(--gray);
+  border-radius: 16px;
+  padding: 28px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.profile-info__fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.profile-info__field {
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.profile-info__label {
+  font-family: 'NT Somic', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--gray-light);
+}
+
+.profile-info__value {
+  font-family: 'NT Somic', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--black);
+}
+
+.profile-info__verify {
+  margin-top: 4px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: 'NT Somic', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--red);
+  text-decoration: underline;
+  text-align: left;
+}
+
+.profile-info__verify:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.profile-info__verify-sent {
+  margin-top: 4px;
+  font-family: 'NT Somic', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: #4caf50;
+}
+
+.profile-info__verify-error {
+  margin-top: 2px;
+  font-family: 'NT Somic', sans-serif;
+  font-size: 12px;
+  color: var(--red);
+}
+
+.profile-info__input {
+  font-family: 'NT Somic', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--black);
+  background: none;
+  border: none;
+  outline: none;
+  width: 100%;
+  padding: 0;
+}
+
+.profile-info__actions {
+  display: flex;
+  gap: 16px;
+}
+
+.profile-info__logout {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'NT Somic', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--black);
+  padding: 0;
+}
+
+.profile-info__logout:hover {
+  opacity: 0.7;
+}
+
 @media (max-width: 1100px) {
   .profile-page {
     padding: 0 37px 60px;
+  }
+
+  .profile-layout {
+    flex-direction: column;
+  }
+
+  .profile-menu {
+    max-width: 100%;
+    width: 100%;
   }
 }
 
@@ -170,8 +377,8 @@ const breadcrumbsItems = [
     padding: 0 20px 60px;
   }
 
-  .profile-menu {
-    max-width: 100%;
+  .profile-info__fields {
+    grid-template-columns: 1fr;
   }
 }
 </style>

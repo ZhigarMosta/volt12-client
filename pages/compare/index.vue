@@ -90,6 +90,7 @@ const catalogs = ref<any[]>([]);
 const activeCatalogIndex = ref(0);
 const filterMode = ref('all');
 
+
 let _compareStorageRef: { value: Record<number, boolean> } | null = null;
 
 const tabSlideProps = (item: any, index: number) => ({
@@ -192,6 +193,7 @@ async function removeItem(catalogItemId: number) {
 onMounted(async () => {
   _compareStorageRef = useLocalStorageRef('compare', {}) as { value: Record<number, boolean> };
   const localIds = Object.keys(_compareStorageRef.value).map(Number).filter(n => !isNaN(n));
+
   try {
     catalogs.value = await getCompareList(isAuthenticated.value ? [] : localIds);
   } catch {
