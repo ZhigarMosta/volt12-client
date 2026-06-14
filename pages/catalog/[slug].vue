@@ -37,7 +37,7 @@
                 @update:model-value="selectSortPrice"
             />
           </div>
-          <button class="mobile">
+          <button class="mobile" @click="mobileFiltersOpen = true" aria-label="Открыть фильтры">
             <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
               <rect width="44" height="44" rx="8" fill="var(--red)" />
               <rect x="11" y="26.8889" width="11" height="2.44444" rx="1.22222" fill="var(--gray)" />
@@ -119,6 +119,51 @@
         </div>
       </div>
     </template>
+
+    <!-- Mobile filters panel -->
+    <Teleport to="body">
+      <Transition name="filters-panel">
+        <div v-if="mobileFiltersOpen" class="filters-panel" @click.self="mobileFiltersOpen = false">
+          <div class="filters-panel__sheet">
+            <header class="filters-panel__header">
+              <h2 class="filters-panel__title">Фильтры</h2>
+              <button class="filters-panel__close" aria-label="Закрыть" @click="mobileFiltersOpen = false">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </button>
+            </header>
+
+            <div class="filters-panel__body">
+              <CatalogFilters
+                :loading="loadingFilters"
+                :min-price="minPrice"
+                :max-price="maxPrice"
+                :catalog-characteristic-without-group="catalogCharacteristicWithoutGroup"
+                :catalog-characteristic-with-group="catalogCharacteristicWithGroup"
+                :selected-standalone-ids="selectedStandaloneIds"
+                :selected-group-values="selectedGroupValues"
+                :facets-counts="facetsCounts"
+                @update:min-price="minPrice = $event"
+                @update:max-price="maxPrice = $event"
+                @update:standalone="selectedStandaloneIds = $event"
+                @update:group="(groupId, value) => selectedGroupValues[groupId] = value"
+                @filter-change="onFilterChange"
+              />
+            </div>
+
+            <footer class="filters-panel__footer">
+              <button class="filters-panel__reset" @click="clearAllFilters">
+                Сбросить
+              </button>
+              <button class="filters-panel__apply" @click="mobileFiltersOpen = false">
+                Показать <span v-if="totalItems">({{ totalItems }})</span>
+              </button>
+            </footer>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -155,6 +200,19 @@ const totalItems = ref(0);
 const limit = ref(15);
 const loadingItems = ref(true);
 const loadingFilters = ref(false);
+
+const mobileFiltersOpen = ref(false);
+
+watch(mobileFiltersOpen, (open) => {
+  if (typeof document === 'undefined') return;
+  document.body.style.overflow = open ? 'hidden' : '';
+});
+
+onUnmounted(() => {
+  if (typeof document !== 'undefined') {
+    document.body.style.overflow = '';
+  }
+});
 
 const debouncedTime = 600;
 
@@ -957,5 +1015,127 @@ watch(searchQuery, () => {
   .products-grid {
     grid-template-columns: repeat(1, 1fr);
   }
+}
+
+/* ─── Mobile filters panel ─── */
+.filters-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 998;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.filters-panel__sheet {
+  width: min(420px, 100vw);
+  height: 100%;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -8px 0 24px rgba(0, 0, 0, 0.12);
+  font-family: 'NT Somic', sans-serif;
+}
+
+.filters-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  flex-shrink: 0;
+}
+
+.filters-panel__title {
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--black);
+  margin: 0;
+}
+
+.filters-panel__close {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f4f4f4;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--black);
+  transition: background 0.15s, color 0.15s;
+}
+
+.filters-panel__close:hover {
+  background: var(--red);
+  color: #fff;
+}
+
+.filters-panel__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px 20px;
+}
+
+
+.filters-panel__footer {
+  display: flex;
+  gap: 12px;
+  padding: 16px 20px;
+  border-top: 1px solid #f0f0f0;
+  flex-shrink: 0;
+}
+
+.filters-panel__reset,
+.filters-panel__apply {
+  flex: 1;
+  height: 48px;
+  border-radius: 10px;
+  border: none;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, opacity 0.15s;
+}
+
+.filters-panel__reset {
+  background: #f4f4f4;
+  color: var(--black);
+}
+
+.filters-panel__reset:hover {
+  background: #e8e8e8;
+}
+
+.filters-panel__apply {
+  background: var(--red);
+  color: #fff;
+}
+
+.filters-panel__apply:hover {
+  opacity: 0.9;
+}
+
+/* Slide in from right */
+.filters-panel-enter-active,
+.filters-panel-leave-active {
+  transition: opacity 0.25s ease;
+}
+
+.filters-panel-enter-active .filters-panel__sheet,
+.filters-panel-leave-active .filters-panel__sheet {
+  transition: transform 0.28s ease;
+}
+
+.filters-panel-enter-from,
+.filters-panel-leave-to {
+  opacity: 0;
+}
+
+.filters-panel-enter-from .filters-panel__sheet,
+.filters-panel-leave-to .filters-panel__sheet {
+  transform: translateX(100%);
 }
 </style>

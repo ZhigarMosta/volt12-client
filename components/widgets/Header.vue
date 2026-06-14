@@ -42,10 +42,7 @@
           <p class="header__catalog-text">Каталог</p>
         </NuxtLink>
 
-        <div class="header__search">
-          <input class="header__search-input header__text" type="text" placeholder="Поиск по сайту">
-          <img class="header__search-icon" src="../../public/icons/search.svg" alt="search">
-        </div>
+        <HeaderSearch class="header__search-wrap" variant="desktop" />
 
         <Transition @mouseleave="onCatalogLeave" name="catalog-fade">
           <div v-if="showCatalogMenu" class="catalog-menu">
@@ -138,17 +135,8 @@
         </header>
 
         <!-- Search -->
-        <div class="mm__search">
-          <svg class="mm__search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <circle cx="9" cy="9" r="6.5" stroke="currentColor" stroke-width="1.5"/>
-            <path d="M14 14l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-          <input
-            v-model="mmSearch"
-            class="mm__search-input"
-            type="text"
-            placeholder="Поиск по сайту"
-          >
+        <div class="mm__search-wrap">
+          <HeaderSearch variant="mobile" @navigate="isMenuOpen = false" />
         </div>
 
         <!-- Scrollable body -->
@@ -274,16 +262,10 @@
   @apply font-['NT_Somic'] font-medium text-[14px] text-white;
 }
 
-.header__search {
-  @apply flex justify-between items-center px-[26px] h-[51px] w-full rounded-[8px] bg-[var(--gray)] gap-[20px] ml-[20px];
-}
-
-.header__search-input {
-  @apply w-full;
-}
-
-.header__search-input::placeholder {
-  @apply text-[var(--gray-light)];
+.header__search-wrap {
+  flex: 1;
+  min-width: 0;
+  margin-left: 20px;
 }
 
 .header__actions {
@@ -631,7 +613,7 @@
   right: 0;
   bottom: 0;
   left: 0;
-  z-index: 999;
+  z-index: 1002;
   background: #fff;
   display: flex;
   flex-direction: column;
@@ -677,35 +659,9 @@
 }
 
 /* Search */
-.mm__search {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.mm__search-wrap {
   margin: 16px 20px 0;
-  padding: 0 16px;
-  height: 48px;
-  background: #f4f4f4;
-  border-radius: 10px;
   flex-shrink: 0;
-}
-
-.mm__search-icon {
-  flex-shrink: 0;
-  color: #999;
-}
-
-.mm__search-input {
-  flex: 1;
-  background: transparent;
-  border: none;
-  outline: none;
-  font-family: inherit;
-  font-size: 14px;
-  color: var(--black);
-}
-
-.mm__search-input::placeholder {
-  color: #999;
 }
 
 /* Body */
@@ -905,7 +861,6 @@ const { showAuthModal } = useAuthModal();
 const isMenuOpen = ref(false);
 const showProfileMenu = ref(false);
 const showCatalogMenu = ref(false);
-const mmSearch = ref('');
 
 let catalogHoverActive = false;
 
