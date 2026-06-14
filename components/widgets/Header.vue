@@ -18,10 +18,7 @@
         </NuxtLink>
         <nav class="header__nav">
           <NuxtLink to="/about" class="header__nav-link header__text">О компании</NuxtLink>
-          <div class="header__nav-services">
-            <NuxtLink to="/" class="header__nav-link header__text">Услуги</NuxtLink>
-            <img src="../../public/icons/linkArrow.svg" alt="arrow">
-          </div>
+          <NuxtLink to="/services" class="header__nav-link header__text">Услуги</NuxtLink>
           <NuxtLink to="/contacts" class="header__nav-link header__text">Контакты</NuxtLink>
         </nav>
       </div>
@@ -40,10 +37,10 @@
         class="header__catalog-search"
         @mouseleave="onCatalogLeave"
       >
-        <button class="header__catalog" @mouseenter="onCatalogEnter" @click="toggleCatalogMenu">
+        <NuxtLink to="/catalog" class="header__catalog" @mouseenter="onCatalogEnter">
           <img class="header__catalog-icon" src="../../public/icons/4squares.svg" alt="squares">
           <p class="header__catalog-text">Каталог</p>
-        </button>
+        </NuxtLink>
 
         <div class="header__search">
           <input class="header__search-input header__text" type="text" placeholder="Поиск по сайту">
@@ -920,13 +917,6 @@ function onCatalogEnter() {
 function onCatalogLeave() {
   catalogHoverActive = false;
   showCatalogMenu.value = false;
-}
-
-function toggleCatalogMenu() {
-  // On touch devices hover doesn't fire — toggle on click
-  if (!catalogHoverActive) {
-    showCatalogMenu.value = !showCatalogMenu.value;
-  }
 }
 
 const { data: catalogMenuData } = await useAsyncData('catalog-menu', getCatalogMenu);
