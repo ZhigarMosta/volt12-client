@@ -36,13 +36,49 @@
       </button>
     </div>
     <div class="header__bottom">
-      <NuxtLink class="header__catalog" to="/catalog">
-        <img class="header__catalog-icon" src="../../public/icons/4squares.svg" alt="squares">
-        <p class="header__catalog-text">Каталог</p>
-      </NuxtLink>
-      <div class="header__search">
-        <input class="header__search-input header__text" type="text" placeholder="Поиск по сайту">
-        <img class="header__search-icon" src="../../public/icons/search.svg" alt="search">
+      <div
+        class="header__catalog-search"
+        @mouseleave="onCatalogLeave"
+      >
+        <button class="header__catalog" @mouseenter="onCatalogEnter" @click="toggleCatalogMenu">
+          <img class="header__catalog-icon" src="../../public/icons/4squares.svg" alt="squares">
+          <p class="header__catalog-text">Каталог</p>
+        </button>
+
+        <div class="header__search">
+          <input class="header__search-input header__text" type="text" placeholder="Поиск по сайту">
+          <img class="header__search-icon" src="../../public/icons/search.svg" alt="search">
+        </div>
+
+        <Transition @mouseleave="onCatalogLeave" name="catalog-fade">
+          <div v-if="showCatalogMenu" class="catalog-menu">
+            <div class="catalog-menu__categories">
+              <div
+                v-for="cat in catalogCategories"
+                :key="cat.title"
+                class="catalog-menu__category"
+              >
+                <NuxtLink :to="`/catalog/${cat.slug}`" class="catalog-menu__category-title">{{ cat.title }}</NuxtLink>
+                <ul class="catalog-menu__sub-list">
+                  <li v-for="sub in cat.items" :key="sub.id">
+                    <NuxtLink :to="`/catalog/${cat.slug}/${sub.slug}`" class="catalog-menu__link">{{ sub.name }}</NuxtLink>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="catalog-menu__divider" />
+
+            <div class="catalog-menu__services">
+              <p class="catalog-menu__services-title">Услуги</p>
+              <ul class="catalog-menu__services-list">
+                <li v-for="service in services" :key="service.label">
+                  <NuxtLink :to="service.to" class="catalog-menu__link">{{ service.label }}</NuxtLink>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </Transition>
       </div>
       <div class="header__actions">
         <NuxtLink to="/compare" class="header__action">
@@ -86,6 +122,89 @@
       </div>
     </div>
   </header>
+
+  <!-- Mobile fullscreen menu -->
+  <Teleport to="body">
+    <Transition name="mm">
+      <div v-if="isMenuOpen" class="mm">
+        <!-- Top bar -->
+        <header class="mm__top">
+          <NuxtLink to="/" class="mm__logo-link" @click="isMenuOpen = false">
+            <img class="mm__logo" src="../../public/icons/logo.webp" alt="logo">
+          </NuxtLink>
+
+          <button class="mm__close" aria-label="Закрыть" @click="isMenuOpen = false">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </header>
+
+        <!-- Search -->
+        <div class="mm__search">
+          <svg class="mm__search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <circle cx="9" cy="9" r="6.5" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M14 14l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <input
+            v-model="mmSearch"
+            class="mm__search-input"
+            type="text"
+            placeholder="Поиск по сайту"
+          >
+        </div>
+
+        <!-- Scrollable body -->
+        <div class="mm__body">
+          <!-- Catalog tiles -->
+          <section class="mm__section">
+            <h2 class="mm__section-title">Каталог</h2>
+            <div class="mm__tiles">
+              <NuxtLink
+                v-for="cat in catalogCategories"
+                :key="cat.title"
+                :to="`/catalog/${cat.slug}`"
+                class="mm__tile"
+                @click="isMenuOpen = false"
+              >
+                <span class="mm__tile-title">{{ cat.title }}</span>
+                <span class="mm__tile-count">{{ cat.items.length }} товаров</span>
+                <span class="mm__tile-arrow">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M5 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </span>
+              </NuxtLink>
+            </div>
+          </section>
+
+          <!-- Services list -->
+          <section class="mm__section">
+            <h2 class="mm__section-title">Услуги</h2>
+            <ul class="mm__services">
+              <li v-for="service in services" :key="service.label">
+                <NuxtLink :to="service.to" class="mm__service" @click="isMenuOpen = false">
+                  <span>{{ service.label }}</span>
+                </NuxtLink>
+              </li>
+            </ul>
+          </section>
+
+          <!-- Bottom links -->
+          <nav class="mm__nav">
+            <NuxtLink to="/about" class="mm__nav-link" @click="isMenuOpen = false">О компании</NuxtLink>
+            <NuxtLink to="/contacts" class="mm__nav-link" @click="isMenuOpen = false">Контакты</NuxtLink>
+          </nav>
+
+          <!-- Contacts footer -->
+          <div class="mm__contacts">
+            <a href="tel:+73517766224" class="mm__phone">+7 (351) 77-66-224</a>
+            <p class="mm__address">Челябинск, Федорова 1А</p>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <style scoped>
@@ -152,16 +271,14 @@
   @apply flex px-[70px];
 }
 
-.header__catalog {
-  @apply flex items-center justify-center gap-[12px] rounded-[8px] py-[16.5px] px-[21px] min-w-[126px] h-[51px] bg-[var(--red)];
-}
+/* .header__catalog styles moved to bottom (button variant) */
 
 .header__catalog-text {
   @apply font-['NT_Somic'] font-medium text-[14px] text-white;
 }
 
 .header__search {
-  @apply flex justify-between items-center px-[26px] h-[51px] w-full rounded-[8px] bg-[var(--gray)] gap-[20px] ml-[20px] mr-[30px];
+  @apply flex justify-between items-center px-[26px] h-[51px] w-full rounded-[8px] bg-[var(--gray)] gap-[20px] ml-[20px];
 }
 
 .header__search-input {
@@ -305,6 +422,174 @@
   transition: top 300ms cubic-bezier(0.23, 1, 0.32, 1), transform 300ms 300ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
+/* Catalog + search container — same width as mega menu */
+.header__catalog-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  margin-right: 30px;
+}
+
+/* Mega menu — spans full width of catalog button + search */
+.catalog-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 200;
+  display: flex;
+  gap: 0;
+  background: #fff;
+  border-radius: 0 0 16px 16px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+  padding: 28px 32px;
+  box-sizing: border-box;
+}
+
+.catalog-menu__categories {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px 32px;
+  max-height: 320px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: #e0e0e0 transparent;
+}
+
+.catalog-menu__category-title {
+  font-family: 'NT Somic', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--black);
+  margin-bottom: 10px;
+  text-decoration: none;
+  display: block;
+  transition: color 0.15s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.catalog-menu__category-title:hover {
+  color: var(--red);
+}
+
+.catalog-menu__category{
+  width: 209px;
+}
+
+.catalog-menu__sub-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.catalog-menu__link {
+  font-family: 'NT Somic', sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  color: #666;
+  text-decoration: none;
+  transition: color 0.15s;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.catalog-menu__link:hover {
+  color: var(--red);
+}
+
+.catalog-menu__divider {
+  width: 1px;
+  background: #e8e8e8;
+  margin: 0 28px;
+  flex-shrink: 0;
+}
+
+.catalog-menu__services {
+  flex: 0 0 220px;
+  min-width: 0;
+  max-height: 320px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: #e0e0e0 transparent;
+}
+
+.catalog-menu__services-title {
+  font-family: 'NT Somic', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--black);
+  margin-bottom: 10px;
+}
+
+.catalog-menu__services-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.catalog-menu__services-list .catalog-menu__link {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 1100px) {
+  .catalog-menu {
+    flex-direction: column;
+    padding: 20px 22px;
+  }
+
+  .catalog-menu__categories {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px 24px;
+    max-height: 260px;
+  }
+
+  .catalog-menu__divider {
+    width: auto;
+    height: 1px;
+    margin: 18px 0;
+  }
+
+  .catalog-menu__services {
+    flex: none;
+    max-height: 200px;
+  }
+
+  .catalog-menu__services-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 16px;
+  }
+}
+
+/* Transition */
+.catalog-fade-enter-active,
+.catalog-fade-leave-active {
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.catalog-fade-enter-from,
+.catalog-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
 /* Media queries */
 @media (max-width: 1100px) {
   .header__burger {
@@ -341,16 +626,328 @@
     @apply hidden;
   }
 }
+
+/* ─── Mobile menu (fullscreen, right) ─── */
+.mm {
+  position: fixed;
+  top: var(--header-top-h, 43px);
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 999;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  font-family: 'NT Somic', sans-serif;
+}
+
+/* Top bar */
+.mm__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  flex-shrink: 0;
+}
+
+.mm__logo-link {
+  display: flex;
+}
+
+.mm__logo {
+  height: 36px;
+  width: auto;
+}
+
+.mm__close {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f4f4f4;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--black);
+  transition: background 0.15s, color 0.15s;
+}
+
+.mm__close:hover {
+  background: var(--red);
+  color: #fff;
+}
+
+/* Search */
+.mm__search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 20px 0;
+  padding: 0 16px;
+  height: 48px;
+  background: #f4f4f4;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.mm__search-icon {
+  flex-shrink: 0;
+  color: #999;
+}
+
+.mm__search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--black);
+}
+
+.mm__search-input::placeholder {
+  color: #999;
+}
+
+/* Body */
+.mm__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 20px 32px;
+}
+
+/* Sections */
+.mm__section {
+  margin-bottom: 28px;
+}
+
+.mm__section-title {
+  font-weight: 700;
+  font-size: 22px;
+  color: var(--black);
+  margin: 0 0 14px;
+}
+
+/* Catalog tiles 2×3 */
+.mm__tiles {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.mm__tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 6px;
+  min-height: 96px;
+  padding: 14px 36px 14px 14px;
+  background: #f6f6f6;
+  border-radius: 12px;
+  text-decoration: none;
+  color: var(--black);
+  transition: background 0.18s, color 0.18s, transform 0.18s;
+}
+
+.mm__tile:hover,
+.mm__tile:active {
+  background: var(--red);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.mm__tile-title {
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.mm__tile-count {
+  font-weight: 500;
+  font-size: 12px;
+  opacity: 0.6;
+}
+
+.mm__tile-arrow {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.06);
+  color: inherit;
+  transition: background 0.18s;
+}
+
+.mm__tile:hover .mm__tile-arrow,
+.mm__tile:active .mm__tile-arrow {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Services */
+.mm__services {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.mm__service {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 0;
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--black);
+  text-decoration: none;
+  border-bottom: 1px solid #f0f0f0;
+  transition: color 0.15s;
+}
+
+.mm__service:hover {
+  color: var(--red);
+}
+
+.mm__service-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--red);
+  flex-shrink: 0;
+}
+
+/* Nav links */
+.mm__nav {
+  display: flex;
+  flex-direction: column;
+  margin-top: 4px;
+  margin-bottom: 24px;
+}
+
+.mm__nav-link {
+  padding: 14px 0;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--black);
+  text-decoration: none;
+  border-bottom: 1px solid #f0f0f0;
+  transition: color 0.15s;
+}
+
+.mm__nav-link:hover {
+  color: var(--red);
+}
+
+/* Contacts footer */
+.mm__contacts {
+  padding-top: 20px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.mm__phone {
+  display: block;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--red);
+  text-decoration: none;
+  margin-bottom: 4px;
+}
+
+.mm__address {
+  font-weight: 500;
+  font-size: 13px;
+  color: #888;
+  margin: 0;
+}
+
+/* Slide-in from right */
+.mm-enter-active,
+.mm-leave-active {
+  transition: transform 0.28s ease, opacity 0.28s ease;
+}
+
+.mm-enter-from,
+.mm-leave-to {
+  transform: translateX(100%);
+  opacity: 0.6;
+}
+
+/* Catalog button as button (keep same look) */
+.header__catalog {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border-radius: 8px;
+  padding: 16.5px 21px;
+  min-width: 126px;
+  height: 51px;
+  background: var(--red);
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+}
 </style>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch, onUnmounted, computed } from 'vue';
+import { getCatalogMenu } from '~/services/catalogMenuApi';
 
 const { isAuthenticated, user, loading, logoutUser } = useAuth();
 const { showAuthModal } = useAuthModal();
 
 const isMenuOpen = ref(false);
 const showProfileMenu = ref(false);
+const showCatalogMenu = ref(false);
+const mmSearch = ref('');
+
+let catalogHoverActive = false;
+
+function onCatalogEnter() {
+  catalogHoverActive = true;
+  showCatalogMenu.value = true;
+}
+
+function onCatalogLeave() {
+  catalogHoverActive = false;
+  showCatalogMenu.value = false;
+}
+
+function toggleCatalogMenu() {
+  // On touch devices hover doesn't fire — toggle on click
+  if (!catalogHoverActive) {
+    showCatalogMenu.value = !showCatalogMenu.value;
+  }
+}
+
+const { data: catalogMenuData } = await useAsyncData('catalog-menu', getCatalogMenu);
+
+const catalogCategories = computed(() =>
+  (catalogMenuData.value?.catalogs ?? [])
+    .slice()
+    .sort((a, b) => a.position - b.position)
+    .map((cat) => ({
+      title: cat.name,
+      slug: cat.slug,
+      items: cat.items.slice().sort((a, b) => a.position - b.position),
+    }))
+);
+
+const services = computed(() =>
+  (catalogMenuData.value?.services ?? [])
+    .slice()
+    .sort((a, b) => a.position - b.position)
+    .map((s) => ({ label: s.name, to: `/services/${s.slug}` }))
+);
 
 const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value;
@@ -360,4 +957,20 @@ const handleLogout = async () => {
   await logoutUser();
   showProfileMenu.value = false;
 };
+
+watch(isMenuOpen, (open) => {
+  if (typeof document === 'undefined') return;
+  if (open) {
+    window.scrollTo(0, 0);
+    document.body.style.overflow = 'hidden';
+  } else {
+    document.body.style.overflow = '';
+  }
+});
+
+onUnmounted(() => {
+  if (typeof document !== 'undefined') {
+    document.body.style.overflow = '';
+  }
+});
 </script>
