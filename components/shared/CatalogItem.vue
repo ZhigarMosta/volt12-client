@@ -13,12 +13,10 @@
            @touchmove="handleTouchMove"
       >
         <img
-            v-if="normalizedImages.length"
             :src="normalizedImages[activeIndex].url"
             class="product-image"
             :alt="normalizedImages[activeIndex].alt || title"
         />
-        <div v-else class="placeholder">No image</div><!--   TODO лишьний код, продукты без картинок выводится не будут    -->
 
         <div class="dots" v-if="normalizedImages.length > 1">
           <span
@@ -354,14 +352,6 @@ function handleLeave() { activeIndex.value = 0; }
   object-fit: contain;
   max-width: 167px;
   max-height: 138px;
-}
-
-.placeholder {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  color: var(--gray-placeholder);
 }
 
 .dots {

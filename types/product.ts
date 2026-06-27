@@ -1,10 +1,10 @@
 export interface CatalogItemImage {
-  id: number;
+  id?: number;
   alt: string;
   title: string;
   position: number;
   img_link: string;
-  product_code: string;
+  product_code?: string;
 }
 
 export interface Product {

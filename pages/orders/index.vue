@@ -60,15 +60,12 @@
         </NuxtLink>
       </div>
 
-      <div v-if="meta && meta.pages > 1" class="orders-pagination">
-        <button
-          v-for="p in meta.pages"
-          :key="p"
-          class="page-btn"
-          :class="{ 'page-btn--active': p === currentPage }"
-          @click="loadPage(p)"
-        >{{ p }}</button>
-      </div>
+      <Pagination
+        v-if="meta && meta.pages > 1"
+        :current-page="currentPage"
+        :total-pages="meta.pages"
+        @change-page="loadPage"
+      />
     </template>
 
     <EmptyState
@@ -326,31 +323,6 @@ function statusLabel(status: string) {
   font-weight: 700;
   font-size: 20px;
   color: var(--black);
-}
-
-/* Pagination */
-.orders-pagination {
-  display: flex;
-  gap: 8px;
-  margin-top: 24px;
-}
-
-.page-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  border: 1px solid rgba(185, 185, 185, 0.38);
-  background: #fff;
-  font-family: 'NT Somic', sans-serif;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.page-btn--active {
-  background: var(--red);
-  color: #fff;
-  border-color: var(--red);
 }
 
 /* Skeleton */

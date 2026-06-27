@@ -20,7 +20,6 @@ import { formatPrice } from '~/utils/format';
 const props = defineProps<{
   product: Product;
 }>();
-
 const imageUrl = computed(() => getProductImageUrl(props.product));
 const imageTitle = computed(() => getProductImageTitle(props.product));
 </script>

@@ -26,7 +26,8 @@ function getApiBase(): string {
  */
 export async function getPopularProducts(): Promise<Product[]> {
   const apiBase = getApiBase();
-  return await $fetch<Product[]>(`${apiBase}/volt12/popular_catalog_items`);
+  const res = await $fetch<{ items: Product[] }>(`${apiBase}/volt12/popular_catalog_items`);
+  return res.items ?? [];
 }
 
 /**
@@ -101,21 +102,17 @@ export async function getFeedbackFromMap(): Promise<Feedback[]> {
  * Получает URL изображения продукта
  */
 export function getProductImageUrl(product: Product): string {
+  const link = product.images?.[0]?.img_link;
+  if (!link) return '';
   const apiBase = getApiBase();
-  if (product.catalogItemImages?.length > 0) {
-    return `${apiBase}/${product.catalogItemImages[0].img_link}`;
-  }
-  return '/icons/test.png';
+  return `${apiBase}/${link}`;
 }
 
 /**
  * Получает Title изображения продукта
  */
 export function getProductImageTitle(product: Product): string | undefined {
-  if (product.catalogItemImages?.length > 0) {
-    return product.catalogItemImages[0].title;
-  }
-  return undefined;
+  return product.images?.[0]?.title || undefined;
 }
 
 export async function addToCompare(catalogItemId: number): Promise<void> {
