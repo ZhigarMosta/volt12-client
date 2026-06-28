@@ -45,6 +45,7 @@ export interface OrderItemImage {
   id: number;
   img_link: string;
   alt?: string;
+  title?: string;
 }
 
 export interface OrderItem {

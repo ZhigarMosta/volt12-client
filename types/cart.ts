@@ -1,6 +1,7 @@
 export interface CartItemImage {
   url: string;
   alt?: string;
+  title?: string;
   position: number;
 }
 

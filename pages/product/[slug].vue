@@ -1,16 +1,14 @@
 <template>
   <div class="product-detail">
-    <template v-if="pending">
-      <div class="detail-skeleton">
-        <div class="sk-breadcrumbs"/>
-        <div class="sk-title"/>
-        <div class="sk-hero">
-          <div class="sk-gallery"/>
-          <div class="sk-info"/>
-        </div>
+    <div v-if="pending" class="detail-skeleton">
+      <div class="sk-breadcrumbs"/>
+      <div class="sk-title"/>
+      <div class="sk-hero">
+        <div class="sk-gallery"/>
+        <div class="sk-info"/>
       </div>
-    </template>
-    <div v-if="!item" class="error">Товар не найден</div>
+    </div>
+    <div v-else-if="!item" class="error">Товар не найден</div>
 
     <template v-else>
       <Navigate :items="breadcrumbsItems"/>
@@ -31,7 +29,16 @@
                   :key="displayedImageIndex"
                   :src="displayedGalleryImage.url"
                   :alt="displayedGalleryImage.alt || item.name"
+                  :title="displayedGalleryImage.title || item.name"
                   class="gallery-main-image"
+              />
+              <NoImagePlaceholder
+                  v-else
+                  key="no-image"
+                  class="gallery-no-image"
+                  label="Изображение отсутствует"
+                  :icon-size="56"
+                  label-size="16px"
               />
             </Transition>
           </div>
@@ -157,6 +164,7 @@ type GallerySlide = {
   id: number;
   url: string;
   alt?: string;
+  title?: string;
 };
 
 const route = useRoute();
@@ -285,6 +293,7 @@ const galleryImages = computed<GallerySlide[]>(() => {
           id: image.id ?? index,
           url,
           alt: image.alt,
+          title: image.title,
         };
       });
 });
@@ -369,22 +378,24 @@ onMounted(async () => {
 
   try {
     const result = await getCatalogItemDetail(slug.value, recentlyViewedIds.value);
-    if (result) {
-      item.value = result.item;
-      related.value = result.related ?? [];
-      recentlyViewed.value = (result.recently_viewed ?? []).filter(
-          (viewed) => viewed.id !== result.item.id,
-      );
-      pushRecentlyViewedId(recentlyViewedIds, result.item.id);
+    if (!result) {
+      showError(createError({ statusCode: 404, statusMessage: 'Товар не найден' }));
+      return;
+    }
+    item.value = result.item;
+    related.value = result.related ?? [];
+    recentlyViewed.value = (result.recently_viewed ?? []).filter(
+        (viewed) => viewed.id !== result.item.id,
+    );
+    pushRecentlyViewedId(recentlyViewedIds, result.item.id);
 
-      if (result.item.user_state) {
-        cartQty.value = result.item.user_state.cart_count ?? 0;
-        inCart.value = cartQty.value > 0;
-        inCompare.value = result.item.user_state.in_compare;
-        inFavorite.value = result.item.user_state.in_favorite;
-      } else {
-        initLocalState();
-      }
+    if (result.item.user_state) {
+      cartQty.value = result.item.user_state.cart_count ?? 0;
+      inCart.value = cartQty.value > 0;
+      inCompare.value = result.item.user_state.in_compare;
+      inFavorite.value = result.item.user_state.in_favorite;
+    } else {
+      initLocalState();
     }
   } catch (e: unknown) {
     error.value = e instanceof Error ? e : new Error('Не удалось загрузить товар');
@@ -549,10 +560,15 @@ const isTabletWidth = computed(() => windowWidth.value > TABLET_WIDTH);
 }
 
 .gallery-main-image {
-  width: 100%;
-  height: 100%;
+  width: 410px;
+  height: 410px;
   object-fit: contain;
   display: block;
+}
+
+.gallery-no-image {
+  width: 410px;
+  height: 410px;
 }
 
 .gallery-fade-enter-active,
@@ -637,6 +653,8 @@ const isTabletWidth = computed(() => windowWidth.value > TABLET_WIDTH);
   padding: 6px 16px;
   height: 47px;
   flex: 1;
+  width: 100%;
+  max-width: 160px;
 }
 
 .qty-btn {
@@ -690,6 +708,14 @@ const isTabletWidth = computed(() => windowWidth.value > TABLET_WIDTH);
 }
 
 @media (max-width: 1100px) {
+  .gallery-main-image{
+    width: 100%;
+    height: 100%;
+  }
+  .gallery-no-image{
+    width: 100%;
+    height: 100%;
+  }
   .more-products{
     margin-bottom: 56px;
   }

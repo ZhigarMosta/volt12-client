@@ -13,9 +13,11 @@
            @touchmove="handleTouchMove"
       >
         <img
-            :src="normalizedImages[activeIndex].url"
+            v-if="activeImage"
+            :src="activeImage.url"
             class="product-image"
-            :alt="normalizedImages[activeIndex].alt || title"
+            :alt="activeImage.alt || title"
+            :title="activeImage.title || title"
         />
 
         <div class="dots" v-if="normalizedImages.length > 1">
@@ -227,7 +229,7 @@ const config = useRuntimeConfig();
 const baseURL = computed(() => config.public.apiBase as string);
 const rawImages = computed<ImgItem[]>(() => props.images ?? []);
 
-type NormItem = { url: string; alt?: string; position: number; code?: string };
+type NormItem = { url: string; alt?: string; title?: string; position: number; code?: string };
 
 const normalizedImages = computed<NormItem[]>(() => {
   const arr = rawImages.value;
@@ -244,7 +246,7 @@ const normalizedImages = computed<NormItem[]>(() => {
     }
     if (!seen.has(url)) {
       seen.add(url);
-      out.push({ url, alt: it.alt ?? '', position: typeof it.position === 'number' ? it.position : out.length, code: it.product_code ?? '' });
+      out.push({ url, alt: it.alt ?? '', title: it.title ?? '', position: typeof it.position === 'number' ? it.position : out.length, code: it.product_code ?? '' });
     }
   }
   out.sort((a, b) => a.position - b.position);
@@ -253,6 +255,11 @@ const normalizedImages = computed<NormItem[]>(() => {
 
 const activeIndex = ref(0);
 const card = ref<HTMLElement | null>(null);
+
+// Часть товаров приходит без картинок (img_link: null) — тогда normalizedImages пуст.
+// Без этой защиты шаблон обращался к normalizedImages[activeIndex].url и падал при
+// рендере слайда, оставляя битый vnode (ошибка всплывала при unmount во время навигации).
+const activeImage = computed<NormItem | null>(() => normalizedImages.value[activeIndex.value] ?? null);
 
 function updateIndexFromX(clientX: number) {
   const imgs = normalizedImages.value;

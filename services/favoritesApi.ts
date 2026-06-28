@@ -21,6 +21,7 @@ function mapApiItem(raw: any, apiBase: string): FavoriteItem {
       return {
         url,
         alt: img.alt ?? '',
+        title: img.title ?? '',
         position: typeof img.position === 'number' ? img.position : idx,
       };
     })

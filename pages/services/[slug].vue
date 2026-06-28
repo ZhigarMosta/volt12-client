@@ -22,7 +22,7 @@
       <div class="detail-wrapper">
         <h1 class="detail-title">{{ service.name }}</h1>
         <div class="detail-context">
-          <NuxtImg v-if="imgSrc" :src="imgSrc" :alt="service.name" class="service-image"/>
+          <NuxtImg v-if="imgSrc" :src="imgSrc" :alt="service.img_alt || service.name" :title="service.img_title || service.name" class="service-image"/>
           <div v-if="service.description" class="detail-description" v-html="service.description"></div>
         </div>
       </div>
@@ -36,6 +36,8 @@
               :slug="item.slug"
               :name="item.name"
               :img-link="item.img_link"
+              :img-alt="item.img_alt"
+              :img-title="item.img_title"
               :short-description="item.short_description"
           />
         </div>

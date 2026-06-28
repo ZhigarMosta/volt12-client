@@ -1,6 +1,6 @@
 <template>
-  <div class="fav-item">
-    <label class="item-checkbox-wrap">
+  <div class="fav-item" @click="goToProduct">
+    <label class="item-checkbox-wrap" @click.stop>
       <input
         type="checkbox"
         class="checkbox"
@@ -21,13 +21,9 @@
         class="item-image"
         :src="item.images[activeIndex].url"
         :alt="item.images[activeIndex].alt || item.name"
+        :title="item.images[activeIndex].title || item.name"
       />
-      <img
-        v-else
-        class="item-image"
-        src="/icons/outOfStock.svg"
-        :alt="item.name"
-      />
+      <NoImagePlaceholder v-else class="item-image" />
       <div class="dots" v-if="item.images.length > 1">
         <span
           v-for="(_, idx) in item.images"
@@ -60,7 +56,7 @@
       </div>
     </div>
 
-    <div class="item-actions">
+    <div class="item-actions" @click.stop>
       <button
         class="action-btn"
         :class="{ 'action-btn--active': inCompare }"
@@ -108,6 +104,11 @@ const emit = defineEmits<{
 const activeIndex = ref(0);
 const imageStage = ref<HTMLElement | null>(null);
 
+function goToProduct() {
+  if (!props.item.slug) return;
+  navigateTo(`/product/${props.item.slug}`);
+}
+
 function updateIndexFromX(clientX: number) {
   const imgs = props.item.images;
   if (imgs.length <= 1) return;
@@ -137,6 +138,7 @@ function handleLeave() { activeIndex.value = 0; }
   min-height: 167px;
   box-sizing: border-box;
   background: #fff;
+  cursor: pointer;
 }
 
 .item-checkbox-wrap {

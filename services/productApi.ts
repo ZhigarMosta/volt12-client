@@ -115,6 +115,13 @@ export function getProductImageTitle(product: Product): string | undefined {
   return product.images?.[0]?.title || undefined;
 }
 
+/**
+ * Получает Alt изображения продукта
+ */
+export function getProductImageAlt(product: Product): string {
+  return product.images?.[0]?.alt || product.name;
+}
+
 export async function addToCompare(catalogItemId: number): Promise<void> {
   const apiBase = getApiBase();
   await $fetch(`${apiBase}/volt12/compare/add`, {

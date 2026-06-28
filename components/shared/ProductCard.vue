@@ -1,9 +1,9 @@
 <template>
   <NuxtLink :to="`/product/${product.slug}`" class="product-card">
-    <img 
-      class="product-img" 
-      :src="imageUrl" 
-      :alt="product.name"
+    <img
+      class="product-img"
+      :src="imageUrl"
+      :alt="imageAlt"
       :title="imageTitle"
     >
     <p class="product-name">{{ product.name }}</p>
@@ -14,7 +14,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { Product } from '~/types/product';
-import {getProductImageTitle, getProductImageUrl} from '~/services/productApi';
+import {getProductImageAlt, getProductImageTitle, getProductImageUrl} from '~/services/productApi';
 import { formatPrice } from '~/utils/format';
 
 const props = defineProps<{
@@ -22,6 +22,7 @@ const props = defineProps<{
 }>();
 const imageUrl = computed(() => getProductImageUrl(props.product));
 const imageTitle = computed(() => getProductImageTitle(props.product));
+const imageAlt = computed(() => getProductImageAlt(props.product));
 </script>
 
 <style scoped>

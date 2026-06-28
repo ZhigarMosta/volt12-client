@@ -8,7 +8,7 @@
         @mouseenter="onHover"
         @mouseleave="onHoverLeave"
     >
-      <img class="img" :src="image.url" :alt="image.alt || ''"/>
+      <img class="img" :src="image.url" :alt="image.alt || ''" :title="image.title || undefined"/>
     </button>
   </div>
 </template>
@@ -18,6 +18,7 @@ type GalleryThumbImage = {
   id: number;
   url: string;
   alt?: string;
+  title?: string;
 };
 
 const props = defineProps<{

@@ -9,7 +9,8 @@
           </svg>
         </button>
       </div>
-      <NuxtImg class="img" :src="productImage" :alt="product?.name"/>
+      <NuxtImg v-if="hasImage" class="img" :src="productImage" :alt="imageAlt" :title="imageTitle"/>
+      <NoImagePlaceholder v-else class="img" />
       <div class="bottom">
         <p class="price">₽ {{ product?.price }}</p>
       </div>
@@ -45,6 +46,10 @@ const productImage = computed(() => {
   }
   return '/icons/test.png';
 });
+
+const hasImage = computed(() => (props.product?.images?.length ?? 0) > 0);
+const imageAlt = computed(() => props.product?.images?.[0]?.alt || props.product?.name);
+const imageTitle = computed(() => props.product?.images?.[0]?.title || props.product?.name);
 
 function hasCharacteristic(characteristicId: number): boolean {
   return props.product?.characteristics?.some(

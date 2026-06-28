@@ -62,6 +62,8 @@
               :name="item.name"
               :short-description="item.short_description"
               :img-link="item.img_link"
+              :img-alt="item.img_alt"
+              :img-title="item.img_title"
           />
         </template>
       </div>

@@ -101,6 +101,8 @@ export interface Service {
   short_description: string | null;
   position: number | null;
   img_link: string | null;
+  img_alt: string | null;
+  img_title: string | null;
   service_group_id: number | null;
 }
 
@@ -120,6 +122,8 @@ export interface RelatedService {
   name: string;
   slug: string;
   img_link: string;
+  img_alt: string | null;
+  img_title: string | null;
   short_description: string | null;
 }
 

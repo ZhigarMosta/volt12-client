@@ -72,9 +72,10 @@
                 v-if="item.image"
                 :src="`${apiBase}/${item.image.img_link}`"
                 :alt="item.image.alt || item.name"
+                :title="item.image.title || item.name"
                 class="item-img"
               />
-              <div v-else class="item-img item-img--placeholder" />
+              <NoImagePlaceholder v-else class="item-img" label="" :icon-size="26" radius="8px" />
               <div class="item-info">
                 <span class="item-name">{{ item.name }}</span>
                 <span class="item-qty">{{ item.quantity }} шт. × {{ formatPrice(item.price) }}</span>
@@ -279,9 +280,6 @@ function statusLabel(status: string) {
   flex-shrink: 0;
 }
 
-.item-img--placeholder {
-  background: rgba(185, 185, 185, 0.2);
-}
 
 .item-info {
   flex: 1;
