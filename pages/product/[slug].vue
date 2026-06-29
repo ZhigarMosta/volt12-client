@@ -589,6 +589,7 @@ const isTabletWidth = computed(() => windowWidth.value > TABLET_WIDTH);
 .product-info {
   display: flex;
   flex-direction: column;
+  flex: 1;
 }
 
 .short-description {
@@ -619,6 +620,7 @@ const isTabletWidth = computed(() => windowWidth.value > TABLET_WIDTH);
 }
 
 .buy-btn {
+  width: 163px;
   white-space: nowrap;
 }
 
@@ -650,11 +652,9 @@ const isTabletWidth = computed(() => windowWidth.value > TABLET_WIDTH);
   justify-content: space-between;
   background: var(--red);
   border-radius: 8px;
-  padding: 6px 16px;
+  padding: 7px 16px;
   height: 47px;
-  flex: 1;
-  width: 100%;
-  max-width: 160px;
+  width: 163px;
 }
 
 .qty-btn {
@@ -721,6 +721,7 @@ const isTabletWidth = computed(() => windowWidth.value > TABLET_WIDTH);
   }
   .product-hero {
     flex-direction: column;
+    align-items: stretch;
   }
   .product-detail {
     padding: 0 37px;
@@ -741,6 +742,15 @@ const isTabletWidth = computed(() => windowWidth.value > TABLET_WIDTH);
 }
 
 @media (max-width: 744px) {
+  .qty-control{
+    max-width: 100%;
+    width: 100%;
+  }
+  .buy-btn{
+    max-width: 100%;
+    width: 100%;
+    height: 47px;
+  }
   .more-products{
     margin-bottom: 32px;
   }

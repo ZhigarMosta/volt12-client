@@ -279,6 +279,7 @@ function handleLeave() { activeIndex.value = 0; }
 .wrapper-btn-card{
   width: 100%;
   max-width: 137px;
+  height: 31px;
 }
 
 .qty-control {
@@ -401,7 +402,12 @@ function handleLeave() { activeIndex.value = 0; }
   opacity: 0.7;
 
   width: 100%;
-  max-width: 155px;
+  max-width: 100%;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 
