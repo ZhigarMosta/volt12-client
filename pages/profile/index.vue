@@ -36,13 +36,19 @@
 
         <div class="profile-info">
           <div class="profile-info__fields">
-            <div class="profile-info__field">
+            <div
+              class="profile-info__field"
+              :class="{ 'profile-info__field--disabled': !isEmailVerified }"
+              :title="!isEmailVerified ? 'Подтвердите почту, чтобы изменить имя' : ''"
+            >
               <span class="profile-info__label">Имя</span>
               <input
                 class="profile-info__input"
                 v-model="editName"
                 type="text"
                 placeholder="Ваше имя"
+                maxlength="255"
+                :disabled="!isEmailVerified"
                 @blur="saveField('name', editName)"
                 @keydown.enter.prevent="saveField('name', editName)"
               />
@@ -50,6 +56,12 @@
             <div class="profile-info__field">
               <span class="profile-info__label">Электронная почта</span>
               <span class="profile-info__value">{{ user?.email }}</span>
+              <span v-if="isEmailVerified" class="profile-info__badge">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M20 6L9 17L4 12" stroke="#4caf50" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Почта подтверждена
+              </span>
               <template v-if="user?.email_verified === false">
                 <button
                   v-if="verifyState !== 'sent'"
@@ -59,20 +71,139 @@
                 >
                   {{ verifyState === 'loading' ? 'Отправка...' : 'Подтвердите почту' }}
                 </button>
-                <span v-else class="profile-info__verify-sent">Письмо отправлено</span>
+                <template v-else>
+                  <div class="profile-info__code">
+                    <input
+                      class="profile-info__code-input"
+                      v-model="codeInput"
+                      type="text"
+                      inputmode="numeric"
+                      maxlength="6"
+                      placeholder="Код из письма"
+                      :disabled="codeState === 'loading'"
+                      @keydown.enter.prevent="onConfirmCode"
+                    />
+                    <button
+                      class="profile-info__verify"
+                      :disabled="codeState === 'loading' || codeInput.length !== 6"
+                      @click="onConfirmCode"
+                    >
+                      {{ codeState === 'loading' ? 'Проверка...' : 'Подтвердить' }}
+                    </button>
+                  </div>
+                  <span v-if="codeState === 'error'" class="profile-info__verify-error">{{ codeError }}</span>
+                  <button
+                    class="profile-info__verify profile-info__verify--muted"
+                    :disabled="verifyState === 'loading' || resendCooldown > 0"
+                    @click="onVerifyEmail"
+                  >
+                    {{ resendCooldown > 0 ? `Отправить код повторно через ${resendCooldown}с` : 'Отправить код повторно' }}
+                  </button>
+                </template>
                 <span v-if="verifyState === 'error'" class="profile-info__verify-error">{{ verifyError }}</span>
               </template>
             </div>
-            <div class="profile-info__field">
+            <div
+              class="profile-info__field"
+              :class="{ 'profile-info__field--disabled': !isEmailVerified }"
+              :title="!isEmailVerified ? 'Подтвердите почту, чтобы изменить телефон' : ''"
+            >
               <span class="profile-info__label">Телефон</span>
               <input
                 class="profile-info__input"
                 v-model="editPhone"
                 type="tel"
                 placeholder="+7 (999) 999-99-99"
+                maxlength="255"
+                :disabled="!isEmailVerified"
                 @blur="saveField('phone', editPhone)"
                 @keydown.enter.prevent="saveField('phone', editPhone)"
               />
+            </div>
+            <div
+              class="profile-info__field"
+              :class="{ 'profile-info__field--disabled': !isEmailVerified }"
+              :title="!isEmailVerified ? 'Подтвердите почту, чтобы изменить пароль' : ''"
+            >
+              <span class="profile-info__label">Пароль</span>
+
+              <span v-if="!isEmailVerified" class="profile-info__value">••••••••</span>
+
+              <button
+                v-if="isEmailVerified && passwordStep === 'idle'"
+                class="profile-info__verify"
+                @click="passwordStep = 'form'"
+              >
+                Изменить пароль
+              </button>
+
+              <template v-if="isEmailVerified && passwordStep === 'form'">
+                <input
+                  class="profile-info__code-input profile-info__code-input--full"
+                  v-model="newPassword"
+                  type="password"
+                  placeholder="Новый пароль"
+                  :disabled="passwordState === 'loading'"
+                />
+                <input
+                  class="profile-info__code-input profile-info__code-input--full"
+                  v-model="newPasswordConfirm"
+                  type="password"
+                  placeholder="Повторите пароль"
+                  :disabled="passwordState === 'loading'"
+                  @keydown.enter.prevent="onRequestPasswordChange"
+                />
+                <span v-if="passwordFormError" class="profile-info__verify-error">{{ passwordFormError }}</span>
+                <div class="profile-info__code">
+                  <button
+                    class="profile-info__verify"
+                    :disabled="passwordState === 'loading'"
+                    @click="onRequestPasswordChange"
+                  >
+                    {{ passwordState === 'loading' ? 'Отправка...' : 'Отправить код' }}
+                  </button>
+                  <button
+                    class="profile-info__verify profile-info__verify--muted"
+                    :disabled="passwordState === 'loading'"
+                    @click="cancelPasswordChange"
+                  >
+                    Отмена
+                  </button>
+                </div>
+              </template>
+
+              <template v-if="isEmailVerified && passwordStep === 'code'">
+                <span class="profile-info__hint">Код отправлен на {{ user?.email }}</span>
+                <div class="profile-info__code">
+                  <input
+                    class="profile-info__code-input"
+                    v-model="passwordCodeInput"
+                    type="text"
+                    inputmode="numeric"
+                    maxlength="6"
+                    placeholder="Код из письма"
+                    :disabled="passwordState === 'loading'"
+                    @keydown.enter.prevent="onConfirmPasswordChange"
+                  />
+                  <button
+                    class="profile-info__verify"
+                    :disabled="passwordState === 'loading' || passwordCodeInput.length !== 6"
+                    @click="onConfirmPasswordChange"
+                  >
+                    {{ passwordState === 'loading' ? 'Проверка...' : 'Подтвердить' }}
+                  </button>
+                </div>
+                <span v-if="passwordCodeError" class="profile-info__verify-error">{{ passwordCodeError }}</span>
+                <button
+                  class="profile-info__verify profile-info__verify--muted"
+                  :disabled="passwordState === 'loading'"
+                  @click="onResendPasswordCode"
+                >
+                  Отправить код повторно
+                </button>
+              </template>
+
+              <span v-if="passwordStep === 'done'" class="profile-info__verify-sent">Пароль успешно изменён</span>
             </div>
           </div>
           <div class="profile-info__actions">
@@ -103,13 +234,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import { updateProfile, sendVerificationEmail } from '~/services/authApi';
+import { ref, computed, watch, onUnmounted } from 'vue';
+import { updateProfile, sendVerificationEmail, verifyEmail, requestPasswordChange, confirmPasswordChange } from '~/services/authApi';
 
 useHead({ title: 'Личный кабинет — Мастер 12 Вольт' });
 
 const { user, loading, isAuthenticated, logoutUser } = useAuth();
 const { showAuthModal, openAuthModal } = useAuthModal();
+
+const isEmailVerified = computed(() => user.value?.email_verified === true);
 
 const breadcrumbsItems = [
   { to: '/', text: 'Главная' },
@@ -128,6 +261,7 @@ watch(user, (u) => {
 
 async function saveField(field: 'name' | 'phone', value: string) {
   if (!user.value) return;
+  if (!isEmailVerified.value) return;
   if (field === 'name' && value === user.value.name) return;
   if (field === 'phone' && value === (user.value.phone ?? '')) return;
   try {
@@ -142,6 +276,24 @@ async function handleLogout() {
 
 const verifyState = ref<'idle' | 'loading' | 'sent' | 'error'>('idle');
 const verifyError = ref('');
+const resendCooldown = ref(0);
+let resendTimer: ReturnType<typeof setInterval> | null = null;
+
+function startResendCooldown(seconds = 45) {
+  resendCooldown.value = seconds;
+  if (resendTimer) clearInterval(resendTimer);
+  resendTimer = setInterval(() => {
+    resendCooldown.value -= 1;
+    if (resendCooldown.value <= 0 && resendTimer) {
+      clearInterval(resendTimer);
+      resendTimer = null;
+    }
+  }, 1000);
+}
+
+onUnmounted(() => {
+  if (resendTimer) clearInterval(resendTimer);
+});
 
 async function onVerifyEmail() {
   verifyState.value = 'loading';
@@ -149,9 +301,100 @@ async function onVerifyEmail() {
   try {
     await sendVerificationEmail();
     verifyState.value = 'sent';
+    codeInput.value = '';
+    codeState.value = 'idle';
+    codeError.value = '';
+    startResendCooldown();
   } catch (e: any) {
     verifyError.value = e?.data?.error ?? 'Ошибка отправки';
     verifyState.value = 'error';
+  }
+}
+
+const codeInput = ref('');
+const codeState = ref<'idle' | 'loading' | 'error'>('idle');
+const codeError = ref('');
+
+async function onConfirmCode() {
+  if (codeInput.value.length !== 6) return;
+  codeState.value = 'loading';
+  codeError.value = '';
+  try {
+    await verifyEmail(codeInput.value);
+    if (user.value) user.value = { ...user.value, email_verified: true };
+    verifyState.value = 'idle';
+    codeInput.value = '';
+    codeState.value = 'idle';
+  } catch (e: any) {
+    codeError.value = e?.data?.error ?? 'Неверный код';
+    codeState.value = 'error';
+  }
+}
+
+const passwordStep = ref<'idle' | 'form' | 'code' | 'done'>('idle');
+const passwordState = ref<'idle' | 'loading' | 'error'>('idle');
+const newPassword = ref('');
+const newPasswordConfirm = ref('');
+const passwordFormError = ref('');
+const passwordCodeInput = ref('');
+const passwordCodeError = ref('');
+
+function cancelPasswordChange() {
+  passwordStep.value = 'idle';
+  newPassword.value = '';
+  newPasswordConfirm.value = '';
+  passwordFormError.value = '';
+  passwordCodeInput.value = '';
+  passwordCodeError.value = '';
+}
+
+async function onRequestPasswordChange() {
+  passwordFormError.value = '';
+  if (newPassword.value.length < 6) {
+    passwordFormError.value = 'Пароль должен содержать минимум 6 символов';
+    return;
+  }
+  if (newPassword.value !== newPasswordConfirm.value) {
+    passwordFormError.value = 'Пароли не совпадают';
+    return;
+  }
+  passwordState.value = 'loading';
+  try {
+    await requestPasswordChange(newPassword.value);
+    passwordStep.value = 'code';
+    passwordState.value = 'idle';
+  } catch (e: any) {
+    passwordFormError.value = e?.data?.error ?? 'Ошибка отправки';
+    passwordState.value = 'error';
+  }
+}
+
+async function onResendPasswordCode() {
+  passwordCodeError.value = '';
+  passwordState.value = 'loading';
+  try {
+    await requestPasswordChange(newPassword.value);
+    passwordState.value = 'idle';
+  } catch (e: any) {
+    passwordCodeError.value = e?.data?.error ?? 'Ошибка отправки';
+    passwordState.value = 'error';
+  }
+}
+
+async function onConfirmPasswordChange() {
+  if (passwordCodeInput.value.length !== 6) return;
+  passwordCodeError.value = '';
+  passwordState.value = 'loading';
+  try {
+    await confirmPasswordChange(passwordCodeInput.value);
+    passwordStep.value = 'done';
+    newPassword.value = '';
+    newPasswordConfirm.value = '';
+    passwordCodeInput.value = '';
+    passwordState.value = 'idle';
+  } catch (e: any) {
+    passwordCodeError.value = e?.data?.error ?? 'Неверный код';
+    passwordState.value = 'error';
   }
 }
 </script>
@@ -288,6 +531,34 @@ async function onVerifyEmail() {
   color: var(--black);
 }
 
+.profile-info__badge {
+  margin-top: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'NT Somic', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: #4caf50;
+}
+
+.profile-info__field--disabled {
+  cursor: not-allowed;
+}
+
+.profile-info__field--disabled .profile-info__label,
+.profile-info__field--disabled .profile-info__input {
+  opacity: 0.6;
+}
+
+.profile-info__field--disabled .profile-info__input {
+  cursor: not-allowed;
+}
+
+.profile-info__field--disabled:hover {
+  background: var(--gray-lighter);
+}
+
 .profile-info__verify {
   margin-top: 4px;
   background: none;
@@ -307,12 +578,48 @@ async function onVerifyEmail() {
   cursor: default;
 }
 
+.profile-info__verify--muted {
+  color: var(--gray-dark);
+}
+
 .profile-info__verify-sent {
   margin-top: 4px;
   font-family: 'NT Somic', sans-serif;
   font-size: 12px;
   font-weight: 500;
   color: #4caf50;
+}
+
+.profile-info__code {
+  margin-top: 6px;
+  display: flex;
+  gap: 8px;
+}
+
+.profile-info__code-input {
+  width: 110px;
+  font-family: 'NT Somic', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--black);
+  background: var(--gray);
+  border: none;
+  border-radius: 6px;
+  padding: 6px 10px;
+  outline: none;
+}
+
+.profile-info__code-input--full {
+  width: 100%;
+  margin-top: 4px;
+}
+
+.profile-info__hint {
+  margin-top: 4px;
+  font-family: 'NT Somic', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--gray-dark);
 }
 
 .profile-info__verify-error {

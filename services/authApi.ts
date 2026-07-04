@@ -48,6 +48,11 @@ export async function sendVerificationEmail(): Promise<void> {
   await authFetch(`${apiBase}/volt12/auth/send-verification`, { method: 'POST' });
 }
 
+export async function verifyEmail(code: string): Promise<void> {
+  const apiBase = getApiBase();
+  await authFetch(`${apiBase}/volt12/auth/verify-email`, { method: 'POST', body: { code } });
+}
+
 export async function updateProfile(data: { name?: string; phone?: string }): Promise<User> {
   const apiBase = getApiBase();
   const res = await authFetch<{ success: boolean; user: User; error?: string }>(`${apiBase}/volt12/auth/update-profile`, {
@@ -55,6 +60,38 @@ export async function updateProfile(data: { name?: string; phone?: string }): Pr
     body: data,
   });
   return res.user!;
+}
+
+export async function requestPasswordChange(newPassword: string): Promise<void> {
+  const apiBase = getApiBase();
+  await authFetch(`${apiBase}/volt12/auth/request-password-change`, {
+    method: 'POST',
+    body: { new_password: newPassword },
+  });
+}
+
+export async function confirmPasswordChange(code: string): Promise<void> {
+  const apiBase = getApiBase();
+  await authFetch(`${apiBase}/volt12/auth/confirm-password-change`, {
+    method: 'POST',
+    body: { code },
+  });
+}
+
+export async function forgotPassword(email: string): Promise<void> {
+  const apiBase = getApiBase();
+  await authFetch(`${apiBase}/volt12/auth/forgot-password`, {
+    method: 'POST',
+    body: { email },
+  });
+}
+
+export async function resetPassword(email: string, code: string, newPassword: string): Promise<void> {
+  const apiBase = getApiBase();
+  await authFetch(`${apiBase}/volt12/auth/reset-password`, {
+    method: 'POST',
+    body: { email, code, new_password: newPassword },
+  });
 }
 
 export async function getMe(): Promise<User | null> {

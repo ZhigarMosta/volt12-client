@@ -8,39 +8,101 @@
           </svg>
         </button>
 
-        <div class="modal__tabs">
-          <button class="modal__tab" :class="{ 'modal__tab--active': mode === 'login' }" @click="mode = 'login'">Войти</button>
-          <button class="modal__tab" :class="{ 'modal__tab--active': mode === 'register' }" @click="mode = 'register'">Регистрация</button>
-        </div>
-
-        <form class="modal__form" @submit.prevent="onSubmit">
-          <template v-if="mode === 'register'">
-            <div class="modal__field">
-              <label class="modal__label">Имя</label>
-              <input v-model="name" class="modal__input" type="text" placeholder="Ваше имя" required />
-            </div>
-            <div class="modal__field">
-              <label class="modal__label">Телефон</label>
-              <input v-model="phone" class="modal__input" type="tel" placeholder="+7 (999) 999-99-99" />
-            </div>
-          </template>
-
-          <div class="modal__field">
-            <label class="modal__label">Email</label>
-            <input v-model="email" class="modal__input" type="email" placeholder="example@mail.ru" required />
+        <template v-if="forgotStep === 'none'">
+          <div class="modal__tabs">
+            <button class="modal__tab" :class="{ 'modal__tab--active': mode === 'login' }" @click="mode = 'login'">Войти</button>
+            <button class="modal__tab" :class="{ 'modal__tab--active': mode === 'register' }" @click="mode = 'register'">Регистрация</button>
           </div>
 
-          <div class="modal__field">
-            <label class="modal__label">Пароль</label>
-            <input v-model="password" class="modal__input" type="password" placeholder="••••••••" required />
-          </div>
+          <form class="modal__form" @submit.prevent="onSubmit">
+            <template v-if="mode === 'register'">
+              <div class="modal__field">
+                <label class="modal__label">Имя</label>
+                <input v-model="name" class="modal__input" type="text" placeholder="Ваше имя" maxlength="255" required />
+              </div>
+              <div class="modal__field">
+                <label class="modal__label">Телефон</label>
+                <input v-model="phone" class="modal__input" type="tel" placeholder="+7 (999) 999-99-99" maxlength="255" />
+              </div>
+            </template>
 
-          <p v-if="error" class="modal__error">{{ error }}</p>
+            <div class="modal__field">
+              <label class="modal__label">Email</label>
+              <input v-model="email" class="modal__input" type="email" placeholder="example@mail.ru" maxlength="255" required />
+            </div>
 
-          <UiButton type="submit" variant="red" fullWidth :disabled="loading">
-            {{ mode === 'login' ? 'Войти' : 'Зарегистрироваться' }}
-          </UiButton>
-        </form>
+            <div class="modal__field">
+              <label class="modal__label">Пароль</label>
+              <input v-model="password" class="modal__input" type="password" placeholder="••••••••" required />
+            </div>
+
+            <button
+              v-if="mode === 'login'"
+              type="button"
+              class="modal__link"
+              @click="openForgotPassword"
+            >
+              Забыли пароль?
+            </button>
+
+            <p v-if="error" class="modal__error">{{ error }}</p>
+
+            <UiButton type="submit" variant="red" fullWidth :disabled="loading">
+              {{ mode === 'login' ? 'Войти' : 'Зарегистрироваться' }}
+            </UiButton>
+          </form>
+        </template>
+
+        <template v-else-if="forgotStep === 'email'">
+          <h3 class="modal__title">Восстановление пароля</h3>
+          <form class="modal__form" @submit.prevent="onForgotSubmit">
+            <div class="modal__field">
+              <label class="modal__label">Email</label>
+              <input v-model="forgotEmail" class="modal__input" type="email" placeholder="example@mail.ru" maxlength="255" required />
+            </div>
+
+            <p v-if="forgotError" class="modal__error">{{ forgotError }}</p>
+
+            <UiButton type="submit" variant="red" fullWidth :disabled="forgotLoading">
+              {{ forgotLoading ? 'Отправка...' : 'Отправить код' }}
+            </UiButton>
+            <button type="button" class="modal__link" @click="backToLogin">Назад ко входу</button>
+          </form>
+        </template>
+
+        <template v-else-if="forgotStep === 'reset'">
+          <h3 class="modal__title">Восстановление пароля</h3>
+          <p class="modal__hint">Если email зарегистрирован и подтверждён — письмо с кодом отправлено на {{ forgotEmail }}</p>
+          <form class="modal__form" @submit.prevent="onResetSubmit">
+            <div class="modal__field">
+              <label class="modal__label">Код из письма</label>
+              <input
+                v-model="resetCode"
+                class="modal__input"
+                type="text"
+                inputmode="numeric"
+                maxlength="4"
+                placeholder="0000"
+                required
+              />
+            </div>
+            <div class="modal__field">
+              <label class="modal__label">Новый пароль</label>
+              <input v-model="resetPasswordValue" class="modal__input" type="password" placeholder="••••••••" required />
+            </div>
+            <div class="modal__field">
+              <label class="modal__label">Повторите пароль</label>
+              <input v-model="resetPasswordConfirm" class="modal__input" type="password" placeholder="••••••••" required />
+            </div>
+
+            <p v-if="resetError" class="modal__error">{{ resetError }}</p>
+
+            <UiButton type="submit" variant="red" fullWidth :disabled="resetLoading">
+              {{ resetLoading ? 'Сохранение...' : 'Сбросить пароль' }}
+            </UiButton>
+            <button type="button" class="modal__link" @click="forgotStep = 'email'">Отправить код повторно</button>
+          </form>
+        </template>
       </div>
     </div>
   </Transition>
@@ -48,6 +110,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
+import { forgotPassword, resetPassword } from '~/services/authApi';
 
 const props = defineProps<{ modelValue: boolean }>();
 const emit = defineEmits<{ 'update:modelValue': [value: boolean] }>();
@@ -62,6 +125,41 @@ const password = ref('');
 const error = ref('');
 const loading = ref(false);
 
+const { showToast } = useToast();
+
+const forgotStep = ref<'none' | 'email' | 'reset'>('none');
+const forgotEmail = ref('');
+const forgotError = ref('');
+const forgotLoading = ref(false);
+const resetCode = ref('');
+const resetPasswordValue = ref('');
+const resetPasswordConfirm = ref('');
+const resetError = ref('');
+const resetLoading = ref(false);
+
+function resetForgotState() {
+  forgotStep.value = 'none';
+  forgotEmail.value = '';
+  forgotError.value = '';
+  forgotLoading.value = false;
+  resetCode.value = '';
+  resetPasswordValue.value = '';
+  resetPasswordConfirm.value = '';
+  resetError.value = '';
+  resetLoading.value = false;
+}
+
+function openForgotPassword() {
+  forgotEmail.value = email.value;
+  forgotStep.value = 'email';
+  forgotError.value = '';
+}
+
+function backToLogin() {
+  resetForgotState();
+  mode.value = 'login';
+}
+
 watch(() => props.modelValue, (val) => {
   if (!val) {
     name.value = '';
@@ -70,6 +168,7 @@ watch(() => props.modelValue, (val) => {
     password.value = '';
     error.value = '';
     loading.value = false;
+    resetForgotState();
   }
 });
 
@@ -86,9 +185,50 @@ async function onSubmit() {
     }
     emit('update:modelValue', false);
   } catch (e: any) {
-    error.value = e?.data?.message ?? e?.message ?? 'Произошла ошибка';
+    error.value = e?.data?.error ?? e?.message ?? 'Произошла ошибка';
   } finally {
     loading.value = false;
+  }
+}
+
+async function onForgotSubmit() {
+  forgotError.value = '';
+  forgotLoading.value = true;
+  try {
+    await forgotPassword(forgotEmail.value);
+    forgotStep.value = 'reset';
+  } catch (e: any) {
+    forgotError.value = e?.data?.error ?? e?.message ?? 'Произошла ошибка';
+  } finally {
+    forgotLoading.value = false;
+  }
+}
+
+async function onResetSubmit() {
+  resetError.value = '';
+  if (resetCode.value.length !== 4) {
+    resetError.value = 'Введите код из 4 цифр';
+    return;
+  }
+  if (resetPasswordValue.value.length < 6) {
+    resetError.value = 'Пароль должен содержать минимум 6 символов';
+    return;
+  }
+  if (resetPasswordValue.value !== resetPasswordConfirm.value) {
+    resetError.value = 'Пароли не совпадают';
+    return;
+  }
+  resetLoading.value = true;
+  try {
+    await resetPassword(forgotEmail.value, resetCode.value, resetPasswordValue.value);
+    resetForgotState();
+    mode.value = 'login';
+    emit('update:modelValue', false);
+    showToast('Пароль успешно изменён');
+  } catch (e: any) {
+    resetError.value = e?.data?.error ?? e?.message ?? 'Произошла ошибка';
+  } finally {
+    resetLoading.value = false;
   }
 }
 </script>
@@ -189,6 +329,34 @@ async function onSubmit() {
   font-family: 'NT Somic', sans-serif;
   font-size: 13px;
   color: var(--red);
+}
+
+.modal__title {
+  font-family: 'NT Somic', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--black);
+  margin: 0 0 20px;
+}
+
+.modal__hint {
+  font-family: 'NT Somic', sans-serif;
+  font-size: 13px;
+  color: var(--gray-dark);
+  margin: -12px 0 16px;
+}
+
+.modal__link {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  align-self: flex-start;
+  font-family: 'NT Somic', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--red);
+  text-decoration: underline;
 }
 
 .modal-enter-active,
