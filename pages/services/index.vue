@@ -79,6 +79,7 @@
 </template>
 
 <script setup lang="ts">
+useHead({ title: 'Услуги — Мастер 12 Вольт' });
 import { ref, computed, onMounted, watch } from 'vue';
 import type { Service, ServiceGroup } from '~/types/product';
 import { getServices } from '~/services/productApi';

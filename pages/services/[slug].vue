@@ -55,6 +55,9 @@ const route = useRoute();
 const slug = computed(() => route.params.slug as string);
 
 const service = ref<Service | null>(null);
+useHead(() => ({
+  title: service.value?.name ? `${service.value.name} — Мастер 12 Вольт` : 'Услуги — Мастер 12 Вольт',
+}));
 const related = ref<RelatedService[]>([]);
 const pending = ref(true);
 const error = ref<Error | null>(null);

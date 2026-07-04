@@ -75,6 +75,7 @@
 </template>
 
 <script setup lang="ts">
+useHead({ title: 'Сравнение — Мастер 12 Вольт' });
 import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import type Slider from '~/components/features/Slider.vue';
 import { useRouter } from 'vue-router';

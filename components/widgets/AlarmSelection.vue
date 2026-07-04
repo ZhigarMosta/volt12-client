@@ -18,6 +18,7 @@ onUnmounted(() => {
 </script>
 
 <template>
+  <section>
   <ActionBackground class="action-background" right-image="/images/alarm-selection.png">
     <div class="left-side">
       <ActionTitle class="alarm-select-action-title">запишись на бесплатный подбор сигнализации к твоему авто</ActionTitle>
@@ -25,6 +26,7 @@ onUnmounted(() => {
       <UiButton class="alarm-select-btn" variant="white" size="lg" :full-width="isMobile">Записаться</UiButton>
     </div>
   </ActionBackground>
+  </section>
 </template>
 
 <style scoped>

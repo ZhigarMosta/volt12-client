@@ -1,12 +1,12 @@
 <template>
-  <div class="feedback-from-maps-widget">
+  <section class="feedback-from-maps-widget">
     <H2 class="h2">Отзывы с карт</H2>
     <Slider class="slider"
             :fetch-items="getFeedbackFromMap"
             :breakpoints="sliderBreakpoints"
             :slide-component="FeedbackFromMap"
     />
-  </div>
+  </section>
 </template>
 
 <script setup lang="ts">

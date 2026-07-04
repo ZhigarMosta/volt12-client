@@ -88,4 +88,7 @@
 }
 </style>
 <script setup lang="ts">
+useHead({
+  title: 'Мастер 12 Вольт — Официальный дилер Pandora',
+});
 </script>

@@ -176,6 +176,9 @@ const config = useRuntimeConfig();
 const apiBase = computed(() => (config.public.apiBase as string).replace(/\/+$/, ''));
 
 const item = ref<CatalogItemDetail | null>(null);
+useHead(() => ({
+  title: item.value?.name ? `${item.value.name} — Мастер 12 Вольт` : 'Товар — Мастер 12 Вольт',
+}));
 const related = ref<RelatedCatalogItem[]>([]);
 const recentlyViewed = ref<RelatedCatalogItem[]>([]);
 const pending = ref(true);

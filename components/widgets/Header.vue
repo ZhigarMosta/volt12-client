@@ -55,7 +55,7 @@
                 <NuxtLink :to="`/catalog/${cat.slug}`" class="catalog-menu__category-title">{{ cat.title }}</NuxtLink>
                 <ul class="catalog-menu__sub-list">
                   <li v-for="sub in cat.items" :key="sub.id">
-                    <NuxtLink :to="`/catalog/${cat.slug}/${sub.slug}`" class="catalog-menu__link">{{ sub.name }}</NuxtLink>
+                    <NuxtLink :to="`/product/${sub.slug}`" class="catalog-menu__link">{{ sub.name }}</NuxtLink>
                   </li>
                 </ul>
               </div>

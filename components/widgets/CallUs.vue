@@ -1,4 +1,5 @@
 <template>
+  <section>
   <ActionBackground class="action-background">
     <div class="side">
       <div class="left-side">
@@ -11,6 +12,7 @@
       </div>
     </div>
   </ActionBackground>
+  </section>
 </template>
 
 <style scoped>

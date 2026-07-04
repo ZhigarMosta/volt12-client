@@ -12,7 +12,7 @@
         class="h-search__input"
         :placeholder="placeholder"
         @focus="onFocus"
-        @keydown.esc="close"
+        @keydown="onKeydown"
       />
       <button
         v-if="query"
@@ -40,15 +40,16 @@
 
     <!-- Dropdown с результатами -->
     <Transition name="h-search-dropdown">
-      <div v-if="dropdownVisible" class="h-search__dropdown">
+      <div v-if="dropdownVisible" ref="dropdownEl" class="h-search__dropdown">
         <div v-if="loading" class="h-search__state">Поиск…</div>
 
         <template v-else-if="results.length">
           <NuxtLink
-            v-for="item in results"
+            v-for="(item, index) in results"
             :key="`${item.type}-${item.id}`"
             :to="routeFor(item)"
             class="h-search__item"
+            :class="{ 'h-search__item--active': index === activeIndex }"
             @click="close"
           >
             <div class="h-search__item-img">
@@ -72,7 +73,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
+const route = useRoute();
 import { searchMenu, extractImgUrl, type SearchItem } from '~/services/catalogMenuApi';
 
 withDefaults(
@@ -91,10 +93,12 @@ const emit = defineEmits<{
 }>();
 
 const inputEl = ref<HTMLInputElement | null>(null);
+const dropdownEl = ref<HTMLElement | null>(null);
 const query = ref('');
 const results = ref<SearchItem[]>([]);
 const loading = ref(false);
 const isFocused = ref(false);
+const activeIndex = ref(-1);
 
 let debounceId: ReturnType<typeof setTimeout> | null = null;
 let abortController: AbortController | null = null;
@@ -121,7 +125,37 @@ function onFocus() {
 
 function close() {
   isFocused.value = false;
+  activeIndex.value = -1;
   emit('navigate');
+}
+
+function onKeydown(e: KeyboardEvent) {
+  if (e.key === 'Escape') {
+    close();
+    return;
+  }
+  if (!dropdownVisible.value || !results.value.length) return;
+
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    activeIndex.value = activeIndex.value < results.value.length - 1
+      ? activeIndex.value + 1
+      : 0;
+    nextTick(() => dropdownEl.value?.querySelector('.h-search__item--active')?.scrollIntoView({ block: 'nearest' }));
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    activeIndex.value = activeIndex.value > 0
+      ? activeIndex.value - 1
+      : results.value.length - 1;
+    nextTick(() => dropdownEl.value?.querySelector('.h-search__item--active')?.scrollIntoView({ block: 'nearest' }));
+  } else if (e.key === 'Enter' && activeIndex.value >= 0) {
+    const item = results.value[activeIndex.value];
+    if (item) {
+      e.preventDefault();
+      close();
+      navigateTo(routeFor(item));
+    }
+  }
 }
 
 function clearQuery() {
@@ -151,8 +185,16 @@ async function runSearch(name: string) {
 }
 
 watch(query, (val) => {
+  activeIndex.value = -1;
   if (debounceId) clearTimeout(debounceId);
   debounceId = setTimeout(() => runSearch(val), 300);
+});
+
+watch(() => route.path, () => {
+  query.value = '';
+  results.value = [];
+  isFocused.value = false;
+  activeIndex.value = -1;
 });
 
 function onDocClick(e: MouseEvent) {
@@ -310,7 +352,8 @@ defineExpose({
   transition: background 0.15s;
 }
 
-.h-search__item:hover {
+.h-search__item:hover,
+.h-search__item--active {
   background: #f6f6f6;
 }
 

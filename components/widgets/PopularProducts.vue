@@ -1,12 +1,12 @@
 <template>
-  <div class="popular-products-widget">
+  <section class="popular-products-widget">
     <H2 class="h2">Популярные товары</H2>
     <Slider class="slider"
             :fetch-items="getPopularProducts"
             :breakpoints="sliderBreakpoints"
             :slide-component="ProductCard"
     />
-  </div>
+  </section>
 </template>
 
 <script setup lang="ts">

@@ -42,7 +42,7 @@ const cards = [
 </script>
 
 <template>
-  <div class="preview-cards">
+  <section class="preview-cards">
     <PreviewCard
       v-for="(card, index) in cards"
       :key="index"
@@ -51,7 +51,7 @@ const cards = [
       :description="card.description"
       :to="card.to"
     />
-  </div>
+  </section>
 </template>
 
 <style scoped>

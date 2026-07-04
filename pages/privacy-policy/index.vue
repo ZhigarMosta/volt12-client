@@ -1,3 +1,7 @@
+<script setup>
+useHead({ title: 'Политика конфиденциальности — Мастер 12 Вольт' });
+</script>
+
 <template>
   <div class="privacy-policy">
     <p><strong>Политика по обработке персональных данных</strong></p>

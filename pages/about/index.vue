@@ -18,10 +18,10 @@
           электронщика и мелкосрочный ремонт окажем вам с большим успехом.
         </p>
       </div>
-      <div class="cards">
+      <div class="cards" ref="cardsRef">
         <div class="card" v-for="(card, index) in cards" :key="index">
           <NuxtImg class="card-icon" :src="card.icon" :alt="card.text"/>
-          <p class="card-count">{{ card.count }}</p>
+          <p class="card-count">{{ cardCounts[index] }}</p>
           <p class="card-text">{{ card.text }}</p>
         </div>
       </div>
@@ -40,6 +40,7 @@
 </template>
 
 <script setup lang="ts">
+import { animate } from 'animejs';
 import Slider from '~/components/features/Slider.vue';
 import AboutGallerySlide from '~/components/shared/AboutGallerySlide.vue';
 import type { AboutGalleryImage } from '~/types/about';
@@ -91,6 +92,44 @@ const cards = [
   {icon: '/icons/car-signal.svg', count: 10000, text: 'Установлено сигнализаций'},
   {icon: '/icons/users.svg', count: 78, text: 'Обслужено клиентов'},
 ];
+
+const cardsRef = ref<HTMLElement | null>(null);
+const cardCounts = ref(cards.map(() => 0));
+let countersAnimated = false;
+
+function animateCounters() {
+  if (countersAnimated) return;
+  countersAnimated = true;
+
+  cards.forEach((card, index) => {
+    const counter = {value: 0};
+    animate(counter, {
+      value: card.count,
+      duration: 1500,
+      delay: index * 100,
+      ease: 'outExpo',
+      onUpdate: () => {
+        cardCounts.value[index] = Math.round(counter.value);
+      },
+    });
+  });
+}
+
+onMounted(() => {
+  if (!cardsRef.value) return;
+
+  const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          animateCounters();
+          observer.disconnect();
+        }
+      },
+      {threshold: 0.3},
+  );
+
+  observer.observe(cardsRef.value);
+});
 </script>
 
 <style scoped>
