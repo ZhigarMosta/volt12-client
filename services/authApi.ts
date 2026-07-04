@@ -48,6 +48,11 @@ export async function sendVerificationEmail(): Promise<void> {
   await authFetch(`${apiBase}/volt12/auth/send-verification`, { method: 'POST' });
 }
 
+export async function verifyEmail(code: string): Promise<void> {
+  const apiBase = getApiBase();
+  await authFetch(`${apiBase}/volt12/auth/verify-email`, { method: 'POST', body: { code } });
+}
+
 export async function updateProfile(data: { name?: string; phone?: string }): Promise<User> {
   const apiBase = getApiBase();
   const res = await authFetch<{ success: boolean; user: User; error?: string }>(`${apiBase}/volt12/auth/update-profile`, {

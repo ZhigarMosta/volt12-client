@@ -59,7 +59,28 @@
                 >
                   {{ verifyState === 'loading' ? 'Отправка...' : 'Подтвердите почту' }}
                 </button>
-                <span v-else class="profile-info__verify-sent">Письмо отправлено</span>
+                <template v-else>
+                  <div class="profile-info__code">
+                    <input
+                      class="profile-info__code-input"
+                      v-model="codeInput"
+                      type="text"
+                      inputmode="numeric"
+                      maxlength="6"
+                      placeholder="Код из письма"
+                      :disabled="codeState === 'loading'"
+                      @keydown.enter.prevent="onConfirmCode"
+                    />
+                    <button
+                      class="profile-info__verify"
+                      :disabled="codeState === 'loading' || codeInput.length !== 6"
+                      @click="onConfirmCode"
+                    >
+                      {{ codeState === 'loading' ? 'Проверка...' : 'Подтвердить' }}
+                    </button>
+                  </div>
+                  <span v-if="codeState === 'error'" class="profile-info__verify-error">{{ codeError }}</span>
+                </template>
                 <span v-if="verifyState === 'error'" class="profile-info__verify-error">{{ verifyError }}</span>
               </template>
             </div>
@@ -104,7 +125,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { updateProfile, sendVerificationEmail } from '~/services/authApi';
+import { updateProfile, sendVerificationEmail, verifyEmail } from '~/services/authApi';
 
 useHead({ title: 'Личный кабинет — Мастер 12 Вольт' });
 
@@ -152,6 +173,26 @@ async function onVerifyEmail() {
   } catch (e: any) {
     verifyError.value = e?.data?.error ?? 'Ошибка отправки';
     verifyState.value = 'error';
+  }
+}
+
+const codeInput = ref('');
+const codeState = ref<'idle' | 'loading' | 'error'>('idle');
+const codeError = ref('');
+
+async function onConfirmCode() {
+  if (codeInput.value.length !== 6) return;
+  codeState.value = 'loading';
+  codeError.value = '';
+  try {
+    await verifyEmail(codeInput.value);
+    if (user.value) user.value = { ...user.value, email_verified: true };
+    verifyState.value = 'idle';
+    codeInput.value = '';
+    codeState.value = 'idle';
+  } catch (e: any) {
+    codeError.value = e?.data?.error ?? 'Неверный код';
+    codeState.value = 'error';
   }
 }
 </script>
@@ -313,6 +354,25 @@ async function onVerifyEmail() {
   font-size: 12px;
   font-weight: 500;
   color: #4caf50;
+}
+
+.profile-info__code {
+  margin-top: 6px;
+  display: flex;
+  gap: 8px;
+}
+
+.profile-info__code-input {
+  width: 110px;
+  font-family: 'NT Somic', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--black);
+  background: var(--gray);
+  border: none;
+  border-radius: 6px;
+  padding: 6px 10px;
+  outline: none;
 }
 
 .profile-info__verify-error {
