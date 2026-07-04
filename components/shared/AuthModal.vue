@@ -22,13 +22,21 @@
               </div>
               <div class="modal__field">
                 <label class="modal__label">Телефон</label>
-                <input v-model="phone" class="modal__input" type="tel" placeholder="+7 (999) 999-99-99" maxlength="255" />
+                <PhoneInput v-model="phone" class="modal__input" placeholder="+7 (999) 999-99-99" maxlength="18" />
               </div>
             </template>
 
             <div class="modal__field">
               <label class="modal__label">Email</label>
-              <input v-model="email" class="modal__input" type="email" placeholder="example@mail.ru" maxlength="255" required />
+              <input
+                v-model="email"
+                class="modal__input"
+                type="email"
+                placeholder="example@mail.ru"
+                maxlength="255"
+                required
+                @input="email = sanitizeEmailInput(email)"
+              />
             </div>
 
             <div class="modal__field">
@@ -58,7 +66,15 @@
           <form class="modal__form" @submit.prevent="onForgotSubmit">
             <div class="modal__field">
               <label class="modal__label">Email</label>
-              <input v-model="forgotEmail" class="modal__input" type="email" placeholder="example@mail.ru" maxlength="255" required />
+              <input
+                v-model="forgotEmail"
+                class="modal__input"
+                type="email"
+                placeholder="example@mail.ru"
+                maxlength="255"
+                required
+                @input="forgotEmail = sanitizeEmailInput(forgotEmail)"
+              />
             </div>
 
             <p v-if="forgotError" class="modal__error">{{ forgotError }}</p>
@@ -111,6 +127,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import { forgotPassword, resetPassword } from '~/services/authApi';
+import { isValidEmail, sanitizeEmailInput } from '~/utils/email';
 
 const props = defineProps<{ modelValue: boolean }>();
 const emit = defineEmits<{ 'update:modelValue': [value: boolean] }>();
@@ -176,6 +193,10 @@ watch(mode, () => { error.value = ''; });
 
 async function onSubmit() {
   error.value = '';
+  if (!isValidEmail(email.value)) {
+    error.value = 'Некорректный email';
+    return;
+  }
   loading.value = true;
   try {
     if (mode.value === 'login') {
@@ -193,6 +214,10 @@ async function onSubmit() {
 
 async function onForgotSubmit() {
   forgotError.value = '';
+  if (!isValidEmail(forgotEmail.value)) {
+    forgotError.value = 'Некорректный email';
+    return;
+  }
   forgotLoading.value = true;
   try {
     await forgotPassword(forgotEmail.value);

@@ -1,0 +1,29 @@
+/** Formats raw input into a Russian phone mask: +7 (999) 999-99-99 */
+export function formatRuPhone(rawValue: string): string {
+  let digits = rawValue.replace(/\D/g, '');
+
+  if (digits.startsWith('8')) digits = '7' + digits.slice(1);
+  if (digits.length > 0 && !digits.startsWith('7')) digits = '7' + digits;
+  digits = digits.slice(0, 11);
+
+  if (digits.length === 0) return '';
+
+  const rest = digits.slice(1);
+  let result = '+7';
+  if (rest.length === 0) return result;
+
+  result += ' (' + rest.slice(0, 3);
+  if (rest.length >= 3) result += ')';
+  if (rest.length > 3) result += ' ' + rest.slice(3, 6);
+  if (rest.length > 6) result += '-' + rest.slice(6, 8);
+  if (rest.length > 8) result += '-' + rest.slice(8, 10);
+  return result;
+}
+
+export function extractPhoneDigits(value: string): string {
+  return value.replace(/\D/g, '');
+}
+
+export function isCompleteRuPhone(value: string): boolean {
+  return extractPhoneDigits(value).length === 11;
+}

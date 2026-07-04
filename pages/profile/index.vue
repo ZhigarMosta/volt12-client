@@ -109,12 +109,11 @@
               :title="!isEmailVerified ? 'Подтвердите почту, чтобы изменить телефон' : ''"
             >
               <span class="profile-info__label">Телефон</span>
-              <input
+              <PhoneInput
                 class="profile-info__input"
                 v-model="editPhone"
-                type="tel"
                 placeholder="+7 (999) 999-99-99"
-                maxlength="255"
+                maxlength="18"
                 :disabled="!isEmailVerified"
                 @blur="saveField('phone', editPhone)"
                 @keydown.enter.prevent="saveField('phone', editPhone)"

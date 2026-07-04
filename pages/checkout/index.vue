@@ -69,7 +69,7 @@
             <label class="form-label">Телефон*</label>
             <div v-if="authLoading" class="sk-input-field" />
             <template v-else>
-              <input v-model="form.phone" class="form-input" :class="{ 'form-input--error': errors.phone }" type="tel" placeholder="+7(000)000-00-00" @input="clearError('phone')" />
+              <PhoneInput v-model="form.phone" class="form-input" :class="{ 'form-input--error': errors.phone }" placeholder="+7(000)000-00-00" maxlength="18" @input="clearError('phone')" />
               <span v-if="errors.phone" class="field-error">{{ errors.phone }}</span>
             </template>
           </div>
@@ -77,7 +77,14 @@
             <label class="form-label">Почта*</label>
             <div v-if="authLoading" class="sk-input-field" />
             <template v-else>
-              <input v-model="form.email" class="form-input" :class="{ 'form-input--error': errors.email }" type="email" placeholder="example@mail.com" @input="clearError('email')" />
+              <input
+                v-model="form.email"
+                class="form-input"
+                :class="{ 'form-input--error': errors.email }"
+                type="email"
+                placeholder="example@mail.com"
+                @input="form.email = sanitizeEmailInput(form.email); clearError('email')"
+              />
               <span v-if="errors.email" class="field-error">{{ errors.email }}</span>
             </template>
           </div>
@@ -133,6 +140,7 @@
 import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { useCheckoutOrder, type CheckoutOrderItem } from '~/utils/useCheckoutOrder';
 import { createOrder } from '~/services/orderApi';
+import { isValidEmail, sanitizeEmailInput } from '~/utils/email';
 
 useHead({ title: 'Оформление заказа — Мастер 12 Вольт' });
 const breadcrumbsItems = [
@@ -186,7 +194,7 @@ function validate(): boolean {
   if (!form.phone.trim()) e.phone = 'Введите номер телефона';
   if (!form.email.trim()) {
     e.email = 'Введите email';
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+  } else if (!isValidEmail(form.email)) {
     e.email = 'Некорректный email';
   }
   Object.assign(errors, e);

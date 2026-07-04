@@ -93,20 +93,20 @@
             placeholder="example@mail.com"
             autocomplete="email"
             required
+            @input="form.email = sanitizeEmailInput(form.email)"
           >
         </label>
 
         <label class="contacts-form__field">
           <span class="contacts-form__label">Номер телефона*</span>
-          <input
+          <PhoneInput
             v-model="form.phone"
             class="contacts-form__input"
-            type="tel"
             name="phone"
             placeholder="+7(xxx)-xxx-xx-xx"
-            autocomplete="tel"
+            maxlength="18"
             required
-          >
+          />
         </label>
 
         <label class="contacts-form__field">
@@ -146,6 +146,7 @@
 import { ref, reactive, watch, onMounted } from 'vue';
 import { sendFeedback } from '~/services/feedbackApi';
 import { useClientContactStore } from '~/stores/clientContact';
+import { isValidEmail, sanitizeEmailInput } from '~/utils/email';
 
 useHead({
   title: 'Контакты — Мастер 12 Вольт',
@@ -235,6 +236,12 @@ async function submitForm() {
   const email = form.email.trim();
   const phone = form.phone.trim();
   const comment = form.comment.trim();
+
+  if (!isValidEmail(email)) {
+    submitError.value = 'Введите корректный email';
+    submitting.value = false;
+    return;
+  }
 
   try {
     await sendFeedback({
