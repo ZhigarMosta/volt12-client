@@ -6,37 +6,19 @@ const cards = [
     image: '/icons/car-preview-card.png',
     name: 'Каталог',
     description: 'Получайте бонусы, отслеживайте заказы и делитесь мнением',
-    to: '/'
+    to: '/catalog'
   },
   {
-    image: '/icons/car-preview-card.png',
-    name: 'Каталог',
-    description: 'Получайте бонусы, отслеживайте заказы и делитесь мнением',
-    to: '/'
+    image: '/images/preview-services.svg',
+    name: 'Услуги',
+    description: 'Профессиональная установка и обслуживание автоэлектроники',
+    to: '/services'
   },
   {
-    image: '/icons/car-preview-card.png',
-    name: 'Каталог',
-    description: 'Получайте бонусы, отслеживайте заказы и делитесь мнением',
-    to: '/'
-  },
-  {
-    image: '/icons/car-preview-card.png',
-    name: 'Каталог',
-    description: 'Получайте бонусы, отслеживайте заказы и делитесь мнением',
-    to: '/'
-  },
-  {
-    image: '/icons/car-preview-card.png',
-    name: 'Каталог',
-    description: 'Получайте бонусы, отслеживайте заказы и делитесь мнением',
-    to: '/'
-  },
-  {
-    image: '/icons/car-preview-card.png',
-    name: 'Каталог',
-    description: 'Получайте бонусы, отслеживайте заказы и делитесь мнением',
-    to: '/'
+    image: '/images/preview-faq.svg',
+    name: 'FAQ',
+    description: 'Ответы на частые вопросы об установке и оборудовании',
+    to: '/contacts?faq=1'
   }
 ];
 </script>

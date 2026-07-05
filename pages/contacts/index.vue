@@ -41,7 +41,7 @@
     <ContactsYandexMap class="contacts-map-block" />
 
     <section class="contacts-content">
-      <div class="contacts-faq">
+      <div ref="faqBlockRef" class="contacts-faq">
         <h2 class="contacts-faq__heading">Часто задаваемые вопросы (FAQ)</h2>
         <div class="contacts-faq__list">
           <div
@@ -59,8 +59,10 @@
               <span>{{ item.question }}</span>
               <span class="contacts-faq__arrow" aria-hidden="true" />
             </button>
-            <div v-show="openFaqIndex === index" class="contacts-faq__answer">
-              {{ item.answer }}
+            <div class="contacts-faq__answer-wrap">
+              <div class="contacts-faq__answer">
+                {{ item.answer }}
+              </div>
             </div>
           </div>
         </div>
@@ -139,11 +141,24 @@
         </button>
       </form>
     </section>
+
+    <div
+      v-if="faqSpotlight.visible"
+      class="faq-spotlight"
+      :class="{ 'faq-spotlight--dim': faqSpotlight.dim, 'faq-spotlight--snap': faqSpotlight.snap }"
+      :style="{
+        top: faqSpotlight.top + 'px',
+        left: faqSpotlight.left + 'px',
+        width: faqSpotlight.width + 'px',
+        height: faqSpotlight.height + 'px',
+      }"
+      aria-hidden="true"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch, onMounted } from 'vue';
+import { ref, reactive, watch, onMounted, nextTick } from 'vue';
 import { sendFeedback } from '~/services/feedbackApi';
 import { useClientContactStore } from '~/stores/clientContact';
 import { isValidEmail, sanitizeEmailInput } from '~/utils/email';
@@ -194,6 +209,102 @@ const faqItems = [
 ];
 
 const openFaqIndex = ref(0);
+
+const route = useRoute();
+const faqBlockRef = ref<HTMLElement | null>(null);
+const faqSpotlight = reactive({
+  visible: false,
+  dim: false,
+  // snap = true отключает CSS-переход геометрии, чтобы «дыра» покадрово
+  // повторяла реальные габариты FAQ-блока при раскрытии ответа.
+  snap: false,
+  top: 0,
+  left: 0,
+  width: 0,
+  height: 0,
+});
+
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// «Дыра» на весь экран — тень целиком за кадром, затемнения не видно.
+function setSpotlightToViewport() {
+  faqSpotlight.top = 0;
+  faqSpotlight.left = 0;
+  faqSpotlight.width = window.innerWidth;
+  faqSpotlight.height = window.innerHeight;
+}
+
+// «Дыра» точно по FAQ-блоку — тень заполняет всё вокруг него.
+function measureSpotlight() {
+  const el = faqBlockRef.value;
+  if (!el) return;
+  const rect = el.getBoundingClientRect();
+  const pad = 16;
+  faqSpotlight.top = rect.top - pad;
+  faqSpotlight.left = rect.left - pad;
+  faqSpotlight.width = rect.width + pad * 2;
+  faqSpotlight.height = rect.height + pad * 2;
+}
+
+// Покадрово подгоняем «дыру» под растущий блок в течение duration мс.
+function trackSpotlight(duration: number) {
+  const start = performance.now();
+  const frame = (now: number) => {
+    measureSpotlight();
+    if (now - start < duration) requestAnimationFrame(frame);
+  };
+  requestAnimationFrame(frame);
+}
+
+async function playFaqIntro() {
+  if (!faqBlockRef.value) return;
+
+  const prefersReduced =
+    typeof window !== 'undefined' &&
+    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+  // Прокручиваем к FAQ и раскрываем первый вопрос сразу, без анимации.
+  if (prefersReduced) {
+    openFaqIndex.value = 0;
+    faqBlockRef.value.scrollIntoView({ block: 'center' });
+    return;
+  }
+
+  // Сначала свернём первый ответ, чтобы затем эффектно его раскрыть.
+  openFaqIndex.value = -1;
+  await nextTick();
+
+  faqBlockRef.value.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  await wait(500);
+
+  // Показываем тень, но «дыра» пока во весь экран — затемнение не заметно.
+  faqSpotlight.snap = false;
+  faqSpotlight.dim = true;
+  setSpotlightToViewport();
+  faqSpotlight.visible = true;
+  await nextTick();
+
+  // Сжимаем «дыру» от краёв экрана до FAQ-блока — тень наползает со всех сторон.
+  requestAnimationFrame(() => {
+    requestAnimationFrame(measureSpotlight);
+  });
+  await wait(650);
+
+  // Раскрываем первый ответ: блок растёт плавно, «дыра» покадрово следует за ним.
+  faqSpotlight.snap = true;
+  openFaqIndex.value = 0;
+  await nextTick();
+  trackSpotlight(560);
+  await wait(560);
+  faqSpotlight.snap = false;
+
+  // Держим кадр, затем тень постепенно светлеет, пока не исчезнет.
+  await wait(650);
+  faqSpotlight.dim = false;
+  await wait(600);
+  faqSpotlight.visible = false;
+}
+
 const submitting = ref(false);
 const submitError = ref('');
 const submitSuccess = ref(false);
@@ -221,6 +332,13 @@ watch(user, (authUser) => {
 
 onMounted(() => {
   applyClientContactToForm();
+
+  if (route.query.faq !== undefined) {
+    // Небольшая задержка, чтобы страница успела отрисоваться.
+    nextTick(() => {
+      setTimeout(playFaqIntro, 150);
+    });
+  }
 });
 
 function toggleFaq(index: number) {
@@ -266,6 +384,40 @@ async function submitForm() {
 <style scoped>
 .contacts-page {
   padding: 0 70px 88px;
+}
+
+.faq-spotlight {
+  position: fixed;
+  z-index: 9999;
+  border-radius: 16px;
+  pointer-events: none;
+  /* Тень вокруг «дыры»; сама дыра меняет размер и наползает с краёв. */
+  box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0);
+  transition:
+    top 0.6s cubic-bezier(0.65, 0, 0.35, 1),
+    left 0.6s cubic-bezier(0.65, 0, 0.35, 1),
+    width 0.6s cubic-bezier(0.65, 0, 0.35, 1),
+    height 0.6s cubic-bezier(0.65, 0, 0.35, 1),
+    box-shadow 0.55s ease;
+}
+
+/* При раскрытии ответа «дыра» подгоняется покадрово — CSS-переход геометрии выключаем. */
+.faq-spotlight--snap {
+  transition: box-shadow 0.55s ease;
+}
+
+.faq-spotlight--dim {
+  box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.62);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .faq-spotlight {
+    transition: none;
+  }
+
+  .contacts-faq__answer-wrap {
+    transition: none;
+  }
 }
 
 .contacts-map-block {
@@ -383,7 +535,19 @@ async function submitForm() {
   margin-top: 8px;
 }
 
+.contacts-faq__answer-wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.5s ease;
+}
+
+.contacts-faq__item--open .contacts-faq__answer-wrap {
+  grid-template-rows: 1fr;
+}
+
 .contacts-faq__answer {
+  overflow: hidden;
+  min-height: 0;
   padding: 0 0 20px;
   font-family: 'NT Somic', sans-serif;
   font-weight: 500;
