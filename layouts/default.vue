@@ -8,10 +8,12 @@
     <CookieAcceptPanel />
     <Footer />
     <MobileButtonBar />
+    <BookingModal v-model="isBookingModalOpen" :type="bookingType" />
   </div>
 </template>
 
 <script setup lang="ts">
+const { isBookingModalOpen, bookingType } = useBookingModal();
 </script>
 
 <style scoped>

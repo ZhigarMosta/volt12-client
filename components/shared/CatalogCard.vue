@@ -1,7 +1,7 @@
 <template>
   <NuxtLink :to="`/catalog/${catalog.slug}`" class="catalog-card">
     <div class="catalog-content">
-      <img
+      <ImageWithSkeleton
           v-if="imageUrl"
           :src="imageUrl"
           :alt="catalog.imgAlt || catalog.name"

@@ -7,7 +7,7 @@ defineProps<{
 </script>
 
 <template>
-  <NuxtImg
+  <ImageWithSkeleton
       class="about-gallery-slide"
       :src="image.src"
       :alt="image.alt"

@@ -1,11 +1,11 @@
 <template>
   <NuxtLink :to="`/product/${product.slug}`" class="product-card">
-    <img
+    <ImageWithSkeleton
       class="product-img"
       :src="imageUrl"
       :alt="imageAlt"
       :title="imageTitle"
-    >
+    />
     <p class="product-name">{{ product.name }}</p>
     <p class="product-price">{{ formatPrice(product.price) }}</p>
   </NuxtLink>

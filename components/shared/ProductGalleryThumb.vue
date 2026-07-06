@@ -8,7 +8,7 @@
         @mouseenter="onHover"
         @mouseleave="onHoverLeave"
     >
-      <img class="img" :src="image.url" :alt="image.alt || ''" :title="image.title || undefined"/>
+      <ImageWithSkeleton class="img" :src="image.url" :alt="image.alt || ''" :title="image.title || undefined"/>
     </button>
   </div>
 </template>

@@ -12,7 +12,7 @@
            @mouseleave="handleLeave"
            @touchmove="handleTouchMove"
       >
-        <img
+        <ImageWithSkeleton
             v-if="activeImage"
             :src="activeImage.url"
             class="product-image"

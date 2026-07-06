@@ -1,6 +1,6 @@
 <template>
   <NuxtLink :to="`/services/${slug}`" class="service-card">
-    <NuxtImg v-if="imgSrc" :src="imgSrc" class="service-img" :alt="imgAlt || name" :title="imgTitle || name" />
+    <ImageWithSkeleton v-if="imgSrc" :src="imgSrc" class="service-img" :alt="imgAlt || name" :title="imgTitle || name" />
     <div v-else class="service-img-placeholder" />
     <div class="service-content">
       <div class="service-info">

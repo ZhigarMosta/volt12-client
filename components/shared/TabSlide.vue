@@ -1,7 +1,7 @@
 <template>
   <div class="tab-slide" :class="{ active: isActive }" @click="onSelect?.(index)">
     <button class="select-catalog">
-      <NuxtImg class="catalog_img" v-if="img?.link" :src="imgSrc" :alt="img.alt" :title="img.title" />
+      <ImageWithSkeleton class="catalog_img" v-if="img?.link" :src="imgSrc" :alt="img.alt" :title="img.title" />
       <p class="catalog_name">{{ name }}</p>
       <p class="tab-count">{{ count }}</p>
     </button>

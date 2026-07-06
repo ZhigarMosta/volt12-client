@@ -68,7 +68,7 @@
           <p class="section-title">Товары</p>
           <div class="item-list">
             <NuxtLink v-for="item in order.items" :key="item.catalog_item_id" :to="`/product/${item.slug}`" class="item-row">
-              <img
+              <ImageWithSkeleton
                 v-if="item.image"
                 :src="`${apiBase}/${item.image.img_link}`"
                 :alt="item.image.alt || item.name"

@@ -22,7 +22,7 @@
       <div class="detail-wrapper">
         <h1 class="detail-title">{{ service.name }}</h1>
         <div class="detail-context">
-          <NuxtImg v-if="imgSrc" :src="imgSrc" :alt="service.img_alt || service.name" :title="service.img_title || service.name" class="service-image"/>
+          <ImageWithSkeleton v-if="imgSrc" :src="imgSrc" :alt="service.img_alt || service.name" :title="service.img_title || service.name" loading="eager" class="service-image"/>
           <div v-if="service.description" class="detail-description" v-html="service.description"></div>
         </div>
       </div>

@@ -158,10 +158,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch, onMounted, nextTick } from 'vue';
+import { ref, reactive, computed, watch, onMounted, nextTick } from 'vue';
 import { sendFeedback } from '~/services/feedbackApi';
 import { useClientContactStore } from '~/stores/clientContact';
 import { isValidEmail, sanitizeEmailInput } from '~/utils/email';
+
+definePageMeta({
+  middleware: (to, from) => {
+    to.meta.isRealNavigation = from.name != null;
+  },
+});
 
 useHead({
   title: 'Контакты — Мастер 12 Вольт',
@@ -211,6 +217,9 @@ const faqItems = [
 const openFaqIndex = ref(0);
 
 const route = useRoute();
+const shouldAnimateFaq = computed(() =>
+  route.query.faq !== undefined && route.meta.isRealNavigation === true
+);
 const faqBlockRef = ref<HTMLElement | null>(null);
 const faqSpotlight = reactive({
   visible: false,
@@ -333,8 +342,7 @@ watch(user, (authUser) => {
 onMounted(() => {
   applyClientContactToForm();
 
-  if (route.query.faq !== undefined) {
-    // Небольшая задержка, чтобы страница успела отрисоваться.
+  if (shouldAnimateFaq.value) {
     nextTick(() => {
       setTimeout(playFaqIntro, 150);
     });

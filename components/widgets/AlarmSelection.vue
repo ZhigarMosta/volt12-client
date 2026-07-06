@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 
+const { openBookingModal } = useBookingModal()
+
 const isMobile = ref(false)
 
 const checkMobile = () => {
@@ -23,7 +25,7 @@ onUnmounted(() => {
     <div class="left-side">
       <ActionTitle class="alarm-select-action-title">запишись на бесплатный подбор сигнализации к твоему авто</ActionTitle>
       <p class="alarm-select-description">наши специалисты подбирают охранные комплексы исходя из индивидуальных особенностей и слабых сторон модели автомобиля</p>
-      <UiButton class="alarm-select-btn" variant="white" size="lg" :full-width="isMobile">Записаться</UiButton>
+      <UiButton class="alarm-select-btn" variant="white" size="lg" :full-width="isMobile" @click="openBookingModal('alarm_selection')">Записаться</UiButton>
     </div>
   </ActionBackground>
   </section>

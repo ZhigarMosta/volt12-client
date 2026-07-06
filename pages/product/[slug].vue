@@ -24,12 +24,13 @@
         <div class="gallery-block">
           <div class="gallery-main-image-container">
             <Transition name="gallery-fade">
-              <img
+              <ImageWithSkeleton
                   v-if="displayedGalleryImage"
                   :key="displayedImageIndex"
                   :src="displayedGalleryImage.url"
                   :alt="displayedGalleryImage.alt || item.name"
                   :title="displayedGalleryImage.title || item.name"
+                  loading="eager"
                   class="gallery-main-image"
               />
               <NoImagePlaceholder

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 
+const { openBookingModal } = useBookingModal()
+
 const isMobile = ref(false)
 
 const checkMobile = () => {
@@ -22,7 +24,7 @@ onUnmounted(() => {
   <ActionBackground class="action-background" right-image="/images/install-alarm.png">
     <div class="left-side">
       <ActionTitle>Установка сигнавлизации с автозапуском</ActionTitle>
-      <UiButton variant="white" size="lg" :full-width="isMobile">Записаться</UiButton>
+      <UiButton variant="white" size="lg" :full-width="isMobile" @click="openBookingModal('alarm_installation')">Записаться</UiButton>
     </div>
   </ActionBackground>
   </section>

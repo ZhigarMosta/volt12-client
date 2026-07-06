@@ -9,7 +9,7 @@
           </svg>
         </button>
       </div>
-      <NuxtImg v-if="hasImage" class="img" :src="productImage" :alt="imageAlt" :title="imageTitle"/>
+      <ImageWithSkeleton v-if="hasImage" class="img" :src="productImage" :alt="imageAlt" :title="imageTitle"/>
       <NoImagePlaceholder v-else class="img" />
       <div class="bottom">
         <p class="price">₽ {{ product?.price }}</p>

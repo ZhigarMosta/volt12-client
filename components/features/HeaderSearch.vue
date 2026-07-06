@@ -53,7 +53,7 @@
             @click="close"
           >
             <div class="h-search__item-img">
-              <img v-if="imgFor(item)" :src="imgFor(item)" :alt="item.name" />
+              <ImageWithSkeleton v-if="imgFor(item)" :src="imgFor(item)" :alt="item.name" class="h-search__item-img-el" />
             </div>
             <div class="h-search__item-text">
               <div class="h-search__item-name">{{ item.name }}</div>
@@ -369,7 +369,7 @@ defineExpose({
   overflow: hidden;
 }
 
-.h-search__item-img img {
+.h-search__item-img-el {
   width: 100%;
   height: 100%;
   object-fit: cover;

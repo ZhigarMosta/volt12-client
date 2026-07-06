@@ -16,12 +16,12 @@
       @mouseleave="handleLeave"
       @touchmove="handleTouchMove"
     >
-      <NuxtImg
+      <ImageWithSkeleton
         v-if="item.images.length"
         class="item-image"
-        :src="item.images[activeIndex].url"
-        :alt="item.images[activeIndex].alt || item.name"
-        :title="item.images[activeIndex].title || item.name"
+        :src="item.images[activeIndex]?.url"
+        :alt="item.images[activeIndex]?.alt || item.name"
+        :title="item.images[activeIndex]?.title || item.name"
       />
       <NoImagePlaceholder v-else class="item-image" />
       <div class="dots" v-if="item.images.length > 1">

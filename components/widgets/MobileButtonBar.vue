@@ -1,6 +1,6 @@
 <template>
   <div class="mobile-button-bar">
-    <MobileSearchButton />
+    <MobileSearchButton @open-search="openMobileSearch" />
     <MobileButton
       v-for="(button, index) in buttons"
       :key="index"
@@ -12,6 +12,8 @@
 </template>
 
 <script setup lang="ts">
+const { openMobileSearch } = useMobileMenu();
+
 const buttons = [
   { icon: '/icons/compare.svg', alt: 'Compare', to: '/compare' },
   { icon: '/icons/cart.svg', alt: 'Cart', to: '/cart' },

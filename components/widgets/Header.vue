@@ -136,7 +136,7 @@
 
         <!-- Search -->
         <div class="mm__search-wrap">
-          <HeaderSearch variant="mobile" @navigate="isMenuOpen = false" />
+          <HeaderSearch ref="mobileSearchEl" variant="mobile" @navigate="isMenuOpen = false" />
         </div>
 
         <!-- Scrollable body -->
@@ -852,13 +852,14 @@
 </style>
 
 <script setup lang="ts">
-import { ref, watch, onUnmounted, computed } from 'vue';
+import { ref, watch, onUnmounted, computed, nextTick } from 'vue';
 import { getCatalogMenu } from '~/services/catalogMenuApi';
 
 const { isAuthenticated, user, loading, logoutUser } = useAuth();
 const { showAuthModal } = useAuthModal();
+const { isMobileMenuOpen: isMenuOpen, focusSearchOnOpen } = useMobileMenu();
 
-const isMenuOpen = ref(false);
+const mobileSearchEl = ref<InstanceType<typeof HeaderSearch> | null>(null);
 const showProfileMenu = ref(false);
 const showCatalogMenu = ref(false);
 
@@ -908,6 +909,10 @@ watch(isMenuOpen, (open) => {
   if (open) {
     window.scrollTo(0, 0);
     document.body.style.overflow = 'hidden';
+    if (focusSearchOnOpen.value) {
+      focusSearchOnOpen.value = false;
+      nextTick(() => mobileSearchEl.value?.focus());
+    }
   } else {
     document.body.style.overflow = '';
   }

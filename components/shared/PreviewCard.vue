@@ -76,6 +76,7 @@ defineProps<{
 
 .preview-card {
   position: relative;
+  min-width: 0;
   border-radius: 16px;
   max-width: 420px;
   max-height: 288px;
@@ -104,7 +105,7 @@ defineProps<{
 
 @media (max-width: 1100px) {
   .preview-card__img {
-    max-width: 205px;
+    max-width: min(205px, 70%);
   }
 
   .preview-card__ellipse {
@@ -117,7 +118,7 @@ defineProps<{
 }
 @media (max-width: 744px) {
   .preview-card__img {
-    max-width: 158px;
+    max-width: min(158px, 70%);
   }
 
   .preview-card__ellipse {
