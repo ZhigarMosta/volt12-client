@@ -1,5 +1,10 @@
 <script setup lang="ts">
+import { getFooterServices } from '~/services/servicesApi';
 
+const { data: footerServices, pending: footerServicesPending } = useAsyncData(
+  'footer-services',
+  getFooterServices
+);
 </script>
 
 <template>
@@ -18,15 +23,21 @@
         <NuxtLink to="/" class="block_text">Услуги</NuxtLink>
         <NuxtLink to="/" class="block_text">Работа у нас</NuxtLink>
       </div>
-      <div class="footer__block footer__block--c"><!--   TODO наверное нужно эту информацию тоже тянуть с бэкенда    -->
+      <div v-if="footerServicesPending || footerServices?.length" class="footer__block footer__block--c">
         <p class="block_title">Защита от угона</p>
-        <NuxtLink to="/" class="block_text">Установка сигнализаций</NuxtLink>
-        <NuxtLink to="/" class="block_text">Установка иммобилайзера</NuxtLink>
-        <NuxtLink to="/" class="block_text">Установка механических блокираторов</NuxtLink>
-        <NuxtLink to="/" class="block_text">Установка замка капота</NuxtLink>
-        <NuxtLink to="/" class="block_text">Ремонт брелоков автосигнализаций</NuxtLink>
-        <NuxtLink to="/" class="block_text">Нанесение противоугонной маркировки</NuxtLink>
-        <NuxtLink to="/" class="block_text">Спецпредложения</NuxtLink>
+        <template v-if="footerServicesPending">
+          <div v-for="i in 7" :key="i" class="skeleton-text" />
+        </template>
+        <template v-else>
+          <NuxtLink
+            v-for="service in footerServices"
+            :key="service.slug"
+            :to="`/services/${service.slug}`"
+            class="block_text"
+          >
+            {{ service.name }}
+          </NuxtLink>
+        </template>
       </div>
       <div class="footer__block footer__block--d">
         <p class="block_title">Связаться с нами</p>
@@ -81,6 +92,20 @@
   font-weight: 500;
   font-size: 14px;
   color: var(--gray-light);
+}
+
+.skeleton-text {
+  width: 160px;
+  height: 14px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--gray-shimmer) 25%, var(--gray-shimmer-light) 50%, var(--gray-shimmer) 75%);
+  background-size: 200% 100%;
+  animation: sk-shimmer 1.5s infinite;
+}
+
+@keyframes sk-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
 .footer__logo {
