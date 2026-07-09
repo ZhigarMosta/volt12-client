@@ -29,11 +29,20 @@ export async function register(
   return res.user!;
 }
 
-export async function login(email: string, password: string): Promise<User> {
+export async function login(
+  email: string,
+  password: string,
+  cart?: Record<number, number>,
+  compare?: number[],
+): Promise<User> {
   const apiBase = getApiBase();
+  const body: Record<string, any> = { email, password };
+  // гостевые корзина и сравнение переезжают в аккаунт (сервер объединяет их с серверными)
+  if (cart && Object.keys(cart).length > 0) body.cart = cart;
+  if (compare && compare.length > 0) body.compare = compare;
   const res = await authFetch<{ success: boolean; user: User; error?: string }>(`${apiBase}/volt12/auth/login`, {
     method: 'POST',
-    body: { email, password }
+    body,
   });
   return res.user!;
 }

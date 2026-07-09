@@ -33,7 +33,7 @@ const getMapName = (map: string) => {
             viewBox="0 0 20 18"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            :class="{ 'empty': position >= feedback.star_count }"
+            :class="{ 'empty': position > feedback.star_count }"
         >
           <path
               d="M9.5105 0L11.7556 6.56434H19.0211L13.1432 10.6213L15.3884 17.1857L9.5105 13.1287L3.63265 17.1857L5.87779 10.6213L-6.67572e-05 6.56434H7.26536L9.5105 0Z"

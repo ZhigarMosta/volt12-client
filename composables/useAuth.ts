@@ -45,7 +45,8 @@ export function useAuth() {
   }
 
   async function loginUser(email: string, password: string) {
-    user.value = await login(email, password);
+    const { cart, compare } = readLocalStore();
+    user.value = await login(email, password, cart, compare);
     syncUserToClientContact(user.value);
     clearLocalStore();
     window.location.reload();

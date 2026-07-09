@@ -151,12 +151,11 @@ function pluralizeItems(n: number) {
   return 'товаров';
 }
 
+// статусы соответствуют админ-панели: new / processing / done
 const STATUS_LABELS: Record<string, string> = {
   new: 'Новый',
   processing: 'В обработке',
-  shipped: 'Отправлен',
-  delivered: 'Доставлен',
-  cancelled: 'Отменён',
+  done: 'Выполнен',
 };
 
 function statusLabel(status: string) {
@@ -254,9 +253,7 @@ function statusLabel(status: string) {
 
 .order-card__badge--new { background: #e3f2fd; color: #1565c0; }
 .order-card__badge--processing { background: #fff3e0; color: #e65100; }
-.order-card__badge--shipped { background: #f3e5f5; color: #6a1b9a; }
-.order-card__badge--delivered { background: #e8f5e9; color: #2e7d32; }
-.order-card__badge--cancelled { background: #ffebee; color: #c62828; }
+.order-card__badge--done { background: #e8f5e9; color: #2e7d32; }
 
 /* Divider */
 .order-card__top {

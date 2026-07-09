@@ -100,6 +100,7 @@ export interface Service {
   description: string | null;
   short_description: string | null;
   position: number | null;
+  is_published?: boolean;
   img_link: string | null;
   img_alt: string | null;
   img_title: string | null;

@@ -13,10 +13,17 @@
     <template v-else>
       <Navigate :items="breadcrumbsItems"/>
 
+      <div v-if="item.is_published === false" class="unpublished-notice">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Товар не опубликован — он скрыт из каталога и доступен только по прямой ссылке
+      </div>
+
       <div class="product-header">
         <h1 class="product-title">{{ item.name }}</h1>
         <div v-if="!isTabletWidth">
-          <InStock :count="100" />
+          <InStock :count="item.count" />
         </div>
       </div>
 
@@ -77,7 +84,7 @@
             <InStock :count="item.count" />
           </div>
 
-          <div v-if="item.description" class="short-description" v-html="item.short_description"/>
+          <div v-if="item.short_description" class="short-description" v-html="item.short_description"/>
 
           <p class="product-price">{{ formatPrice(item.price) }}</p>
 
@@ -511,6 +518,25 @@ const isTabletWidth = computed(() => windowWidth.value > TABLET_WIDTH);
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.unpublished-notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: #fff3e0;
+  color: #e65100;
+  font-family: 'NT Somic', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.unpublished-notice svg {
+  flex-shrink: 0;
 }
 
 .product-title {

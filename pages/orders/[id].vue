@@ -147,12 +147,11 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
+// статусы соответствуют админ-панели: new / processing / done
 const STATUS_LABELS: Record<string, string> = {
   new: 'Новый',
   processing: 'В обработке',
-  shipped: 'Отправлен',
-  delivered: 'Доставлен',
-  cancelled: 'Отменён',
+  done: 'Выполнен',
 };
 
 function statusLabel(status: string) {
@@ -204,9 +203,7 @@ function statusLabel(status: string) {
 
 .order-status--new { background: #e3f2fd; color: #1565c0; }
 .order-status--processing { background: #fff3e0; color: #e65100; }
-.order-status--shipped { background: #f3e5f5; color: #6a1b9a; }
-.order-status--delivered { background: #e8f5e9; color: #2e7d32; }
-.order-status--cancelled { background: #ffebee; color: #c62828; }
+.order-status--done { background: #e8f5e9; color: #2e7d32; }
 
 .order-layout {
   display: grid;
