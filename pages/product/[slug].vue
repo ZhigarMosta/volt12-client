@@ -158,7 +158,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import type { CatalogItemDetail, RelatedCatalogItem } from '~/types/product';
 import { addToCompare, removeFromCompare, getCatalogItemDetail } from '~/services/productApi';
 import { addToCart, updateCartItem } from '~/services/cartApi';
@@ -177,20 +177,27 @@ type GallerySlide = {
 
 const route = useRoute();
 const slug = computed(() => route.params.slug as string);
-const { isAuthenticated } = useAuth();
+const { isAuthenticated, loading: authLoading } = useAuth();
 const { openAuthModal } = useAuthModal();
 
 const config = useRuntimeConfig();
 const apiBase = computed(() => (config.public.apiBase as string).replace(/\/+$/, ''));
 
-const item = ref<CatalogItemDetail | null>(null);
-useHead(() => ({
-  title: item.value?.name ? `${item.value.name} — Мастер 12 Вольт` : 'Товар — Мастер 12 Вольт',
-}));
-const related = ref<RelatedCatalogItem[]>([]);
+// Основные данные грузятся при SSR — контент и мета-теги попадают в HTML-ответ для роботов.
+// «Недавно просмотренные» и user_state — персональные данные, подгружаются на клиенте в onMounted.
+const { data: detail, status } = await useAsyncData(
+  () => `product-${slug.value}`,
+  () => getCatalogItemDetail(slug.value, []),
+);
+if (!detail.value) {
+  // Выброс на уровне setup — SSR-ответ получает честный статус 404
+  throw createError({ statusCode: 404, statusMessage: 'Товар не найден', fatal: true });
+}
+const pending = computed(() => status.value === 'pending');
+
+const item = computed<CatalogItemDetail | null>(() => detail.value?.item ?? null);
+const related = computed<RelatedCatalogItem[]>(() => detail.value?.related ?? []);
 const recentlyViewed = ref<RelatedCatalogItem[]>([]);
-const pending = ref(true);
-const error = ref<Error | null>(null);
 
 const inCart = ref(false);
 const cartQty = ref(0);
@@ -311,6 +318,20 @@ const galleryImages = computed<GallerySlide[]>(() => {
 
 const gallerySlides = computed(() => galleryImages.value);
 
+useSeo(() => {
+  const i = item.value;
+  const api = seoFromApi(i?.seo);
+  return {
+    title: i?.name ? `${i.name} — Мастер 12 Вольт` : 'Товар — Мастер 12 Вольт',
+    description: i?.short_description || i?.description,
+    image: galleryImages.value[0]?.url ?? null,
+    type: 'product' as const,
+    ...api,
+    // Неопубликованный товар не должен попадать в индекс независимо от настроек SEO
+    noindex: Boolean(api.noindex) || i?.is_published === false,
+  };
+});
+
 const displayedImageIndex = computed(() => hoverImageIndex.value ?? selectedImageIndex.value);
 
 const displayedGalleryImage = computed(
@@ -381,37 +402,56 @@ function updateWindowWidth() {
   windowWidth.value = window.innerWidth;
 }
 
+function whenAuthReady(): Promise<void> {
+  if (!authLoading.value) return Promise.resolve();
+  return new Promise((resolve) => {
+    const stop = watch(authLoading, (loading) => {
+      if (!loading) {
+        stop();
+        resolve();
+      }
+    });
+  });
+}
+
+// Дозапрос персональных данных: user_state (корзина/сравнение/избранное) и «недавно просмотренные»
+async function loadPersonalized(viewedIds: number[], currentId: number) {
+  const result = await getCatalogItemDetail(slug.value, viewedIds);
+  if (!result) return;
+
+  recentlyViewed.value = (result.recently_viewed ?? []).filter(
+      (viewed) => viewed.id !== currentId,
+  );
+
+  if (result.item.user_state) {
+    cartQty.value = result.item.user_state.cart_count ?? 0;
+    inCart.value = cartQty.value > 0;
+    inCompare.value = result.item.user_state.in_compare;
+    inFavorite.value = result.item.user_state.in_favorite;
+  }
+}
+
 onMounted(async () => {
   updateWindowWidth();
   window.addEventListener('resize', updateWindowWidth);
 
+  const currentItem = item.value;
+  if (!currentItem) return;
+
+  initLocalState();
+
   const recentlyViewedIds = useRecentlyViewedIds();
+  const viewedIds = recentlyViewedIds.value;
+  pushRecentlyViewedId(recentlyViewedIds, currentItem.id);
 
-  try {
-    const result = await getCatalogItemDetail(slug.value, recentlyViewedIds.value);
-    if (!result) {
-      showError(createError({ statusCode: 404, statusMessage: 'Товар не найден' }));
-      return;
+  if (viewedIds.length > 0) {
+    // cookie авторизации уйдёт вместе с запросом — user_state вернётся, если пользователь залогинен
+    await loadPersonalized(viewedIds, currentItem.id);
+  } else {
+    await whenAuthReady();
+    if (isAuthenticated.value) {
+      await loadPersonalized([], currentItem.id);
     }
-    item.value = result.item;
-    related.value = result.related ?? [];
-    recentlyViewed.value = (result.recently_viewed ?? []).filter(
-        (viewed) => viewed.id !== result.item.id,
-    );
-    pushRecentlyViewedId(recentlyViewedIds, result.item.id);
-
-    if (result.item.user_state) {
-      cartQty.value = result.item.user_state.cart_count ?? 0;
-      inCart.value = cartQty.value > 0;
-      inCompare.value = result.item.user_state.in_compare;
-      inFavorite.value = result.item.user_state.in_favorite;
-    } else {
-      initLocalState();
-    }
-  } catch (e: unknown) {
-    error.value = e instanceof Error ? e : new Error('Не удалось загрузить товар');
-  } finally {
-    pending.value = false;
   }
 });
 

@@ -187,9 +187,16 @@ const searchQuery = ref<string>('');
 const facetsCounts = ref<Record<number, number>>({});
 
 const catalog = ref<Catalog | null>(null);
-useHead(() => ({
-  title: catalog.value?.name ? `${catalog.value.name} — Мастер 12 Вольт` : 'Каталог — Мастер 12 Вольт',
-}));
+useSeo(() => {
+  const c = catalog.value;
+  return {
+    title: c?.name ? `${c.name} — Мастер 12 Вольт` : 'Каталог — Мастер 12 Вольт',
+    description: c?.name
+        ? `${c.name} — купить в «Мастер 12 Вольт»: цены, наличие, характеристики.`
+        : undefined,
+    ...seoFromApi(c?.seo),
+  };
+});
 const catalogItems = ref<Product[]>([]);
 const catalogCharacteristicWithoutGroup = ref<Characteristic[]>([]);
 const catalogCharacteristicWithGroup = ref<CharacteristicGroup[]>([]);

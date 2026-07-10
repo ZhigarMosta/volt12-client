@@ -1,3 +1,12 @@
+export interface SeoData {
+  meta_title: string | null;
+  meta_description: string | null;
+  meta_keywords: string | null;
+  noindex: boolean;
+  nofollow: boolean;
+  canonical_url: string | null;
+}
+
 export interface CatalogItemImage {
   id?: number;
   alt: string;
@@ -39,6 +48,7 @@ export interface Catalog {
   imgAlt?: string;
   imgTitle?: string;
   items_count?: number;
+  seo?: SeoData;
 }
 
 export interface Characteristic {
@@ -105,6 +115,7 @@ export interface Service {
   img_alt: string | null;
   img_title: string | null;
   service_group_id: number | null;
+  seo?: SeoData;
 }
 
 export interface ServicesResponse {
@@ -165,6 +176,7 @@ export interface CatalogItemDetail {
   position: number;
   count: number;
   catalog_id: number | null;
+  seo?: SeoData;
   images: CatalogItemDetailImage[];
   characteristics: ProductCharacteristic[];
   user_state: {

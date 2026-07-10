@@ -83,7 +83,7 @@ import { ref, onMounted, watch } from 'vue';
 import { getOrders, type OrderListItem, type OrderListMeta } from '~/services/orderApi';
 import { formatPrice } from '~/utils/format';
 
-useHead({ title: 'История заказов — Мастер 12 Вольт' });
+useSeo(() => ({ title: 'История заказов — Мастер 12 Вольт', noindex: true }));
 
 const router = useRouter();
 const { isAuthenticated, loading: authLoading } = useAuth();

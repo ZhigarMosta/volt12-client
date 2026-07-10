@@ -45,9 +45,10 @@ import Slider from '~/components/features/Slider.vue';
 import AboutGallerySlide from '~/components/shared/AboutGallerySlide.vue';
 import type { AboutGalleryImage } from '~/types/about';
 
-useHead({
+useSeo(() => ({
   title: 'О нас — Мастер 12 Вольт',
-});
+  description: 'О компании «Мастер 12 Вольт»: официальный дилер Pandora, установка и настройка автоэлектроники.',
+}));
 
 const sliderBreakpoints = {
   0: {

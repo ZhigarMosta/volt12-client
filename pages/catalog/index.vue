@@ -15,7 +15,10 @@
 </template>
 
 <script setup lang="ts">
-useHead({ title: 'Каталог — Мастер 12 Вольт' });
+useSeo(() => ({
+  title: 'Каталог — Мастер 12 Вольт',
+  description: 'Каталог товаров «Мастер 12 Вольт»: автосигнализации, автоэлектроника и аксессуары — цены, наличие, характеристики.',
+}));
 import { ref, onMounted } from 'vue';
 import { getCatalogs } from '~/services/productApi';
 import CatalogCard from '~/components/shared/CatalogCard.vue';

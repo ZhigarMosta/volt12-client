@@ -81,7 +81,7 @@ import { addToCompare, removeFromCompare } from '~/services/productApi';
 import { useCheckoutOrder } from '~/utils/useCheckoutOrder';
 import type OrderSummary from '~/components/features/OrderSummary.vue';
 
-useHead({ title: 'Корзина — Мастер 12 Вольт' });
+useSeo(() => ({ title: 'Корзина — Мастер 12 Вольт', noindex: true }));
 
 const router = useRouter();
 

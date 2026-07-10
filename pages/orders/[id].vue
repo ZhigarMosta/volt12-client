@@ -124,7 +124,10 @@ const breadcrumbsItems = computed(() => [
   { to: `/orders/${orderId}`, text: order.value ? `Заказ #${order.value.id}` : '...' },
 ]);
 
-useHead({ title: computed(() => order.value ? `Заказ #${order.value.id} — Мастер 12 Вольт` : 'Заказ') });
+useSeo(() => ({
+  title: order.value ? `Заказ #${order.value.id} — Мастер 12 Вольт` : 'Заказ',
+  noindex: true,
+}));
 
 onMounted(() => {
   watch(authLoading, async (isLoading) => {

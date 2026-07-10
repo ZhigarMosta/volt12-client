@@ -68,7 +68,7 @@ import { useCart } from '~/utils/cart';
 import { addToCart, updateCartItem } from '~/services/cartApi';
 import { addToCompare, removeFromCompare } from '~/services/productApi';
 
-useHead({ title: 'Избранное — Мастер 12 Вольт' });
+useSeo(() => ({ title: 'Избранное — Мастер 12 Вольт', noindex: true }));
 
 const router = useRouter();
 

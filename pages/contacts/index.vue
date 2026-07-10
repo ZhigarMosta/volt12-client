@@ -169,9 +169,10 @@ definePageMeta({
   },
 });
 
-useHead({
+useSeo(() => ({
   title: 'Контакты — Мастер 12 Вольт',
-});
+  description: 'Контакты «Мастер 12 Вольт»: адрес, телефон, режим работы и форма обратной связи.',
+}));
 
 const clientContact = useClientContactStore();
 const { user } = useAuth();

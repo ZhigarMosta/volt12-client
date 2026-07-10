@@ -61,13 +61,19 @@ import {getServiceBySlug} from '~/services/productApi';
 const route = useRoute();
 const slug = computed(() => route.params.slug as string);
 
-const service = ref<Service | null>(null);
-useHead(() => ({
-  title: service.value?.name ? `${service.value.name} — Мастер 12 Вольт` : 'Услуги — Мастер 12 Вольт',
-}));
-const related = ref<RelatedService[]>([]);
-const pending = ref(true);
-const error = ref<Error | null>(null);
+// Данные грузятся при SSR — контент и мета-теги попадают в HTML-ответ для роботов
+const { data, status, error } = await useAsyncData(
+  () => `service-${slug.value}`,
+  () => getServiceBySlug(slug.value),
+);
+if (!data.value) {
+  // Выброс на уровне setup — SSR-ответ получает честный статус 404
+  throw createError({ statusCode: 404, statusMessage: 'Услуга не найдена', fatal: true });
+}
+const pending = computed(() => status.value === 'pending');
+
+const service = computed<Service | null>(() => data.value?.service ?? null);
+const related = computed<RelatedService[]>(() => data.value?.related ?? []);
 
 const breadcrumbsItems = computed(() => [
   {to: '/', text: 'Главная'},
@@ -79,6 +85,19 @@ const imgSrc = computed(() => {
   if (!service.value?.img_link) return null;
   if (/^https?:\/\//i.test(service.value.img_link)) return service.value.img_link;
   return `${config.public.apiBase}/${service.value.img_link}`;
+});
+
+useSeo(() => {
+  const s = service.value;
+  const api = seoFromApi(s?.seo);
+  return {
+    title: s?.name ? `${s.name} — Мастер 12 Вольт` : 'Услуги — Мастер 12 Вольт',
+    description: s?.short_description || s?.description,
+    image: imgSrc.value,
+    ...api,
+    // Неопубликованная услуга не должна попадать в индекс независимо от настроек SEO
+    noindex: Boolean(api.noindex) || s?.is_published === false,
+  };
 });
 
 const windowWidth = ref(0);

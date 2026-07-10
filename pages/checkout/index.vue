@@ -142,7 +142,7 @@ import { useCheckoutOrder, type CheckoutOrderItem } from '~/utils/useCheckoutOrd
 import { createOrder } from '~/services/orderApi';
 import { isValidEmail, sanitizeEmailInput } from '~/utils/email';
 
-useHead({ title: 'Оформление заказа — Мастер 12 Вольт' });
+useSeo(() => ({ title: 'Оформление заказа — Мастер 12 Вольт', noindex: true }));
 const breadcrumbsItems = [
   { to: '/', text: 'Главная' },
   { to: '/cart', text: 'Корзина' },

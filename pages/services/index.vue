@@ -79,7 +79,10 @@
 </template>
 
 <script setup lang="ts">
-useHead({ title: 'Услуги — Мастер 12 Вольт' });
+useSeo(() => ({
+  title: 'Услуги — Мастер 12 Вольт',
+  description: 'Услуги «Мастер 12 Вольт»: установка, настройка и диагностика автоэлектроники. Цены и описание работ.',
+}));
 import { ref, computed, onMounted, watch } from 'vue';
 import type { Service, ServiceGroup } from '~/types/product';
 import { getServices } from '~/services/productApi';

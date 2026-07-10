@@ -236,7 +236,7 @@
 import { ref, computed, watch, onUnmounted } from 'vue';
 import { updateProfile, sendVerificationEmail, verifyEmail, requestPasswordChange, confirmPasswordChange } from '~/services/authApi';
 
-useHead({ title: 'Личный кабинет — Мастер 12 Вольт' });
+useSeo(() => ({ title: 'Личный кабинет — Мастер 12 Вольт', noindex: true }));
 
 const { user, loading, isAuthenticated, logoutUser } = useAuth();
 const { showAuthModal, openAuthModal } = useAuthModal();
