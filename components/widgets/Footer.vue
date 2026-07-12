@@ -117,9 +117,8 @@ const { data: footerServices, pending: footerServicesPending } = useAsyncData(
 .footer__grid {
   @apply w-full px-[90px];
   display: grid;
-  grid-template-columns: 1fr auto auto auto;
+  grid-template-columns: 1fr auto minmax(0, 220px) auto;
   column-gap: 60px;
-  width: 85%;
 }
 
 .footer__block {
@@ -131,6 +130,16 @@ const { data: footerServices, pending: footerServicesPending } = useAsyncData(
   flex-direction: column;
   gap: 8px;
   line-height: 100%;
+}
+
+.footer__block--c {
+  width: 100%;
+  min-width: 0;
+}
+
+.footer__block--c .block_text {
+  white-space: normal;
+  word-break: break-word;
 }
 
 
@@ -183,6 +192,14 @@ const { data: footerServices, pending: footerServicesPending } = useAsyncData(
   .footer__block--c {
     grid-area: c;
     margin-top: 32px;
+    width: auto;
+    max-width: 100%;
+    white-space: normal;
+  }
+
+  .footer__block--c .block_text {
+    white-space: normal;
+    word-break: break-word;
   }
 
   .footer__block--d {
