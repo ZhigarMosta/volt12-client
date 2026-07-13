@@ -232,6 +232,12 @@ function goToCatalog() {
 }
 
 function goToCheckout() {
+  if (!isAuthenticated.value) {
+    const { openAuthModal } = useAuthModal();
+    openAuthModal();
+    return;
+  }
+
   const { saveOrder } = useCheckoutOrder();
   const toSave = selectedItems.value.length > 0 ? selectedItems.value : items.value;
   saveOrder(
