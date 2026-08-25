@@ -1,0 +1,11 @@
+.git/
+.github/
+.idea/
+.claude/
+.qwen/
+node_modules/
+.nuxt/
+.output/
+dist/
+docs/
+*.log

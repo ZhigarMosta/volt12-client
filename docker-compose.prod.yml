@@ -1,0 +1,15 @@
+services:
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+      args:
+        NUXT_PUBLIC_API_BASE: http://80.93.61.63:8000
+        NUXT_PUBLIC_SITE_URL: http://80.93.61.63:3000
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      # Nuxt читает их в рантайме через runtimeConfig.public
+      NUXT_PUBLIC_API_BASE: http://80.93.61.63:8000
+      NUXT_PUBLIC_SITE_URL: http://80.93.61.63:3000
