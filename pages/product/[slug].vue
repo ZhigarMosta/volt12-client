@@ -124,13 +124,13 @@
         />
       </section>
 
-      <div class="more-products">
-        <section v-if="related.length > 0" class="products-section">
-          <h2 class="section-title mb-like-h">Вам может понравиться</h2>
+      <div v-if="linkedBlocks.length > 0 || recentlyViewed.length > 0" class="more-products">
+        <section v-for="block in linkedBlocks" :key="block.key" class="products-section">
+          <h2 class="section-title mb-like-h">{{ block.title }}</h2>
           <Slider
               class="slider-mb-like"
               slides-per-view="auto"
-              :items="related"
+              :items="block.items"
               :slide-props="catalogItemSlideProps"
               :space-between="23"
               :slide-component="CatalogItem"
@@ -159,7 +159,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
-import type { CatalogItemDetail, RelatedCatalogItem } from '~/types/product';
+import type { CatalogItemDetail, ProductCard } from '~/types/product';
 import { addToCompare, removeFromCompare, getCatalogItemDetail } from '~/services/productApi';
 import { addToCart, updateCartItem } from '~/services/cartApi';
 import { addToFavorites, removeFromFavorites } from '~/services/favoritesApi';
@@ -196,8 +196,14 @@ if (!detail.value) {
 const pending = computed(() => status.value === 'pending');
 
 const item = computed<CatalogItemDetail | null>(() => detail.value?.item ?? null);
-const related = computed<RelatedCatalogItem[]>(() => detail.value?.related ?? []);
-const recentlyViewed = ref<RelatedCatalogItem[]>([]);
+// Три блока связанных товаров приходят из detail в том порядке, в котором их задал
+// контент-менеджер — на фронте не сортируем. Пустой блок не рендерится вообще.
+const linkedBlocks = computed(() => [
+  { key: 'recommended', title: 'Рекомендуемые товары', items: detail.value?.recommended ?? [] },
+  { key: 'bought_together', title: 'С этим товаром покупают', items: detail.value?.bought_together ?? [] },
+  { key: 'also_needed', title: 'Вам также может понадобиться', items: detail.value?.also_needed ?? [] },
+].filter((block) => block.items.length > 0));
+const recentlyViewed = ref<ProductCard[]>([]);
 
 const inCart = ref(false);
 const cartQty = ref(0);
@@ -358,14 +364,14 @@ function selectGalleryImage(index: number) {
   gallerySliderRef.value?.slideTo(index);
 }
 
-function catalogItemSlideProps(relatedItem: RelatedCatalogItem) {
+function catalogItemSlideProps(card: ProductCard) {
   return {
-    productId: relatedItem.id,
-    slug: relatedItem.slug,
-    title: relatedItem.name,
-    price: relatedItem.price,
-    images: relatedItem.img_link
-        ? [{ img_link: relatedItem.img_link, alt: relatedItem.name }]
+    productId: card.id,
+    slug: card.slug,
+    title: card.name,
+    price: card.price,
+    images: card.img_link
+        ? [{ img_link: card.img_link, alt: card.name }]
         : [],
   };
 }

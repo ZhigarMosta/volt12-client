@@ -187,19 +187,23 @@ export interface CatalogItemDetail {
   } | null;
 }
 
-export interface RelatedCatalogItem {
+export interface ProductCard {
   id: number;
   name: string;
   slug: string;
   price: number;
   img_link: string | null;
-  product_code: string;
+  product_code?: string;
 }
 
 export interface CatalogItemDetailResponse {
   success: boolean;
   item: CatalogItemDetail;
-  related: RelatedCatalogItem[];
-  recently_viewed: RelatedCatalogItem[];
+  // Три блока связанных товаров — контент-менеджер наполняет их вручную в админке,
+  // автоподбора «похожих» больше нет. Пустой массив = блок не рендерим.
+  recommended: ProductCard[];
+  bought_together: ProductCard[];
+  also_needed: ProductCard[];
+  recently_viewed: ProductCard[];
   error?: string;
 }
