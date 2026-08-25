@@ -91,6 +91,21 @@ const btnClass = computed(() => [
   width: 100%;
 }
 
+/* disabled прилетает как обычный атрибут (inheritAttrs), стиль нужен здесь —
+   иначе заблокированная кнопка выглядит активной. */
+.ui-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ui-btn--red:disabled:hover {
+  background: var(--red);
+}
+
+.ui-btn--white:disabled:hover {
+  background: var(--white);
+}
+
 .ui-btn--default {
   padding-top: 10px;
   padding-bottom: 10px;

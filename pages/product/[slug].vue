@@ -88,30 +88,48 @@
 
           <p class="product-price">{{ formatPrice(item.price) }}</p>
 
-          <div class="product-actions">
-            <div v-if="inCart" class="qty-control">
-              <button class="qty-btn" @click="onDecrement">−</button>
-              <span class="qty-value">{{ cartQty }}</span>
-              <button class="qty-btn" @click="onIncrement">+</button>
+          <div class="product-buy">
+            <div class="product-actions">
+              <div v-if="inCart" class="qty-control">
+                <button class="qty-btn" @click="onDecrement">−</button>
+                <span class="qty-value">{{ cartQty }}</span>
+                <button class="qty-btn" @click="onIncrement">+</button>
+              </div>
+              <UiButton v-else class="buy-btn" variant="red" size="sm" full-width :disabled="!canBuy" @click="onCartClick">
+                Купить сейчас
+              </UiButton>
+              <div class="icon-actions">
+                <button type="button" class="icon-btn" :class="{ 'icon-btn--active': inFavorite }" aria-label="В избранное" @click="onFavoriteClick">
+                  <svg width="25" height="21" viewBox="0 0 25 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6.5332 1C8.00107 1.00003 9.40835 1.58057 10.4453 2.61328L12.0762 4.16504L12.7607 3.52051C14.7358 1.59131 16.1332 1.01366 17.5918 1.00977C19.0504 1.00588 20.4511 1.57632 21.4893 2.59473C22.527 3.61289 23.1191 4.99705 23.1377 6.44629C23.1562 7.89571 22.5993 9.29465 21.5879 10.3389L12.292 19.5996C12.2349 19.6565 12.1567 19.6895 12.0742 19.6895C11.9918 19.6894 11.9126 19.6565 11.8555 19.5996L2.55762 10.3379C1.54776 9.29964 0.988638 7.90802 1 6.46387C1.01069 5.10996 1.52319 3.80961 2.43359 2.80957L2.62109 2.61328C3.65807 1.58061 5.06535 1 6.5332 1Z" :stroke="inFavorite ? 'var(--red)' : 'var(--black)'" :fill="inFavorite ? 'var(--red)' : 'none'" stroke-width="2"/>
+                  </svg>
+                </button>
+                <button type="button" class="icon-btn" :class="{ 'icon-btn--active': inCompare }" aria-label="Сравнить" @click="onCompareClick">
+                  <svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M17.68 0.00455729C19.5294 0.0982503 21 1.62738 21 3.5V17.5L20.9954 17.68C20.9048 19.4697 19.4697 20.9048 17.68 20.9954L17.5 21H3.5C1.62738 21 0.0982502 19.5294 0.00455729 17.68L0 17.5V3.5C0 1.567 1.567 0 3.5 0H17.5L17.68 0.00455729ZM3.5 1.75C2.5335 1.75 1.75 2.5335 1.75 3.5V17.5C1.75 18.4665 2.5335 19.25 3.5 19.25H4.95833V5.83333C4.95833 5.35008 5.35008 4.95833 5.83333 4.95833C6.31658 4.95833 6.70833 5.35008 6.70833 5.83333V19.25H9.625V11.6667C9.625 11.1834 10.0168 10.7917 10.5 10.7917C10.9832 10.7917 11.375 11.1834 11.375 11.6667V19.25H14.2917V9.33333C14.2917 8.85008 14.6834 8.45833 15.1667 8.45833C15.6499 8.45833 16.0417 8.85008 16.0417 9.33333V19.25H17.5C18.4665 19.25 19.25 18.4665 19.25 17.5V3.5C19.25 2.5335 18.4665 1.75 17.5 1.75H3.5Z" :fill="inCompare ? 'var(--red)' : 'var(--black)'"/>
+                  </svg>
+                </button>
+              </div>
             </div>
-            <UiButton v-else class="buy-btn" variant="red" size="sm" full-width @click="onCartClick">
-              Купить сейчас
+            <UiButton
+                class="quick-order-btn"
+                variant="white"
+                size="sm"
+                full-width
+                :disabled="!canBuy"
+                @click="isQuickOrderOpen = true"
+            >
+              Купить в один клик
             </UiButton>
-            <div class="icon-actions">
-              <button type="button" class="icon-btn" :class="{ 'icon-btn--active': inFavorite }" aria-label="В избранное" @click="onFavoriteClick">
-                <svg width="25" height="21" viewBox="0 0 25 21" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M6.5332 1C8.00107 1.00003 9.40835 1.58057 10.4453 2.61328L12.0762 4.16504L12.7607 3.52051C14.7358 1.59131 16.1332 1.01366 17.5918 1.00977C19.0504 1.00588 20.4511 1.57632 21.4893 2.59473C22.527 3.61289 23.1191 4.99705 23.1377 6.44629C23.1562 7.89571 22.5993 9.29465 21.5879 10.3389L12.292 19.5996C12.2349 19.6565 12.1567 19.6895 12.0742 19.6895C11.9918 19.6894 11.9126 19.6565 11.8555 19.5996L2.55762 10.3379C1.54776 9.29964 0.988638 7.90802 1 6.46387C1.01069 5.10996 1.52319 3.80961 2.43359 2.80957L2.62109 2.61328C3.65807 1.58061 5.06535 1 6.5332 1Z" :stroke="inFavorite ? 'var(--red)' : 'var(--black)'" :fill="inFavorite ? 'var(--red)' : 'none'" stroke-width="2"/>
-                </svg>
-              </button>
-              <button type="button" class="icon-btn" :class="{ 'icon-btn--active': inCompare }" aria-label="Сравнить" @click="onCompareClick">
-                <svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path fill-rule="evenodd" clip-rule="evenodd" d="M17.68 0.00455729C19.5294 0.0982503 21 1.62738 21 3.5V17.5L20.9954 17.68C20.9048 19.4697 19.4697 20.9048 17.68 20.9954L17.5 21H3.5C1.62738 21 0.0982502 19.5294 0.00455729 17.68L0 17.5V3.5C0 1.567 1.567 0 3.5 0H17.5L17.68 0.00455729ZM3.5 1.75C2.5335 1.75 1.75 2.5335 1.75 3.5V17.5C1.75 18.4665 2.5335 19.25 3.5 19.25H4.95833V5.83333C4.95833 5.35008 5.35008 4.95833 5.83333 4.95833C6.31658 4.95833 6.70833 5.35008 6.70833 5.83333V19.25H9.625V11.6667C9.625 11.1834 10.0168 10.7917 10.5 10.7917C10.9832 10.7917 11.375 11.1834 11.375 11.6667V19.25H14.2917V9.33333C14.2917 8.85008 14.6834 8.45833 15.1667 8.45833C15.6499 8.45833 16.0417 8.85008 16.0417 9.33333V19.25H17.5C18.4665 19.25 19.25 18.4665 19.25 17.5V3.5C19.25 2.5335 18.4665 1.75 17.5 1.75H3.5Z" :fill="inCompare ? 'var(--red)' : 'var(--black)'"/>
-                </svg>
-              </button>
-            </div>
           </div>
         </div>
       </div>
+
+      <QuickOrderModal
+          v-model="isQuickOrderOpen"
+          :product="quickOrderProduct"
+          :initial-quantity="inCart ? cartQty : 1"
+      />
 
       <section class="characteristics-section">
         <h2 class="section-title characteristics-title">Характеристики</h2>
@@ -204,6 +222,17 @@ const linkedBlocks = computed(() => [
   { key: 'also_needed', title: 'Вам также может понадобиться', items: detail.value?.also_needed ?? [] },
 ].filter((block) => block.items.length > 0));
 const recentlyViewed = ref<ProductCard[]>([]);
+
+const isQuickOrderOpen = ref(false);
+// Шапка окна «в один клик» берёт название, цену и картинку из уже полученного detail
+const quickOrderProduct = computed(() => ({
+  id: item.value?.id ?? 0,
+  name: item.value?.name ?? '',
+  price: item.value?.price ?? 0,
+  imgLink: item.value?.images?.[0]?.img_link ?? null,
+}));
+// Условие покупки общее для «Купить сейчас» и «Купить в один клик» — состояния кнопок не расходятся
+const canBuy = computed(() => item.value !== null);
 
 const inCart = ref(false);
 const cartQty = ref(0);
@@ -687,12 +716,24 @@ const isTabletWidth = computed(() => windowWidth.value > TABLET_WIDTH);
   color: var(--black);
 }
 
-.product-actions {
+.product-buy {
   margin-top: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 455px;
+}
+
+.product-actions {
   display: flex;
   gap: 12px;
   align-items: stretch;
-  max-width: 455px;
+}
+
+.quick-order-btn {
+  height: 47px;
+  border: 1px solid var(--red);
+  white-space: nowrap;
 }
 
 .buy-btn {
@@ -868,6 +909,9 @@ const isTabletWidth = computed(() => windowWidth.value > TABLET_WIDTH);
 
   .product-actions {
     flex-direction: column;
+  }
+
+  .product-buy {
     max-width: none;
   }
 
