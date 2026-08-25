@@ -19,19 +19,21 @@ export interface CreateOrderPayload {
   items: { catalog_item_id: number; quantity: number }[];
 }
 
+// Поля адреса могут быть пустыми строками или null — у заказа «в один клик»
+// адрес не заполняется вообще, менеджер уточняет его по телефону.
 export interface OrderListItem {
   id: number;
   status: string;
   total_price: number;
   items_count: number;
   created_at: string;
-  city: string;
-  region: string;
-  street: string;
-  house: string;
-  entrance?: string;
-  apartment?: string;
-  postal_code: string;
+  city: string | null;
+  region: string | null;
+  street: string | null;
+  house: string | null;
+  entrance?: string | null;
+  apartment?: string | null;
+  postal_code: string | null;
 }
 
 export interface OrderListMeta {
@@ -63,17 +65,17 @@ export interface OrderFull {
   total_price: number;
   created_at: string;
   first_name: string;
-  last_name: string;
+  last_name: string | null;
   phone: string;
   email: string;
-  city: string;
-  region: string;
-  postal_code: string;
-  street: string;
-  house: string;
-  entrance?: string;
-  apartment?: string;
-  comment?: string;
+  city: string | null;
+  region: string | null;
+  postal_code: string | null;
+  street: string | null;
+  house: string | null;
+  entrance?: string | null;
+  apartment?: string | null;
+  comment?: string | null;
   items: OrderItem[];
 }
 

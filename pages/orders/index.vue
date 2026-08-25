@@ -30,7 +30,7 @@
 
           <!-- Body: address + meta -->
           <div class="order-card__body">
-            <div class="order-card__address">
+            <div v-if="formatAddress(order)" class="order-card__address">
               <svg width="14" height="16" viewBox="0 0 14 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M7 0C3.69 0 1 2.69 1 6C1 10.5 7 16 7 16C7 16 13 10.5 13 6C13 2.69 10.31 0 7 0ZM7 8C5.9 8 5 7.1 5 6C5 4.9 5.9 4 7 4C8.1 4 9 4.9 9 6C9 7.1 8.1 8 7 8Z" fill="#B9B9B9"/>
               </svg>
@@ -128,8 +128,11 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
+// У заказа «в один клик» адреса нет вообще — пустые части пропускаем,
+// чтобы не рисовать «, , » и «д. » без номера.
 function formatAddress(order: OrderListItem) {
-  const parts = [order.city, order.region, order.street, `д. ${order.house}`];
+  const parts = [order.city, order.region, order.street].filter((part) => !!part?.trim());
+  if (order.house) parts.push(`д. ${order.house}`);
   if (order.entrance) parts.push(`подъезд ${order.entrance}`);
   if (order.apartment) parts.push(`кв. ${order.apartment}`);
   return parts.join(', ');

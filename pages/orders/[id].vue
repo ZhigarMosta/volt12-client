@@ -29,7 +29,7 @@
           <p class="section-title">Информация о покупателе</p>
           <div class="detail-row">
             <span class="detail-label">Имя</span>
-            <span class="detail-value">{{ order.first_name }} {{ order.last_name }}</span>
+            <span class="detail-value">{{ customerName }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">Телефон</span>
@@ -40,22 +40,29 @@
             <span class="detail-value">{{ order.email }}</span>
           </div>
 
-          <p class="section-title">Адрес доставки</p>
-          <div class="detail-row">
-            <span class="detail-label">Город</span>
-            <span class="detail-value">{{ order.city }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Область / район</span>
-            <span class="detail-value">{{ order.region }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Индекс</span>
-            <span class="detail-value">{{ order.postal_code }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Улица</span>
-            <span class="detail-value">{{ order.street }}, д. {{ order.house }}<template v-if="order.entrance">, подъезд {{ order.entrance }}</template><template v-if="order.apartment">, кв. {{ order.apartment }}</template></span>
+          <!-- У заказа «в один клик» адреса нет: секцию и пустые строки не рисуем -->
+          <template v-if="hasAddress">
+            <p class="section-title">Адрес доставки</p>
+            <div v-if="order.city" class="detail-row">
+              <span class="detail-label">Город</span>
+              <span class="detail-value">{{ order.city }}</span>
+            </div>
+            <div v-if="order.region" class="detail-row">
+              <span class="detail-label">Область / район</span>
+              <span class="detail-value">{{ order.region }}</span>
+            </div>
+            <div v-if="order.postal_code" class="detail-row">
+              <span class="detail-label">Индекс</span>
+              <span class="detail-value">{{ order.postal_code }}</span>
+            </div>
+            <div v-if="streetLine" class="detail-row">
+              <span class="detail-label">Улица</span>
+              <span class="detail-value">{{ streetLine }}</span>
+            </div>
+          </template>
+          <div v-else class="detail-row">
+            <span class="detail-label">Доставка</span>
+            <span class="detail-value">Менеджер согласует по телефону</span>
           </div>
           <div v-if="order.comment" class="detail-row">
             <span class="detail-label">Примечание</span>
@@ -116,6 +123,29 @@ const orderId = Number(route.params.id);
 
 const order = ref<OrderFull | null>(null);
 const loading = ref(true);
+
+const customerName = computed(() =>
+    [order.value?.first_name, order.value?.last_name].filter(Boolean).join(' ').trim(),
+);
+
+// Заказ «в один клик» приходит с пустыми полями адреса (пустые строки или null)
+const hasAddress = computed(() => {
+  const o = order.value;
+  if (!o) return false;
+  return [o.city, o.region, o.postal_code, o.street, o.house, o.apartment, o.entrance]
+      .some((part) => !!part && String(part).trim() !== '');
+});
+
+const streetLine = computed(() => {
+  const o = order.value;
+  if (!o) return '';
+  const parts: string[] = [];
+  if (o.street) parts.push(o.street);
+  if (o.house) parts.push(`д. ${o.house}`);
+  if (o.entrance) parts.push(`подъезд ${o.entrance}`);
+  if (o.apartment) parts.push(`кв. ${o.apartment}`);
+  return parts.join(', ');
+});
 
 const breadcrumbsItems = computed(() => [
   { to: '/', text: 'Главная' },
