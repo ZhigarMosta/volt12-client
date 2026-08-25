@@ -19,6 +19,7 @@
             :alt="activeImage.alt || title"
             :title="activeImage.title || title"
         />
+        <NoImagePlaceholder v-else class="product-no-image" :icon-size="28" radius="8px" />
 
         <div class="dots" v-if="normalizedImages.length > 1">
           <span
@@ -352,7 +353,8 @@ function handleLeave() { activeIndex.value = 0; }
   margin-top: 5px;
 }
 
-.product-image {
+.product-image,
+.product-no-image {
   top: 0;
   left: 0;
   width: 100%;
@@ -463,7 +465,8 @@ function handleLeave() { activeIndex.value = 0; }
   .price {
     font-size: 16px;
   }
-  .product-image {
+  .product-image,
+  .product-no-image {
     max-width: 141px;
     max-height: 116px;
   }

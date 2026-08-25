@@ -1,10 +1,15 @@
 <template>
-  <div v-if="breadcrumbs.length > 0 || loading" class="filters-breadcrumbs">
+  <div
+      v-if="breadcrumbs.length > 0 || loading"
+      class="filters-breadcrumbs"
+      :class="{ 'filters-breadcrumbs--loading': loading }"
+  >
     <template v-if="loading">
-      <div class="skeleton-title" />
-      <div class="skeleton-pill" />
-      <div class="skeleton-pill" />
-      <div class="skeleton-pill" />
+      <div class="skeleton-chip skeleton-chip--sm" />
+      <div class="skeleton-chip skeleton-chip--lg" />
+      <button class="clear-all-filters clear-all-filters--loading" @click="$emit('clear-all')">
+        Очистить все
+      </button>
     </template>
     <template v-else>
       <span class="breadcrumbs-title">Примененные фильтры</span>
@@ -141,22 +146,36 @@ defineEmits<{
   100% { background-position: 200% 0; }
 }
 
-.skeleton-title {
-  height: 14px;
-  width: 70px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, var(--gray-shimmer) 25%, var(--gray-shimmer-light) 50%, var(--gray-shimmer) 75%);
+.filters-breadcrumbs--loading {
+  min-height: 62px;
+  padding: 12px 24px;
+  margin-bottom: 29px;
+  background: var(--gray);
+  gap: 41px;
+}
+
+.skeleton-chip {
+  border-radius: 8px;
+  background: linear-gradient(90deg, rgba(var(--gray-light-rgb), 0.2) 25%, rgba(var(--gray-light-rgb), 0.1) 50%, rgba(var(--gray-light-rgb), 0.2) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   flex-shrink: 0;
 }
 
-.skeleton-pill {
-  height: 28px;
-  width: 80px;
-  border-radius: 16px;
-  background: linear-gradient(90deg, var(--gray-shimmer) 25%, var(--gray-shimmer-light) 50%, var(--gray-shimmer) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+.skeleton-chip--sm {
+  width: 154px;
+  height: 23px;
+}
+
+.skeleton-chip--lg {
+  width: 224px;
+  height: 38px;
+}
+
+.clear-all-filters--loading {
+  margin-left: auto;
+  padding: 0;
+  font-size: 15px;
+  color: var(--red);
 }
 </style>

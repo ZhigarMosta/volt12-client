@@ -1,18 +1,19 @@
 <template>
   <div class="filters-column">
     <template v-if="loading">
-      <div class="skeleton-title" />
+      <div class="skeleton-line skeleton-line--title" />
       <div class="skeleton-price-row">
         <div class="skeleton-input" />
         <div class="skeleton-input" />
       </div>
-      <div class="skeleton-divider" />
-      <div class="skeleton-checkboxes">
-        <div v-for="i in 4" :key="i" class="skeleton-checkbox-row">
-          <div class="skeleton-checkbox" />
-          <div class="skeleton-text" />
+      <template v-for="(group, groupIndex) in skeletonGroups" :key="groupIndex">
+        <div class="skeleton-divider" />
+        <div class="skeleton-group">
+          <div v-if="group.title" class="skeleton-line skeleton-line--title" />
+          <div v-for="line in group.lines" :key="line" class="skeleton-line" />
         </div>
-      </div>
+      </template>
+      <div class="skeleton-button" />
     </template>
     <template v-else>
       <p class="filter-text filter-group">Цена</p>
@@ -119,6 +120,19 @@ const emit = defineEmits<{
   'filter-change': [];
 }>();
 
+// Структура скелетона фильтров по макету: блоки между разделителями,
+// четвёртый блок — одиночная строка без заголовка
+const skeletonGroups = [
+  { title: true, lines: 2 },
+  { title: true, lines: 2 },
+  { title: true, lines: 2 },
+  { title: false, lines: 1 },
+  { title: true, lines: 2 },
+  { title: true, lines: 2 },
+  { title: true, lines: 2 },
+  { title: true, lines: 2 },
+];
+
 const localMinPrice = computed({
   get: () => props.minPrice,
   set: (value) => emit('update:minPrice', value)
@@ -180,65 +194,53 @@ const localMaxPrice = computed({
   100% { background-position: 200% 0; }
 }
 
-.skeleton-title {
-  height: 18px;
-  width: 60px;
-  border-radius: 6px;
-  background: linear-gradient(90deg, var(--gray-shimmer) 25%, var(--gray-shimmer-light) 50%, var(--gray-shimmer) 75%);
+.skeleton-line,
+.skeleton-input,
+.skeleton-button {
+  border-radius: 8px;
+  background: linear-gradient(90deg, rgba(var(--gray-light-rgb), 0.2) 25%, rgba(var(--gray-light-rgb), 0.1) 50%, rgba(var(--gray-light-rgb), 0.2) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
-  margin-bottom: 18px;
+}
+
+.skeleton-line {
+  width: 176px;
+  height: 20px;
+}
+
+.skeleton-line--title {
+  width: 103px;
+  margin-bottom: 7px;
 }
 
 .skeleton-price-row {
   display: flex;
-  gap: 5px;
-  margin-bottom: 24px;
+  gap: 12px;
+  margin: 18px 0 25px;
 }
 
 .skeleton-input {
-  flex: 1;
-  height: 40px;
-  border-radius: 6px;
-  background: linear-gradient(90deg, var(--gray-shimmer) 25%, var(--gray-shimmer-light) 50%, var(--gray-shimmer) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+  width: 140px;
+  height: 51px;
 }
 
 .skeleton-divider {
+  width: 292px;
+  max-width: 100%;
   height: 1px;
-  background: var(--gray-shimmer);
-  margin-bottom: 24px;
+  background: var(--gray-light);
 }
 
-.skeleton-checkboxes {
+.skeleton-group {
+  margin: 25px 0;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 10px;
 }
 
-.skeleton-checkbox-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.skeleton-checkbox {
-  width: 20px;
-  height: 20px;
-  border-radius: 3px;
-  flex-shrink: 0;
-  background: linear-gradient(90deg, var(--gray-shimmer) 25%, var(--gray-shimmer-light) 50%, var(--gray-shimmer) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-}
-
-.skeleton-text {
-  height: 15px;
-  width: 60%;
-  border-radius: 4px;
-  background: linear-gradient(90deg, var(--gray-shimmer) 25%, var(--gray-shimmer-light) 50%, var(--gray-shimmer) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+.skeleton-button {
+  width: 176px;
+  height: 37px;
+  margin-top: 34px;
 }
 </style>

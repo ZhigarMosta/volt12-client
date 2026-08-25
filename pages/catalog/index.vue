@@ -1,8 +1,8 @@
 <template>
   <div class="catalogs-widget">
     <Navigate :items="breadcrumbsItems" />
-    <div v-if="loading" class="catalogs-grid">
-      <SkeletonCatalogCard v-for="i in 6" :key="i" />
+    <div v-if="loading" class="catalogs-grid catalogs-grid--skeleton">
+      <SkeletonCatalogCard v-for="i in 9" :key="i" />
     </div>
     <div v-else class="catalogs-grid">
       <CatalogCard
@@ -54,6 +54,11 @@ onMounted(() => {
 }
 
 @media (max-width: 1100px) {
+  /* Скелетонов по макету: планшет — 8 */
+  .catalogs-grid--skeleton > *:nth-child(n + 9) {
+    display: none;
+  }
+
   .h2 {
     margin-bottom: 31px;
   }
@@ -71,6 +76,11 @@ onMounted(() => {
 }
 
 @media (max-width: 744px) {
+  /* Скелетонов по макету: мобильный — 6 */
+  .catalogs-grid--skeleton > *:nth-child(n + 7) {
+    display: none;
+  }
+
   .h2 {
     margin-bottom: 65px;
   }

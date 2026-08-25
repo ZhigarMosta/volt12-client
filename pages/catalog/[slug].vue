@@ -1,33 +1,23 @@
 <template>
   <div class="catalog-page">
-    <div v-if="pending" class="loading">Загрузка...</div>
-    <div v-else-if="error" class="error">Ошибка: {{ error.message }}</div>
-    <div v-else-if="!catalog" class="error">Каталог не найден</div>
+    <div v-if="error" class="error">Ошибка: {{ error.message }}</div>
+    <div v-else-if="!pending && !catalog" class="error">Каталог не найден</div>
 
     <template v-else>
       <Navigate :items="breadcrumbsItems" />
       <div class="sorts">
-        <template v-if="loadingFilters">
-          <div class="header__search left-sort skeleton-search"/>
-        </template>
-        <div v-else class="header__search left-sort">
+        <div class="header__search left-sort">
           <input
             v-model="searchQuery"
             class="header__search-input search_text"
             type="text"
-            placeholder="Поиск по сайту"
+            placeholder="Поиск по каталогу"
           >
           <img class="header__search-icon" src="../../public/icons/search.svg" alt="search">
         </div>
         <div class="right-sort">
           <div class="sort-order-by">
-            <template v-if="loadingFilters">
-              <div class="right-sort">
-                <div class="sort skeleton-sort" />
-              </div>
-            </template>
             <SortSelect
-                v-if="!loadingFilters"
                 label="Цена"
                 :options="sortPriceOptions"
                 :model-value="currentSortPrice"
@@ -47,17 +37,10 @@
           </button>
         </div>
       </div>
-      <FiltersBreadcrumbs
-          :breadcrumbs="activeFiltersBreadcrumbs"
-          :loading="loadingFilters"
-          @remove="removeFilter"
-          @clear-all="clearAllFilters"
-      />
-
       <div class="wrapper">
         <CatalogFilters
             class="catalog-filters"
-            :loading="loadingFilters"
+            :loading="pending || loadingFilters"
             :min-price="minPrice"
             :max-price="maxPrice"
             :catalog-characteristic-without-group="catalogCharacteristicWithoutGroup"
@@ -73,10 +56,15 @@
         />
 
         <div class="items-column">
-          <div v-if="loadingItems" class="loading-overlay"></div>
+          <FiltersBreadcrumbs
+              :breadcrumbs="activeFiltersBreadcrumbs"
+              :loading="pending || loadingFilters"
+              @remove="removeFilter"
+              @clear-all="clearAllFilters"
+          />
 
           <EmptyState
-              v-if="catalogItems.length === 0 && !loadingItems"
+              v-if="catalogItems.length === 0 && !loadingItems && !pending"
               title="Ничего не найдено"
               subtitle="Попробуйте изменить критерии поиска"
               button-text="По умолчанию"
@@ -84,7 +72,7 @@
           />
 
           <div class="products-grid">
-            <template v-if="loadingItems">
+            <template v-if="pending || loadingItems">
               <div
                   v-for="i in limit"
                   :key="i"
@@ -92,7 +80,10 @@
               >
                 <div class="skeleton-card-title" />
                 <div class="skeleton-card-image" />
-                <div class="skeleton-card-price" />
+                <div class="skeleton-card-footer">
+                  <div class="skeleton-card-btn" />
+                  <div class="skeleton-card-btn" />
+                </div>
               </div>
             </template>
             <template v-else>
@@ -136,7 +127,7 @@
 
             <div class="filters-panel__body">
               <CatalogFilters
-                :loading="loadingFilters"
+                :loading="pending || loadingFilters"
                 :min-price="minPrice"
                 :max-price="maxPrice"
                 :catalog-characteristic-without-group="catalogCharacteristicWithoutGroup"
@@ -209,7 +200,7 @@ const totalPages = ref(1);
 const totalItems = ref(0);
 const limit = ref(15);
 const loadingItems = ref(true);
-const loadingFilters = ref(false);
+const loadingFilters = ref(true);
 
 const mobileFiltersOpen = ref(false);
 
@@ -905,77 +896,39 @@ watch(searchQuery, () => {
   width: 100%;
   max-width: 267px;
   border-radius: 16px;
-  border: 1px solid rgba(185, 185, 185, 0.38);
+  border: 1px solid rgba(var(--gray-light-rgb), 0.38);
   padding: 15px 17px;
   display: flex;
   flex-direction: column;
-  gap: 13px;
+  gap: 10px;
+}
+
+.skeleton-card-title,
+.skeleton-card-image,
+.skeleton-card-btn {
+  border-radius: 8px;
+  background: linear-gradient(90deg, rgba(var(--gray-light-rgb), 0.2) 25%, rgba(var(--gray-light-rgb), 0.1) 50%, rgba(var(--gray-light-rgb), 0.2) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
 }
 
 .skeleton-card-title {
-  height: 14px;
-  width: 60%;
-  border-radius: 4px;
-  background: linear-gradient(90deg, var(--gray-shimmer) 25%, var(--gray-shimmer-light) 50%, var(--gray-shimmer) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+  height: 23px;
+  width: 100%;
 }
 
 .skeleton-card-image {
-  height: 138px;
-  border-radius: 8px;
-  background: linear-gradient(90deg, var(--gray-shimmer) 25%, var(--gray-shimmer-light) 50%, var(--gray-shimmer) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+  height: 162px;
 }
 
-.skeleton-card-price {
-  height: 20px;
-  width: 80px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, var(--gray-shimmer) 25%, var(--gray-shimmer-light) 50%, var(--gray-shimmer) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-}
-
-.skeleton-search {
-  height: 51px;
-  width: 307px;
-  border-radius: 8px;
-  background: linear-gradient(90deg, var(--gray-shimmer) 25%, var(--gray-shimmer-light) 50%, var(--gray-shimmer) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-  flex-shrink: 0;
-}
-
-.skeleton-sort {
-  height: 45px;
-  width: 195px;
-  border-radius: 8px;
-  background: linear-gradient(90deg, var(--gray-shimmer) 25%, var(--gray-shimmer-light) 50%, var(--gray-shimmer) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-}
-
-.loading-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(255, 255, 255, 0.8);
+.skeleton-card-footer {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--gray-dark);
-  font-style: italic;
-  z-index: 10;
+  gap: 6px;
 }
 
-.loading {
-  padding: 40px;
-  text-align: center;
-  color: var(--gray-dark);
+.skeleton-card-btn {
+  flex: 1;
+  height: 37px;
 }
 
 .error {
