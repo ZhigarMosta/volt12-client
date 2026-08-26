@@ -48,9 +48,9 @@ const { data: footerServices, pending: footerServicesPending } = useAsyncData(
       </div>
     </div>
     <div class="footer_last">
-      <p class="footer_text">
+      <NuxtLink to="/privacy-policy" class="footer_text">
         Политика конфиденциальности
-      </p>
+      </NuxtLink>
       <p class="footer_text">
         Согласие на обработку персональных данных
       </p>
