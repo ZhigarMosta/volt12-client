@@ -21,6 +21,8 @@
         />
         <NoImagePlaceholder v-else class="product-no-image" :icon-size="28" radius="8px" />
 
+        <ProductBadges :label="label" :discount-percent="discountPercent" />
+
         <div class="dots" v-if="normalizedImages.length > 1">
           <span
               v-for="(img, idx) in normalizedImages"
@@ -52,7 +54,10 @@
 
     <div class="info">
       <div class="price-block">
-        <p class="price">₽ {{ price }}</p>
+        <div class="prices">
+          <p class="price">{{ formattedPrice }}</p>
+          <s v-if="oldPrice != null && discountPercent != null" class="old-price">{{ formatPrice(oldPrice) }}</s>
+        </div>
         <div class="actions-mobile">
           <button class="action" @click.stop="onFavoriteClick">
             <svg class="favorite" width="25" height="21" viewBox="0 0 25 21" fill="none"
@@ -94,6 +99,8 @@ import { computed, ref, onMounted } from 'vue';
 import { addToCompare, removeFromCompare } from '~/services/productApi';
 import { addToCart, updateCartItem } from '~/services/cartApi';
 import { addToFavorites, removeFromFavorites } from '~/services/favoritesApi';
+import { formatPrice } from '~/utils/format';
+import type { ProductLabel } from '~/types/product';
 
 type ImgItem = {
   img_link?: string;
@@ -114,10 +121,17 @@ const props = defineProps<{
   title: string;
   subtitle?: string;
   price: string | number;
+  oldPrice?: number | null;
+  discountPercent?: number | null;
+  label?: ProductLabel | null;
   productId?: number;
   slug?: string;
   userState?: UserState;
 }>();
+
+const formattedPrice = computed(() =>
+  typeof props.price === 'number' ? formatPrice(props.price) : `₽ ${props.price}`,
+);
 
 const { isAuthenticated } = useAuth();
 const { openAuthModal } = useAuthModal();
@@ -413,12 +427,28 @@ function handleLeave() { activeIndex.value = 0; }
 }
 
 
+.prices {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .price {
   font-family: 'NT Somic', sans-serif;
   font-weight: 500;
   font-size: 20px;
   color: var(--black);
 
+  white-space: nowrap;
+}
+
+.old-price {
+  font-family: 'NT Somic', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--gray-light);
+  text-decoration: line-through;
   white-space: nowrap;
 }
 

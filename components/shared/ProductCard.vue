@@ -1,13 +1,22 @@
 <template>
   <NuxtLink :to="`/product/${product.slug}`" class="product-card">
-    <ImageWithSkeleton
-      class="product-img"
-      :src="imageUrl"
-      :alt="imageAlt"
-      :title="imageTitle"
-    />
+    <div class="product-img-wrap">
+      <ImageWithSkeleton
+        class="product-img"
+        :src="imageUrl"
+        :alt="imageAlt"
+        :title="imageTitle"
+      />
+      <ProductBadges :label="product.label" :discount-percent="product.discount_percent" />
+    </div>
     <p class="product-name">{{ product.name }}</p>
-    <p class="product-price">{{ formatPrice(product.price) }}</p>
+    <p class="product-price">
+      {{ formatPrice(product.price) }}
+      <s
+        v-if="product.old_price != null && product.discount_percent != null"
+        class="product-old-price"
+      >{{ formatPrice(product.old_price) }}</s>
+    </p>
   </NuxtLink>
 </template>
 
@@ -56,10 +65,23 @@ const imageAlt = computed(() => getProductImageAlt(props.product));
   text-align: left;
 }
 
+.product-img-wrap {
+  position: relative;
+  width: 100%;
+  margin-top: 17px;
+}
+
 .product-img {
   width: 100%;
   height: 120px;
   object-fit: contain;
-  margin-top: 17px;
+}
+
+.product-old-price {
+  font-size: 14px;
+  color: var(--gray-light);
+  text-decoration: line-through;
+  margin-left: 8px;
+  white-space: nowrap;
 }
 </style>

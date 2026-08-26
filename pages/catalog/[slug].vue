@@ -96,6 +96,9 @@
                   :title="item.name"
                   :subtitle="item.product_code"
                   :price="item.price"
+                  :old-price="item.old_price"
+                  :discount-percent="item.discount_percent"
+                  :label="item.label"
                   :userState="item.user_state"
               />
             </template>

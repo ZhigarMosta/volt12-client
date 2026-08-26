@@ -49,6 +49,11 @@
                   label-size="16px"
               />
             </Transition>
+            <ProductBadges
+                class="gallery-badges"
+                :label="item.label"
+                :discount-percent="item.discount_percent"
+            />
           </div>
           <Slider
               v-if="gallerySlides.length > 1 && !isGalleryMobile"
@@ -86,7 +91,13 @@
 
           <div v-if="item.short_description" class="short-description" v-html="item.short_description"/>
 
-          <p class="product-price">{{ formatPrice(item.price) }}</p>
+          <div class="product-price-row">
+            <p class="product-price">{{ formatPrice(item.price) }}</p>
+            <s
+                v-if="item.old_price != null && item.discount_percent != null"
+                class="product-old-price"
+            >{{ formatPrice(item.old_price) }}</s>
+          </div>
 
           <div class="product-buy">
             <div class="product-actions">
@@ -399,6 +410,9 @@ function catalogItemSlideProps(card: ProductCard) {
     slug: card.slug,
     title: card.name,
     price: card.price,
+    oldPrice: card.old_price,
+    discountPercent: card.discount_percent,
+    label: card.label,
     images: card.img_link
         ? [{ img_link: card.img_link, alt: card.name }]
         : [],
@@ -708,12 +722,34 @@ const isTabletWidth = computed(() => windowWidth.value > TABLET_WIDTH);
   max-width: 536px;
 }
 
-.product-price {
+.product-price-row {
   margin-top: 27px;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.product-price {
   font-family: 'NT Somic', sans-serif;
   font-weight: 500;
   font-size: 32px;
   color: var(--black);
+}
+
+.product-old-price {
+  font-family: 'NT Somic', sans-serif;
+  font-weight: 500;
+  font-size: 20px;
+  color: var(--gray-light);
+  text-decoration: line-through;
+}
+
+/* Бейджи внутри рамки галереи — с отступом от края, чтобы не липли к границе */
+.gallery-badges {
+  top: 14px;
+  left: 14px;
+  right: 14px;
 }
 
 .product-buy {

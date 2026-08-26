@@ -16,6 +16,13 @@ export interface CatalogItemImage {
   product_code?: string;
 }
 
+// Визуальная метка товара («ТОП», «ПОД ЗАКАЗ», …) — справочник ведёт контент-менеджер,
+// поэтому на конкретные названия не завязываемся. id пользователю не показываем.
+export interface ProductLabel {
+  id: number;
+  name: string;
+}
+
 export interface Product {
   id: number;
   name: string;
@@ -26,6 +33,11 @@ export interface Product {
   is_new: boolean;
   is_popular: boolean;
   is_published: boolean;
+  // Поля скидки и метки опциональны, пока бэкенд с ними не уехал на прод —
+  // клиент обязан работать и со старым ответом без этих ключей.
+  old_price?: number | null;
+  discount_percent?: number | null;
+  label?: ProductLabel | null;
   catalogItemImages?: CatalogItemImage[];
   images?: CatalogItemImage[];
   user_state: {
@@ -173,6 +185,9 @@ export interface CatalogItemDetail {
   is_new: boolean;
   is_popular: boolean;
   is_published: boolean;
+  old_price?: number | null;
+  discount_percent?: number | null;
+  label?: ProductLabel | null;
   position: number;
   count: number;
   catalog_id: number | null;
@@ -192,6 +207,9 @@ export interface ProductCard {
   name: string;
   slug: string;
   price: number;
+  old_price?: number | null;
+  discount_percent?: number | null;
+  label?: ProductLabel | null;
   img_link: string | null;
   product_code?: string;
 }
